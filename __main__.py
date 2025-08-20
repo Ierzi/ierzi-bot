@@ -216,7 +216,7 @@ async def forcemarry(ctx: commands.Context, user1: discord.Member, user2: discor
         await ctx.send("no.")
         return
     
-    await add_marriage_list((user1.id, user2.id))
+    await add_marriage_list((user1, user2))
     await ctx.send(f"{user1.mention} and {user2.mention} are now married!", allowed_mentions=discord.AllowedMentions.none())
     console.print(f"Forced marriage between {user1.name} and {user2.name} has been recorded.")
 
@@ -230,7 +230,7 @@ async def forcedivorce(ctx: commands.Context, user1: discord.Member, user2: disc
         await ctx.send("no.")
         return
     
-    await remove_marriage_list((user1.id, user2.id))
+    await remove_marriage_list((user1, user2))
     await ctx.send(f"{user1.mention} and {user2.mention} have been divorced.", allowed_mentions=discord.AllowedMentions.none())
     console.print(f"Forced divorce between {user1.name} and {user2.name} has been recorded.")
 
