@@ -47,25 +47,25 @@ async def on_ready():
 async def hello(ctx: commands.Context):
     await ctx.send(random.choice(["hi", "hello", "fuck you"]))
 
-async def add_marriage_list(marriage_pair: tuple[discord.Member]):
+async def add_marriage_list(marriage_pair: tuple[int]):
     cur.execute(
         "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
-        (marriage_pair[0].id, marriage_pair[1].id)
+        (marriage_pair[0], marriage_pair[1])
         )
     cur.execute(
         "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
-        (marriage_pair[1].id, marriage_pair[0].id)
+        (marriage_pair[1], marriage_pair[0])
         )
     conn.commit()
 
-async def remove_marriage_list(marriage_pair: tuple[discord.Member]):
+async def remove_marriage_list(marriage_pair: tuple[int]):
     cur.execute(
         "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
-        (marriage_pair[0].id, marriage_pair[1].id)
+        (marriage_pair[0], marriage_pair[1])
     )
     cur.execute(
         "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
-        (marriage_pair[1].id, marriage_pair[0].id)
+        (marriage_pair[1], marriage_pair[0])
     )
     conn.commit()
 
@@ -219,7 +219,7 @@ async def forcemarry(ctx: commands.Context, user1: discord.Member, user2: discor
         await ctx.send("no.")
         return
     
-    await add_marriage_list((user1, user2))
+    await add_marriage_list((user1.id, user2.id))
     await ctx.send(f"{user1.mention} and {user2.mention} are now married!", allowed_mentions=discord.AllowedMentions.none())
     console.print(f"Forced marriage between {user1.name} and {user2.name} has been recorded.")
 
@@ -233,7 +233,7 @@ async def forcedivorce(ctx: commands.Context, user1: discord.Member, user2: disc
         await ctx.send("no.")
         return
     
-    await remove_marriage_list((user1, user2))
+    await remove_marriage_list((user1.id, user2.id))
     await ctx.send(f"{user1.mention} and {user2.mention} have been divorced.", allowed_mentions=discord.AllowedMentions.none())
     console.print(f"Forced divorce between {user1.name} and {user2.name} has been recorded.")
 
