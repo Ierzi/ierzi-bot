@@ -75,8 +75,8 @@ async def get_marriages():
     marriages = cur.fetchall()
     ids = []
     for marriage in marriages:
-        for _, id1, id2 in marriage:
-            ids.append((id1, id2))
+        _, id1, id2 = marriage
+        ids.append((id1, id2))
     
     return ids
 
