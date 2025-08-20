@@ -156,14 +156,16 @@ class Marriages(commands.Cog):
             mess_count = 0
             marriages_ = []
             for i, pair in enumerate(marriages):
+                if pair[::-1] in marriages_:
+                    continue
+
                 count += 1
                 if count <= start_index:
                     continue
+                
                 if mess_count == 10:
                     # Reach the end of the page
                     break
-                if pair[::-1] in marriages_:
-                    continue
 
                 if i % 10 == 0:
                     all_messages += f"**Page {page_number}/{n_pages}**\n"
