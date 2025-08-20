@@ -39,6 +39,20 @@ class Reactions(commands.Cog):
         await ctx.send(f"{ctx.author.mention} hugs {user.mention} 🤗", allowed_mentions=discord.AllowedMentions.none())
     
     @commands.command()
+    async def cuddle(self, ctx: commands.Context, user: discord.Member):
+        if user == ctx.author:
+            await ctx.send(f"{ctx.author.mention} ain't got anyone to cuddle (lonely ass)", allowed_mentions=discord.AllowedMentions.none())
+            return
+        if user.id == self.bot.user.id:
+            await ctx.send("hell no, I don't cuddle with anyone but my owner <33")
+            return
+        if user.bot:
+            await ctx.send("cuddling a bot? really? :broken_heart:")
+            return
+        
+        await ctx.send(f"{ctx.author.mention} cuddles {user.mention} 🥰 \n-#so cutesy", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
     async def slap(self, ctx: commands.Context, user: discord.Member):
         if user == ctx.author:
             await ctx.send(f"this dumbass {ctx.author.mention} is slapping himself smh my head", allowed_mentions=discord.AllowedMentions.none())
