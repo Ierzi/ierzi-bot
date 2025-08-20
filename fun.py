@@ -11,9 +11,9 @@ class Fun(commands.Cog):
     
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member):
-        if user.id == 1153301933231181824:
+        if user.id == 1153301933231181824: #apex
             await ctx.send("yes")
-        elif user.id == 966351518020300841:
+        elif user.id == 966351518020300841: #ierzi
             await ctx.send("no")
         else:
             await ctx.send(random.choice(["no", "yes", "not yet", "soon", "idk ask them"]))
