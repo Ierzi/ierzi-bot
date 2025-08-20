@@ -47,7 +47,7 @@ async def on_ready():
 async def hello(ctx: commands.Context):
     await ctx.send(random.choice(["hi", "hello", "fuck you"]))
 
-async def add_marriage_list(marriage_pair: tuple[discord.User]):
+async def add_marriage_list(marriage_pair: tuple[discord.Member]):
     cur.execute(
         "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
         (marriage_pair[0].id, marriage_pair[1].id)
@@ -58,7 +58,7 @@ async def add_marriage_list(marriage_pair: tuple[discord.User]):
         )
     conn.commit()
 
-async def remove_marriage_list(marriage_pair: tuple[discord.User]):
+async def remove_marriage_list(marriage_pair: tuple[discord.Member]):
     cur.execute(
         "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
         (marriage_pair[0].id, marriage_pair[1].id)
@@ -98,7 +98,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
         await ctx.send("does he know?")
         return
     
-    await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}? \n Reply with yes if you accept, or no if you decline.", allowed_mentions=discord.AllowedMentions.none())
+    await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline.", allowed_mentions=discord.AllowedMentions.none())
 
     def check(m: discord.Message):
         return m.author.id == partner.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
@@ -125,7 +125,7 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
         await ctx.send("You are not married to this person!")
         return
     
-    await ctx.send(f"Are you sure you want to divorce {partner.mention}? \n Reply with yes if you confirm, or no if you changed your mind. ", allowed_mentions=discord.AllowedMentions.none())
+    await ctx.send(f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. ", allowed_mentions=discord.AllowedMentions.none())
     
     def check(m: discord.Message):
         return m.author.id == proposer.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
@@ -139,7 +139,7 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
     if msg.content.lower() == "yes":
         # Remove the marriage from the list
         await remove_marriage_list((proposer.id, partner.id))
-        await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n -# its over...", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...", allowed_mentions=discord.AllowedMentions.none())
         console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
     else:
         await ctx.send(f"{proposer.mention} has canceled the divorce proposal.")
@@ -161,8 +161,7 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
             return
         
         # Send some sort of message to indicate that the bot is processing the request
-        think = await ctx.send("Thinking...")
-        think_slow = await ctx.send("-# slow ass program (why did i make it in python)")
+        think = await ctx.send("Thinking... \n-# slow ass program (why did i make it in python)")
 
         all_messages = ""
         start_index = (page_number - 1) * 10
@@ -186,7 +185,6 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
                 mess_count += 1
         
         await think.delete()
-        await think_slow.delete()
         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
