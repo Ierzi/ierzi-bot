@@ -71,7 +71,7 @@ async def remove_marriage_list(marriage_pair: tuple[discord.User]):
 
 
 async def get_marriages():
-    cur.execute("SELECT * FROM marriages")
+    cur.execute("SELECT (user1_id, user2_id) FROM marriages")
     marriages = cur.fetchall()
     return marriages
 
