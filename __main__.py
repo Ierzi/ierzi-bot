@@ -191,6 +191,7 @@ async def marriagestatus(ctx: commands.Context):
 # OpenAI commands
 @bot.command()
 async def aiask(ctx: commands.Context, text: str):
+    thinking = await ctx.send("The ai is thinking...")
     author = ctx.author
 
     client = OpenAI(api_key=openai_key)
@@ -200,7 +201,8 @@ async def aiask(ctx: commands.Context, text: str):
     )
 
     console.print(f"AI response: {response.output_text}")
-    text = f"{author.mention}: {text} \n AI: {response.output_text}"
+    text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
+    await thinking.delete()
     await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
 
