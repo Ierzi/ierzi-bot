@@ -23,7 +23,7 @@ class Reactions(commands.Cog):
             await ctx.send("ok what :broken_heart:")
             return
         
-        await ctx.send(f"{ctx.author.mention} kisses {user.mention} ❤️")
+        await ctx.send(f"{ctx.author.mention} kisses {user.mention} ❤️", allowed_mentions=discord.AllowedMentions(users=False))
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Reactions(bot))
