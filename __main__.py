@@ -110,7 +110,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
         return
     
     if msg.content.lower() == "yes":
-        await ctx.send(f"Congratulations {proposer.mention} and {partner.mention}, you are now happilly married!", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"Congratulations {proposer.mention} and {partner.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none())
         console.print(f"Marriage between {proposer.name} and {partner.name} has been recorded.")
         await add_marriage_list((proposer.id, partner.id))
     else:
