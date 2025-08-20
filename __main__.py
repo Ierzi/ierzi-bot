@@ -168,7 +168,6 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
 
 @bot.command()
 async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
-    """Debug command to check bot status."""
     if not fake_n_marriages:
         n_marriages = len(marriages)
         await ctx.send(f"Current marriages: {n_marriages} pairs.")
