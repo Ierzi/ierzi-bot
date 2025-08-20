@@ -167,6 +167,27 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
+async def marriagestatus(ctx: commands.Context):
+    """Check the marriage status of a user."""
+    await update_marriage_list()
+    
+    user = ctx.author
+    user_marriages = [pair for pair in marriages if user.id in pair]
+    
+    if not user_marriages:
+        await ctx.send(f"{user.mention} is not married.")
+        return
+    
+    marriage_status = ""
+    for pair in user_marriages:
+        partner_id = pair[0] if pair[1] == user.id else pair[1]
+        partner = bot.get_user(partner_id) or await bot.fetch_user(partner_id)
+        message = f"{user.mention} is married to {partner.mention}.\n"
+        marriage_status += message if message not in marriage_status else ""
+    
+    await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
+
+@bot.command()
 async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
     if not fake_n_marriages:
         n_marriages = len(marriages)
