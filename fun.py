@@ -29,7 +29,7 @@ class Fun(commands.Cog):
         await ctx.send(result)
     
     @commands.command()
-    async def hello(ctx: commands.Context):
+    async def hello(self, ctx: commands.Context):
         await ctx.send(random.choice(["hi", "hello", "fuck you"]))
 
 
