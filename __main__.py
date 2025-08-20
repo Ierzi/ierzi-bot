@@ -64,6 +64,12 @@ async def marry(ctx: commands.Context, partner: discord.Member):
     if proposer.id == partner.id:
         await ctx.send("You cannot marry yourself!")
         return
+    if partner.id == bot.user.id:
+        await ctx.send("faggot")
+        return
+    if partner.bot:
+        await ctx.send("dumbass")
+        return
     if (proposer.id, partner.id) in marriages or (partner.id, proposer.id) in marriages:
         await ctx.send("You are already married to this person!")
         return
@@ -122,6 +128,8 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
 async def listmarriages(ctx: commands.Context, page_number: int = 1):
     # Update
     await update_marriage_list()
+
+    global marriages
 
     if not marriages:
         await ctx.send("Nobody is married yet!")
@@ -186,7 +194,7 @@ async def marriagestatus(ctx: commands.Context):
 
 # OpenAI commands
 @bot.command()
-async def aiask(ctx: commands.Context, text: str):
+async def aiask(ctx: commands.Context, *, text: str):
     thinking = await ctx.send("The ai is thinking...")
     author = ctx.author
 
@@ -201,6 +209,27 @@ async def aiask(ctx: commands.Context, text: str):
     await thinking.delete()
     await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
+# Debug commands
+@bot.command()
+async def eml(ctx: commands.Context):
+    """Export marriage list (ignore this)"""
+    await update_marriage_list()
+    global marriages
+    await ctx.send(marriages)
+
+@bot.command()
+async def iml(ctx: commands.Context, ml: list):
+    """Import marriage list (ignore this)"""
+    global marriages
+    marriages = ml
+
+    with open("marriages.json", "w") as f:
+        json.dump(marriages, f, indent=4)
+
+@bot.command()
+async def id(ctx: commands.Context, user: discord.Member):
+    """Get the ID of a user."""
+    await ctx.send(f"{user.id}")
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
