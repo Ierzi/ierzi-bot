@@ -106,7 +106,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
     try:
         msg = await bot.wait_for('message', check=check, timeout=60.0)
     except asyncio.TimeoutError:
-        await ctx.send(f"Marriage proposal for {partner.id} timed out.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"Marriage proposal for {partner.mention} timed out.", allowed_mentions=discord.AllowedMentions.none())
         return
     
     if msg.content.lower() == "yes":
@@ -133,7 +133,7 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
     try:
         msg = await bot.wait_for('message', check=check, timeout=60.0)
     except asyncio.TimeoutError:
-        await ctx.send("Divorce request timed out.")
+        await ctx.send(f"Divorce request by {ctx.author.mention} timed out.", allowed_mentions=discord.AllowedMentions.none())
         return
     
     if msg.content.lower() == "yes":
@@ -157,7 +157,7 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
         n_pages = round(n_marriages // 10 + 1)
         
         if page_number > n_pages or page_number < 1:
-            await ctx.send(f"Invalid page number. There are {n_pages} pages of marriages.")
+            await ctx.send(f"Invalid page number. There are {n_pages} pages.")
             return
         
         # Send some sort of message to indicate that the bot is processing the request
@@ -176,7 +176,7 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
                 break
 
             if i % 10 == 0:
-                all_messages += f"**Page {page_number}**\n"
+                all_messages += f"**Page {page_number}/{n_pages}**\n"
             
             if i >= start_index:
                 user_1 = bot.get_user(pair[0]) or await bot.fetch_user(pair[0])
@@ -245,7 +245,7 @@ async def aiask(ctx: commands.Context, *, text: str):
 
     client = OpenAI(api_key=openai_key)
     response = client.responses.create(
-        model="gpt-5-nano",
+        model="gpt-5-mini",
         input=text
     )
 
@@ -257,11 +257,11 @@ async def aiask(ctx: commands.Context, *, text: str):
 # Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
-    """Get the ID of a user."""
     await ctx.send(f"{user.id}")
 
 @bot.command()
 async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
+    """Ignore this"""
     marriages = await get_marriages()
     console.print(marriages)
 
