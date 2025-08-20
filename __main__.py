@@ -36,7 +36,6 @@ async def update_marriage_list():
         marriages = list(json.load(f))
 
 async def add_marriage_list(marriage_pair: tuple):
-    """Update the marriage list with a new marriage pair."""
     if marriage_pair in marriages:
         console.print(f"Marriage pair {marriage_pair} already exists in the list.")
         return
@@ -49,7 +48,6 @@ async def add_marriage_list(marriage_pair: tuple):
         console.print(f"Marriage list updated with {marriage_pair}.")
 
 async def remove_marriage_list(marriage_pair):
-    """Remove a marriage pair from the list."""
     if marriage_pair in marriages:
         marriages.remove(marriage_pair)
         marriages.remove((marriage_pair[1], marriage_pair[0]))
@@ -122,7 +120,6 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
 # TODO
 @bot.command()
 async def listmarriages(ctx: commands.Context, page_number: int = 1):
-    """List all current marriages."""
     # Update
     await update_marriage_list()
 
@@ -169,7 +166,6 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
 
 @bot.command()
 async def marriagestatus(ctx: commands.Context):
-    """Check the marriage status of a user."""
     await update_marriage_list()
     
     user = ctx.author
