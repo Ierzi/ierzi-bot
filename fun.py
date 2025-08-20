@@ -16,7 +16,7 @@ class Fun(commands.Cog):
         elif user.id == 966351518020300841:
             await ctx.send("no")
         else:
-            await ctx.send(random.choice(["no", "yes", "not yet"]))
+            await ctx.send(random.choice(["no", "yes", "not yet", "soon", "idk ask them"]))
 
     @commands.command()
     async def d20(self, ctx: commands.Context):
@@ -31,6 +31,12 @@ class Fun(commands.Cog):
     @commands.command()
     async def hello(self, ctx: commands.Context):
         await ctx.send(random.choice(["hi", "hello", "fuck you"]))
+    
+    @commands.command(name="2ball")
+    async def twoball(self, ctx: commands.Context, *, text: str):
+        """8ball but only 2 options, yes and no"""
+        result = random.choice(["yes", "no"])
+        await ctx.send(result)
 
 
 async def setup(bot: commands.Bot):
