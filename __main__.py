@@ -104,7 +104,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
         return m.author.id == partner.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
 
     try:
-        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        msg = await bot.wait_for('message', check=check, timeout=30.0)
     except asyncio.TimeoutError:
         await ctx.send(f"Marriage proposal for {partner.mention} timed out.", allowed_mentions=discord.AllowedMentions.none())
         return
@@ -131,7 +131,7 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
         return m.author.id == proposer.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
 
     try:
-        msg = await bot.wait_for('message', check=check, timeout=60.0)
+        msg = await bot.wait_for('message', check=check, timeout=30.0)
     except asyncio.TimeoutError:
         await ctx.send(f"Divorce request by {ctx.author.mention} timed out.", allowed_mentions=discord.AllowedMentions.none())
         return
@@ -210,7 +210,7 @@ async def marriagestatus(ctx: commands.Context):
         marriage_status += message if message not in marriage_status else ""
         count += 1
     
-    marriage_status += f"\nTotal marriages: {count}"
+    marriage_status += f"\nTotal marriages: {count // 2}"
     await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
