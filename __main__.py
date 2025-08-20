@@ -271,6 +271,12 @@ async def istrans(ctx: commands.Context, user: discord.Member):
     else:
         await ctx.send(random.choice(["no", "yes", "not yet"]))
 
+@bot.command()
+async def d20(ctx: commands.Context):
+    """Rolls a 20-sided die."""
+    roll = random.randint(1, 20)
+    await ctx.send(f"{roll}")
+
 # Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
