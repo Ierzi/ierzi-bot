@@ -167,6 +167,7 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
         start_index = (page_number - 1) * 10
         count = 0
         mess_count = 0
+        marriages_ = []
         for i, pair in enumerate(marriages):
             count += 1
             if count <= start_index:
@@ -174,6 +175,8 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
             if mess_count == 10:
                 # Reach the end of the page
                 break
+            if pair[::-1] in marriages_:
+                continue
 
             if i % 10 == 0:
                 all_messages += f"**Page {page_number}/{n_pages}**\n"
@@ -182,6 +185,7 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
                 user_1 = bot.get_user(pair[0]) or await bot.fetch_user(pair[0])
                 user_2 = bot.get_user(pair[1]) or await bot.fetch_user(pair[1])
                 all_messages += f"{user_1.mention} and {user_2.mention}\n"
+                marriages_.append(pair)
                 mess_count += 1
         
         await think.delete()
@@ -194,16 +198,19 @@ async def marriagestatus(ctx: commands.Context):
     user_marriages = [pair for pair in marriages if user.id in pair]
     
     if not user_marriages:
-        await ctx.send(f"{user.mention} is not married.")
+        await ctx.send(f"You are not married, {user.mention}.", allowed_mentions=discord.AllowedMentions.none())
         return
     
     marriage_status = ""
+    count = 0
     for pair in user_marriages:
         partner_id = pair[0] if pair[1] == user.id else pair[1]
         partner = bot.get_user(partner_id) or await bot.fetch_user(partner_id)
         message = f"{user.mention} is married to {partner.mention}.\n"
         marriage_status += message if message not in marriage_status else ""
+        count += 1
     
+    marriage_status += f"\nTotal marriages: {count}"
     await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
