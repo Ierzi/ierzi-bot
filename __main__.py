@@ -261,6 +261,16 @@ async def aiask(ctx: commands.Context, *, text: str):
     await thinking.delete()
     await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
+# Fun commands
+@bot.command()
+async def istrans(ctx: commands.Context, user: discord.Member):
+    if user.id == 1153301933231181824:
+        await ctx.send("yes")
+    elif user.id == 966351518020300841:
+        await ctx.send("no")
+    else:
+        await ctx.send(random.choice(["no", "yes", "not yet"]))
+
 # Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
