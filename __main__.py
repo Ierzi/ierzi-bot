@@ -257,17 +257,9 @@ async def id(ctx: commands.Context, user: discord.Member):
     """Get the ID of a user."""
     await ctx.send(f"{user.id}")
 
-# @bot.command()
-# async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
-#     if not fake_n_marriages:
-#         n_marriages = len(marriages)
-#         await ctx.send(f"Current marriages: {n_marriages} pairs.")
-#         await ctx.send(marriages)
-#     else:
-#         n_marriages = fake_n_marriages
-#         await ctx.send(f"Debugging with {n_marriages} fake marriages.")
-
-#     number_of_pages = round(n_marriages // 10 + 1)
-#     await ctx.send(number_of_pages)
+@bot.command()
+async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
+    marriages = await get_marriages()
+    console.print(marriages)
 
 bot.run(token)
