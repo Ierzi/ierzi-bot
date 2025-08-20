@@ -4,8 +4,9 @@ from rich.console import Console
 import os
 from dotenv import load_dotenv
 import asyncio
-import json
 from openai import OpenAI
+import psycopg2
+import random
 
 console = Console()
 # Load environment variables from .env file
@@ -17,52 +18,70 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+# Init database
+conn = psycopg2.connect(
+    host=os.getenv("PGHOST"),
+    database=os.getenv("PGDATABASE"),
+    user=os.getenv("PGUSER"),
+    password=os.getenv("PGPASSWORD"),
+    port=os.getenv("PGPORT")
+)
+
+cur = conn.cursor()
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS marriages (
+        id SERIAL PRIMARY KEY,
+        user1_id BIGINT NOT NULL,
+        user2_id BIGINT NOT NULL
+    );
+""")
+
+conn.commit()
+
 @bot.event
 async def on_ready():
     console.print(f"Logged in as {bot.user}")
-    marriage_file = "marriages.json"
-    with open(marriage_file, "r") as f:
-        global marriages
-        marriages = list(json.load(f))
 
 @bot.command()
 async def hello(ctx: commands.Context):
-    await ctx.send("Hello!")
+    await ctx.send(random.choice(["hi", "hello", "fuck you"]))
 
-# Marriage commands
-async def update_marriage_list():
-    with open("marriages.json", "r") as f:
-        global marriages
-        marriages = list(json.load(f))
+async def add_marriage_list(marriage_pair: tuple[discord.User]):
+    cur.execute(
+        "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
+        (marriage_pair[0].id, marriage_pair[1].id)
+        )
+    cur.execute(
+        "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
+        (marriage_pair[1].id, marriage_pair[0].id)
+        )
+    conn.commit()
 
-async def add_marriage_list(marriage_pair: tuple):
-    if marriage_pair in marriages:
-        console.print(f"Marriage pair {marriage_pair} already exists in the list.")
-        return
-    
-    marriages.append(marriage_pair)
-    marriages.append((marriage_pair[1], marriage_pair[0]))
+async def remove_marriage_list(marriage_pair: tuple[discord.User]):
+    cur.execute(
+        "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
+        (marriage_pair[0].id, marriage_pair[1].id)
+    )
+    cur.execute(
+        "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
+        (marriage_pair[1].id, marriage_pair[0].id)
+    )
+    conn.commit()
 
-    with open("marriages.json", "w") as f:
-        json.dump(marriages, f, indent=4)
-        console.print(f"Marriage list updated with {marriage_pair}.")
 
-async def remove_marriage_list(marriage_pair):
-    if marriage_pair in marriages:
-        marriages.remove(marriage_pair)
-        marriages.remove((marriage_pair[1], marriage_pair[0]))
-        with open("marriages.json", "w") as f:
-            json.dump(marriages, f, indent=4)
-            console.print(f"Marriage list updated by removing {marriage_pair}.")
-    else:
-        console.print(f"Marriage pair {marriage_pair} not found in the list.")
+async def get_marriages():
+    cur.execute("SELECT * FROM marriages")
+    marriages = cur.fetchall()
+    return marriages
 
 @bot.command()
 async def marry(ctx: commands.Context, partner: discord.Member):
     proposer = ctx.author
+    marriages = await get_marriages()
 
     if proposer.id == partner.id:
-        await ctx.send("You cannot marry yourself!")
+        await ctx.send("...")
         return
     if partner.id == bot.user.id:
         await ctx.send("faggot")
@@ -71,7 +90,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
         await ctx.send("dumbass")
         return
     if (proposer.id, partner.id) in marriages or (partner.id, proposer.id) in marriages:
-        await ctx.send("You are already married to this person!")
+        await ctx.send("does he know?")
         return
     
     await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}?", allowed_mentions=discord.AllowedMentions.none())
@@ -83,7 +102,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
     try:
         msg = await bot.wait_for('message', check=check, timeout=60.0)
     except asyncio.TimeoutError:
-        await ctx.send("Marriage proposal timed out.")
+        await ctx.send(f"Marriage proposal for {partner.id} timed out.", allowed_mentions=discord.AllowedMentions.none())
         return
     
     if msg.content.lower() == "yes":
@@ -96,6 +115,7 @@ async def marry(ctx: commands.Context, partner: discord.Member):
 @bot.command()
 async def divorce(ctx: commands.Context, partner: discord.Member):
     proposer = ctx.author
+    marriages = await get_marriages()
 
     if (proposer.id, partner.id) not in marriages and (partner.id, proposer.id) not in marriages:
         await ctx.send("You are not married to this person!")
@@ -126,15 +146,15 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
 # TODO
 @bot.command()
 async def listmarriages(ctx: commands.Context, page_number: int = 1):
-    # Update
-    await update_marriage_list()
-
-    global marriages
-
+    marriages = await get_marriages()
+        
     if not marriages:
         await ctx.send("Nobody is married yet!")
         return
     else:
+        n_marriages = len(marriages) 
+        n_pages = round(n_marriages // 10 + 1)
+        
         if page_number > n_pages:
             await ctx.send(f"Invalid page number. There are only {n_pages} pages of marriages.")
             return
@@ -142,10 +162,7 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
         # Send some sort of message to indicate that the bot is processing the request
         think = await ctx.send("Thinking...")
         think_slow = await ctx.send("-# slow ass program (why did i make it in python)")
-        # Calculate the number of pages based on the number of marriages
-        n_marriages = len(marriages) 
-        n_pages = round(n_marriages // 10 + 1)
-        
+
         all_messages = ""
         start_index = (page_number - 1) * 10
         count = 0
@@ -167,16 +184,14 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
                 all_messages += f"{user_1.mention} and {user_2.mention}\n"
                 mess_count += 1
         
-        # After thinking, deletes the "Thinking..." message
         await think.delete()
         await think_slow.delete()
         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
 async def marriagestatus(ctx: commands.Context):
-    await update_marriage_list()
-    
     user = ctx.author
+    marriages = await get_marriages()
     user_marriages = [pair for pair in marriages if user.id in pair]
     
     if not user_marriages:
@@ -191,6 +206,37 @@ async def marriagestatus(ctx: commands.Context):
         marriage_status += message if message not in marriage_status else ""
     
     await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
+
+@bot.command()
+async def forcemarry(ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+    marriages = await get_marriages()
+    if (user1.id, user2.id) in marriages or (user2.id, user1.id) in marriages:
+        await ctx.send("does he know?")
+        return
+    if user1.id == user2.id:
+        await ctx.send("dumbass")
+        return
+    if ctx.author.id != 966351518020300841:
+        await ctx.send("no.")
+        return
+    
+    await add_marriage_list((user1.id, user2.id))
+    await ctx.send(f"{user1.mention} and {user2.mention} are now married!", allowed_mentions=discord.AllowedMentions.none())
+    console.print(f"Forced marriage between {user1.name} and {user2.name} has been recorded.")
+
+@bot.command()
+async def forcedivorce(ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+    marriages = await get_marriages()
+    if (user1.id, user2.id) not in marriages and (user2.id, user1.id) not in marriages:
+        await ctx.send("yall not married lmao")
+        return
+    if ctx.author.id != 966351518020300841:
+        await ctx.send("no.")
+        return
+    
+    await remove_marriage_list((user1.id, user2.id))
+    await ctx.send(f"{user1.mention} and {user2.mention} have been divorced.", allowed_mentions=discord.AllowedMentions.none())
+    console.print(f"Forced divorce between {user1.name} and {user2.name} has been recorded.")
 
 # OpenAI commands
 @bot.command()
@@ -209,23 +255,7 @@ async def aiask(ctx: commands.Context, *, text: str):
     await thinking.delete()
     await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
-# Debug commands
-@bot.command()
-async def eml(ctx: commands.Context):
-    """Export marriage list (ignore this)"""
-    await update_marriage_list()
-    global marriages
-    await ctx.send(marriages)
-
-@bot.command()
-async def iml(ctx: commands.Context, ml: list):
-    """Import marriage list (ignore this)"""
-    global marriages
-    marriages = ml
-
-    with open("marriages.json", "w") as f:
-        json.dump(marriages, f, indent=4)
-
+# Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
     """Get the ID of a user."""
