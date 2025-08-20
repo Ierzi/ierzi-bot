@@ -5,11 +5,13 @@ import os
 from dotenv import load_dotenv
 import asyncio
 import json
+from openai import OpenAI
 
 console = Console()
 # Load environment variables from .env file
 load_dotenv()
 token = os.getenv("TOKEN")
+openai_key = os.getenv("OPENAI_KEY")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -28,7 +30,6 @@ async def hello(ctx: commands.Context):
     await ctx.send("Hello!")
 
 # Marriage commands
-
 async def update_marriage_list():
     with open("marriages.json", "r") as f:
         global marriages
@@ -187,17 +188,33 @@ async def marriagestatus(ctx: commands.Context):
     
     await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
 
+# OpenAI commands
 @bot.command()
-async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
-    if not fake_n_marriages:
-        n_marriages = len(marriages)
-        await ctx.send(f"Current marriages: {n_marriages} pairs.")
-        await ctx.send(marriages)
-    else:
-        n_marriages = fake_n_marriages
-        await ctx.send(f"Debugging with {n_marriages} fake marriages.")
+async def aiask(ctx: commands.Context, text: str):
+    author = ctx.author
 
-    number_of_pages = round(n_marriages // 10 + 1)
-    await ctx.send(number_of_pages)
+    client = OpenAI(api_key=openai_key)
+    response = client.responses.create(
+        model="gpt-5-nano",
+        input=text
+    )
+
+    console.print(f"AI response: {response.output_text}")
+    text = f"{author.mention}: {text} \n AI: {response.output_text}"
+    await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
+
+
+# @bot.command()
+# async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
+#     if not fake_n_marriages:
+#         n_marriages = len(marriages)
+#         await ctx.send(f"Current marriages: {n_marriages} pairs.")
+#         await ctx.send(marriages)
+#     else:
+#         n_marriages = fake_n_marriages
+#         await ctx.send(f"Debugging with {n_marriages} fake marriages.")
+
+#     number_of_pages = round(n_marriages // 10 + 1)
+#     await ctx.send(number_of_pages)
 
 bot.run(token)
