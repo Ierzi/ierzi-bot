@@ -93,9 +93,8 @@ async def marry(ctx: commands.Context, partner: discord.Member):
         await ctx.send("does he know?")
         return
     
-    await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}?", allowed_mentions=discord.AllowedMentions.none())
-    await ctx.send(f"Reply with yes if you accept, or no if you decline.")
-    
+    await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}? \n Reply with yes if you accept, or no if you decline.", allowed_mentions=discord.AllowedMentions.none())
+
     def check(m: discord.Message):
         return m.author.id == partner.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
 
@@ -121,8 +120,7 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
         await ctx.send("You are not married to this person!")
         return
     
-    await ctx.send(f"Are you sure you want to divorce {partner.mention}?", allowed_mentions=discord.AllowedMentions.none())
-    await ctx.send(f"Reply with yes if you confirm, or no if you decline.")
+    await ctx.send(f"Are you sure you want to divorce {partner.mention}? \n Reply with yes if you confirm, or no if you changed your mind. ", allowed_mentions=discord.AllowedMentions.none())
     
     def check(m: discord.Message):
         return m.author.id == proposer.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
@@ -136,14 +134,12 @@ async def divorce(ctx: commands.Context, partner: discord.Member):
     if msg.content.lower() == "yes":
         # Remove the marriage from the list
         await remove_marriage_list((proposer.id, partner.id))
-        await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced.", allowed_mentions=discord.AllowedMentions.none())
-        await ctx.send("-# its over...")
+        await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n -# its over...", allowed_mentions=discord.AllowedMentions.none())
         console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
     else:
-        await ctx.send(f"{proposer.mention} has declined the divorce proposal.")
+        await ctx.send(f"{proposer.mention} has canceled the divorce proposal.")
 
 
-# TODO
 @bot.command()
 async def listmarriages(ctx: commands.Context, page_number: int = 1):
     marriages = await get_marriages()
@@ -155,8 +151,8 @@ async def listmarriages(ctx: commands.Context, page_number: int = 1):
         n_marriages = len(marriages) 
         n_pages = round(n_marriages // 10 + 1)
         
-        if page_number > n_pages:
-            await ctx.send(f"Invalid page number. There are only {n_pages} pages of marriages.")
+        if page_number > n_pages or page_number < 1:
+            await ctx.send(f"Invalid page number. There are {n_pages} pages of marriages.")
             return
         
         # Send some sort of message to indicate that the bot is processing the request
@@ -228,7 +224,7 @@ async def forcemarry(ctx: commands.Context, user1: discord.Member, user2: discor
 async def forcedivorce(ctx: commands.Context, user1: discord.Member, user2: discord.Member):
     marriages = await get_marriages()
     if (user1.id, user2.id) not in marriages and (user2.id, user1.id) not in marriages:
-        await ctx.send("yall not married lmao")
+        await ctx.send("they are not married lmao")
         return
     if ctx.author.id != 966351518020300841:
         await ctx.send("no.")
@@ -241,8 +237,8 @@ async def forcedivorce(ctx: commands.Context, user1: discord.Member, user2: disc
 # OpenAI commands
 @bot.command()
 async def aiask(ctx: commands.Context, *, text: str):
-    thinking = await ctx.send("The ai is thinking...")
     author = ctx.author
+    thinking = await ctx.send("The ai is thinking...")
 
     client = OpenAI(api_key=openai_key)
     response = client.responses.create(
