@@ -69,6 +69,19 @@ class Reactions(commands.Cog):
         
         await ctx.send(f"{ctx.author.mention} **SLAPS** {user.mention}!", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def kill(self, ctx: commands.Context, user: discord.Member):
+        if user == ctx.author:
+            await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
+            return
+        if user.id == self.bot.user.id:
+            await ctx.send("what did i do to you :pensive:")
+            return
+        if user.bot:
+            await ctx.send("why do you wanna kill a bot. wait kill.. bot? gd reference??")
+            return
+        
+        await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-#that's not nice", allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Reactions(bot))
