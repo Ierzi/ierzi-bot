@@ -20,7 +20,8 @@ class AI(commands.Cog):
         client = OpenAI(api_key=self.openai_key)
         response = client.responses.create(
             model="gpt-5-mini",
-            input=text
+            input=text,
+            max_output_tokens=3000
         )
 
         text = f"{author.mention}: {text} \n \n AI: {response.output_text}"

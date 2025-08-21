@@ -4,6 +4,7 @@ from rich.console import Console
 import psycopg2
 import os
 import random
+from datetime import datetime, timedelta, timezone
 
 console = Console()
 
@@ -16,8 +17,6 @@ conn = psycopg2.connect(
 )
 
 cur = conn.cursor()
-
-cur.execute("ALTER TABLE economy ADD COLUMN last_worked TIMESTAMP;")
 
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
@@ -59,13 +58,37 @@ class Economy(commands.Cog):
         balance = await self.get_balance(user.id)
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
-    # @commands.command()
-    # async def work(self, ctx: commands.Context): 
-    #     # Gets the last time the user worked
-    #     user_id = ctx.author.id
-    #     cur.execute("")
-    #     job = random.choice(self.jobs)
+    @commands.command()
+    async def work(self, ctx: commands.Context): 
+        # Gets the last time the user worked
+        user_id = ctx.author.id
+        cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
+        row = cur.fetchone()
 
+        cooldown = timedelta(hours=6)
+        last_worked = row[1]
+        now = datetime.now(timezone.utc)
+
+        if now - last_worked < cooldown:
+            remaining: timedelta = cooldown - (now - last_worked)
+            hours, remainder = divmod(int(remaining.total_seconds()), 3600)
+            minutes, seconds = divmod(remainder, 60)
+            await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
+            return 
+        
+        job, raw_payement = random.choice(self.jobs)
+        payement = random.randint(raw_payement - 50, raw_payement + 50)
+        cur.execute("""
+                    INSERT INTO economy (user_id, balance, last_daily) 
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET balance = economy.balance + EXLCUDED.balance, last_daily = EXCLUDED.last_daily;
+        """, (user_id, payement, now))
+        conn.commit()
+        await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payement} coins!", allowed_mentions=discord.AllowedMentions.none())
+
+    # @commands.command(name="ecolb")
+    # async def eco_leaderboard():
 
     @commands.command()
     async def daily(self, ctx: commands.Context): ...
