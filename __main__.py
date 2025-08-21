@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ui import Button, View
 from rich.console import Console
 import os
 from dotenv import load_dotenv
@@ -34,8 +35,10 @@ async def id(ctx: commands.Context, user: discord.Member):
 
 @bot.command()
 async def test(ctx: commands.Context):
-    await ctx.send("[hello](youtube.com)")
-
+    cool_button = Button(label="YouTube", url="youtube.com")
+    view = View()
+    view.add_item(cool_button)
+    await ctx.send(view=view)
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
 #     """Ignore this"""
