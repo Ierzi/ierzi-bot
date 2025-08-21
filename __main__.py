@@ -47,10 +47,10 @@ async def github(ctx: commands.Context):
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
         if error.retry_after < 60:
-            await ctx.send(f"{ctx.author}, this command is on cooldown. Try again in {error.retry_after} seconds.")
+            await ctx.send(f"{ctx.author.mention}, this command is on cooldown. Try again in {round(error.retry_after, 2)} seconds.", allowed_mentions=discord.AllowedMentions.none())
         else:
             minutes = error.retry_after / 60
-            await ctx.send(f"{ctx.author}, this command is on cooldown. Try again in {minutes} minutes.")
+            await ctx.send(f"{ctx.author.mention}, this command is on cooldown. Try again in {round(minutes, 2)} minutes.", allowed_mentions=discord.AllowedMentions.none())
 
         return
     elif isinstance(error, commands.CommandNotFound):

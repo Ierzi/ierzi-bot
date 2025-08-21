@@ -34,7 +34,7 @@ class Economy(commands.Cog):
         self.console = console
 
         # All the jobs and how much they pay
-        self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developper", 750), ("Nanotechnology Engineer", 900)]
+        self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
     
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
@@ -70,8 +70,23 @@ class Economy(commands.Cog):
     @commands.cooldown(1, 3600, commands.BucketType.user)
     async def work(self, ctx: commands.Context): 
         job = random.choice(self.jobs)
-        await ctx.send(f"You work as a {job[0]} and gained {job[1]} coins!")
+        await ctx.send(f"You worked as a {job[0]} and gained {job[1]} coins!")
+        await self.add_money(ctx.author.id, job[1])
 
+    @commands.command()
+    async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
+        if ctx.author.id != 966351518020300841:
+            await ctx.send("no.")
+            return
+        if not user:
+            await ctx.send("who?")
+            return
+        if not amount:
+            await ctx.send("how much?")
+            return
+        
+        await self.add_money(user.id, amount)
+        await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account", allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))
