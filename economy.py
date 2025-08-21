@@ -63,17 +63,19 @@ class Economy(commands.Cog):
         # Gets the last time the user worked
         user_id = ctx.author.id
         cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
-        last_worked = timedelta(cur.fetchone()[0])
+        last_worked = cur.fetchone()[0]
 
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
 
-        if now - last_worked < cooldown:
-            remaining: timedelta = cooldown - (now - last_worked)
-            hours, remainder = divmod(int(remaining.total_seconds()), 3600)
-            minutes, seconds = divmod(remainder, 60)
-            await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
-            return 
+        if last_worked:
+            last_worked = timedelta(last_worked)
+            if now - last_worked < cooldown:
+                remaining: timedelta = cooldown - (now - last_worked)
+                hours, remainder = divmod(int(remaining.total_seconds()), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
+                return 
         
         job, raw_payement = random.choice(self.jobs)
         payement = random.randint(raw_payement - 50, raw_payement + 50)
