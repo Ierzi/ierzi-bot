@@ -6,24 +6,28 @@ import os
 
 console = Console()
 
+conn = psycopg2.connect(
+    host=os.getenv("PGHOST"),
+    database=os.getenv("PGDATABASE"),
+    user=os.getenv("PGUSER"),
+    password=os.getenv("PGPASSWORD"),
+    port=os.getenv("PGPORT")
+)
+
+cur = conn.cursor()
+
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS economy (
+        id SERIAL PRIMARY KEY,
+        user_id BIGINT UNIQUE NOT NULL,
+        balance BIGINT DEFAULT 0
+    );
+""")
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.conn = psycopg2.connect(
-            host=os.getenv("PGHOST"),
-            database=os.getenv("PGDATABASE"),
-            user=os.getenv("PGUSER"),
-            password=os.getenv("PGPASSWORD"),
-            port=os.getenv("PGPORT")
-        )
-        self.cur = self.conn.cursor()
-        self.cur.execute("""
-            CREATE TABLE IF NOT EXISTS economy (
-                id SERIAL PRIMARY KEY,
-                user_id BIGINT UNIQUE NOT NULL,
-                balance BIGINT DEFAULT 0
-            );
-        """)
+        self.conn = conn
+        self.cur = cur
         self.console = console
     
     async def get_balance(self, user_id: int) -> int:
