@@ -101,7 +101,7 @@ class Marriages(commands.Cog):
             self.console.print(f"Marriage between {proposer.name} and {partner.name} has been recorded.")
             await self.add_marriage_list((proposer.id, partner.id))
         else:
-            await ctx.send(f"{proposer.mention} has declined the marriage proposal.")
+            await ctx.send(f"{partner.mention} has declined the marriage proposal.")
 
     @commands.command()
     async def divorce(self, ctx: commands.Context, partner: discord.Member):
