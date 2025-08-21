@@ -51,6 +51,15 @@ class Fun(commands.Cog):
         result = random.choice(["yes", "no"])
         await ctx.send(result)
 
+    @commands.command
+    async def guessnumber(self, ctx: commands.Context, guess: int):
+        """Guess the number between 0 and 10000."""
+        number = random.randint(0, 10000)
+        if number == guess:
+            await ctx.send(f"You guessed the right number! {number}")
+            return
+        
+        await ctx.send("no.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))
