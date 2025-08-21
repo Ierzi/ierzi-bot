@@ -23,7 +23,6 @@ class AI(commands.Cog):
             input=text
         )
 
-        console.print(f"AI response: {response.output_text}")
         text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
         await thinking.delete()
         await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
