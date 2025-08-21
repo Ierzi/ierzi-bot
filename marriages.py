@@ -182,8 +182,8 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def countmarriages(self, ctx: commands.Context, user: discord.Member):
-        if not user:
-            user = discord.Member(ctx.author)
+        if user == None:
+            user = ctx.author
         
         marriages = await self.get_marriages()
         user_marriages = [pair for pair in marriages if user.id in pair]
@@ -202,9 +202,9 @@ class Marriages(commands.Cog):
         await ctx.send(f"There are {number_marriages} marriages." if number_marriages != 1 else f"There is 1 marriage.")
 
     @commands.command()
-    async def marriagestatus(self, ctx: commands.Context, user: discord.Member):
-        if not user:
-            user = discord.Member(ctx.author)
+    async def marriagestatus(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
+            user = ctx.author
 
         marriages = await self.get_marriages()
         user_marriages = [pair for pair in marriages if user.id in pair]

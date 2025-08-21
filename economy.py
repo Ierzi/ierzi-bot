@@ -59,6 +59,7 @@ class Economy(commands.Cog):
         balance = await self.get_balance(user.id)
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
+    #TODO: fix this
     # @commands.command()
     # async def work(self, ctx: commands.Context): 
     #     # Gets the last time the user worked
