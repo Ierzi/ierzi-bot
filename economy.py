@@ -18,8 +18,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-cur.execute("ALTER TABLE economy ADD COLUMN last_worked TIMESTAMP;")
-conn.commit()
 
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
