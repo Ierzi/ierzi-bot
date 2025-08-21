@@ -63,10 +63,9 @@ class Economy(commands.Cog):
         # Gets the last time the user worked
         user_id = ctx.author.id
         cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
-        row = cur.fetchone()
+        last_worked = cur.fetchone()
 
         cooldown = timedelta(hours=6)
-        last_worked = row[1]
         now = datetime.now(timezone.utc)
 
         if now - last_worked < cooldown:
@@ -85,6 +84,7 @@ class Economy(commands.Cog):
                     DO UPDATE SET balance = economy.balance + EXLCUDED.balance, last_daily = EXCLUDED.last_daily;
         """, (user_id, payement, now))
         conn.commit()
+
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payement} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     # @commands.command(name="ecolb")
