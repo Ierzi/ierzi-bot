@@ -75,14 +75,19 @@ class Marriages(commands.Cog):
         if proposer.id == partner.id:
             await ctx.send("...")
             return
+        if (proposer.id, partner.id) in marriages or (partner.id, proposer.id) in marriages:
+            await ctx.send("does he know?")
+            return
         if partner.id == self.bot.user.id:
+            if proposer.id == 966351518020300841:
+                await ctx.send("<333")
+                await ctx.send(f"Congratulations {proposer.mention} and {self.bot.user.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none()) 
+                await self.add_marriage_list((proposer.id, self.bot.user.id))
             await ctx.send("faggot")
+            await ctx.send(f"{self.bot.user.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
             return
         if partner.bot:
             await ctx.send("dumbass")
-            return
-        if (proposer.id, partner.id) in marriages or (partner.id, proposer.id) in marriages:
-            await ctx.send("does he know?")
             return
         
         await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline.", allowed_mentions=discord.AllowedMentions.none())
@@ -101,7 +106,7 @@ class Marriages(commands.Cog):
             self.console.print(f"Marriage between {proposer.name} and {partner.name} has been recorded.")
             await self.add_marriage_list((proposer.id, partner.id))
         else:
-            await ctx.send(f"{partner.mention} has declined the marriage proposal.")
+            await ctx.send(f"{partner.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def divorce(self, ctx: commands.Context, partner: discord.Member):
@@ -129,7 +134,7 @@ class Marriages(commands.Cog):
             await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...", allowed_mentions=discord.AllowedMentions.none())
             self.console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
         else:
-            await ctx.send(f"{proposer.mention} has canceled the divorce proposal.")
+            await ctx.send(f"{proposer.mention} has canceled the divorce proposal."), allowed_mentions=discord.AllowedMentions.none()
 
     # TODO: fix this
     # @commands.command()
