@@ -17,15 +17,9 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-cur.execute("""
-    CREATE TABLE IF NOT EXISTS economy (
-        id SERIAL PRIMARY KEY,
-        user_id BIGINT UNIQUE NOT NULL,
-        balance BIGINT DEFAULT 0
-    );
-""")
-
+cur.execute("ALTER TABLE economy ADD COLUMN last_daily TIMESTAMP;")
 conn.commit()
+
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -67,7 +61,6 @@ class Economy(commands.Cog):
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
     @commands.command()
-    @commands.cooldown(1, 3600, commands.BucketType.user)
     async def work(self, ctx: commands.Context): 
         job = random.choice(self.jobs)
         await ctx.send(f"You worked as a {job[0]} and gained {job[1]} coins!")
@@ -84,6 +77,8 @@ class Economy(commands.Cog):
         if not amount:
             await ctx.send("how much?")
             return
+        
+        cur.execute("SELECT ")
         
         await self.add_money(user.id, amount)
         await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account", allowed_mentions=discord.AllowedMentions.none())
