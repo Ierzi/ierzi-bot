@@ -43,6 +43,19 @@ async def github(ctx: commands.Context):
     """cool github repo"""
     await ctx.send("https://github.com/Ierzi/ierzi-bot \nbtw i have no fucking clue how contributing on github works")
 
+@bot.event
+async def on_command_error(ctx: commands.Context, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        if error.retry_after < 60:
+            await ctx.send(f"{ctx.author}, this command is on cooldown. Try again in {error.retry_after} seconds.")
+        else:
+            minutes = error.retry_after / 60
+            await ctx.send(f"{ctx.author}, this command is on cooldown. Try again in {minutes} minutes.")
+
+        return
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send(f"{ctx.author}, this command does not exist.")
+
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
 #     """Ignore this"""
