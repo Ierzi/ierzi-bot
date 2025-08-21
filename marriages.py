@@ -181,15 +181,36 @@ class Marriages(commands.Cog):
     #         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    async def countmarriages(self, ctx: commands.Context, user: discord.Member):
+        if not user:
+            user = ctx.author
+        
+        marriages = await self.get_marriages()
+        user_marriages = [pair for pair in marriages if user.id in pair]
+
+        if not user_marriages:
+            await ctx.send(f"{user.mention} is not married.", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
+        number_marriages = len(user_marriages) // 2
+        await ctx.send(f"{user} has {number_marriages} marriages.")
+
+    @commands.command()
+    async def totalmarriages(self, ctx: commands.Context):
+        marriages = await self.get_marriages()
+        number_marriages = len(marriages) // 2
+        await ctx.send(f"There are {number_marriages} marriages." if number_marriages != 1 else f"There is 1 marriage.")
+
+    @commands.command()
     async def marriagestatus(self, ctx: commands.Context, user: discord.Member):
         if not user:
             user = ctx.author
-            
+
         marriages = await self.get_marriages()
         user_marriages = [pair for pair in marriages if user.id in pair]
         
         if not user_marriages:
-            await ctx.send(f"You are not married, {user.mention}.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{user.mention} is not married.", allowed_mentions=discord.AllowedMentions.none())
             return
         
         marriage_status = ""

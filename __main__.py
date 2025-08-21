@@ -31,6 +31,10 @@ async def load_extensions():
 # Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
+    if not user:
+        await ctx.send(f"{ctx.author.id}")
+        return
+    
     await ctx.send(f"{user.id}")
 
 @bot.command()
@@ -41,7 +45,7 @@ async def wiki(ctx: commands.Context):
 @bot.command()
 async def github(ctx: commands.Context):
     """cool github repo"""
-    await ctx.send("https://github.com/Ierzi/ierzi-bot \nbtw i have no fucking clue how contributing on github works")
+    await ctx.send("https://github.com/Ierzi/ierzi-bot \n-# btw i have no fucking clue how contributing on github works")
 
 
 
