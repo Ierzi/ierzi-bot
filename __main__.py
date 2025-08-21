@@ -34,11 +34,8 @@ async def id(ctx: commands.Context, user: discord.Member):
     await ctx.send(f"{user.id}")
 
 @bot.command()
-async def test(ctx: commands.Context):
-    cool_button = Button(label="YouTube", url="youtube.com")
-    view = View()
-    view.add_item(cool_button)
-    await ctx.send("cool button", view=view)
+async def wiki(ctx: commands.Context):
+    await ctx.send("https://github.com/Ierzi/ierzi-bot/wiki/")
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
