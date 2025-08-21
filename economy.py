@@ -17,6 +17,13 @@ class Economy(commands.Cog):
             port=os.getenv("PGPORT")
         )
         self.cur = self.conn.cursor()
+        self.cur.execute("""
+            CREATE TABLE IF NOT EXISTS economy (
+                id SERIAL PRIMARY KEY,
+                user_id BIGINT UNIQUE NOT NULL,
+                balance BIGINT DEFAULT 0
+            );
+        """)
         self.console = console
     
     async def get_balance(self, user_id: int) -> int:
