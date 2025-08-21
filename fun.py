@@ -22,6 +22,14 @@ class Fun(commands.Cog):
             return
         
         await ctx.send(random.choice(["no", "yes", "idk ask them"]))
+    
+    @commands.command()
+    async def isrich(self, ctx: commands.Context, user: discord.Member):
+        if user.id == 1206615811792576614 or user.id == 1344010392506208340:
+            await ctx.send("yes")
+            return
+        
+        await ctx.send(random.choice(["yes", "no"]))
 
     @commands.command()
     async def d20(self, ctx: commands.Context):
@@ -43,7 +51,7 @@ class Fun(commands.Cog):
         result = random.choice(["yes", "no"])
         await ctx.send(result)
     
-    
+
 
 
 async def setup(bot: commands.Bot):
