@@ -25,6 +25,7 @@ async def load_extensions():
     await bot.load_extension("marriages")
     await bot.load_extension("ai")
     await bot.load_extension("reactions")
+    await bot.load_extension("economy")
     console.print("All cogs loaded.")
 
 # Other commands
