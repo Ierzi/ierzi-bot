@@ -32,6 +32,10 @@ async def load_extensions():
 async def id(ctx: commands.Context, user: discord.Member):
     await ctx.send(f"{user.id}")
 
+@bot.command()
+async def test(ctx: commands.Context):
+    await ctx.send("(hello)[youtube.com]")
+
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
 #     """Ignore this"""
