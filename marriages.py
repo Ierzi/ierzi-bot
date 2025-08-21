@@ -181,8 +181,10 @@ class Marriages(commands.Cog):
     #         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    async def marriagestatus(self, ctx: commands.Context):
-        user = ctx.author
+    async def marriagestatus(self, ctx: commands.Context, user: discord.Member):
+        if not user:
+            user = ctx.author
+            
         marriages = await self.get_marriages()
         user_marriages = [pair for pair in marriages if user.id in pair]
         
