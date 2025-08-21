@@ -10,7 +10,6 @@ console = Console()
 # Load environment variables from .env file
 load_dotenv()
 token = os.getenv("TOKEN")
-openai_key = os.getenv("OPENAI_KEY")
 
 intents = discord.Intents.default()
 intents.message_content = True

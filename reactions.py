@@ -78,10 +78,10 @@ class Reactions(commands.Cog):
             await ctx.send("what did i do to you :pensive:")
             return
         if user.bot:
-            await ctx.send("why do you wanna kill a bot. wait kill.. bot? gd reference??")
+            await ctx.send("why do you wanna kill a bot. wait kill.. bot? gd reference?? \n-# i only made this command for this message lmao")
             return
         
-        await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-#that's not nice", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Reactions(bot))

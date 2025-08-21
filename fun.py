@@ -42,6 +42,8 @@ class Fun(commands.Cog):
         """8ball but only 2 options, yes and no"""
         result = random.choice(["yes", "no"])
         await ctx.send(result)
+    
+    
 
 
 async def setup(bot: commands.Bot):
