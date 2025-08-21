@@ -51,7 +51,7 @@ class Economy(commands.Cog):
         console.print(user)
         
         balance = await self.get_balance(user.id)
-        ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Economy(bot))
