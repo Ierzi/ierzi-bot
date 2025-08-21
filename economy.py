@@ -23,6 +23,8 @@ cur.execute("""
         balance BIGINT DEFAULT 0
     );
 """)
+
+conn.commit()
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -33,6 +35,7 @@ class Economy(commands.Cog):
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
+        print(row)
         if row:
             return row[0]
         else:
@@ -44,6 +47,8 @@ class Economy(commands.Cog):
     async def balance(self, ctx: commands.Context, user: discord.Member = None):
         if not user:
             user = ctx.author
+
+        console.print(user)
         
         balance = await self.get_balance(user.id)
         ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
