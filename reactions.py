@@ -28,7 +28,7 @@ class Reactions(commands.Cog):
     @commands.command()
     async def hug(self, ctx: commands.Context, user: discord.Member):
         if user == ctx.author:
-            ctx.send(f"{ctx.author.mention} hugs themselves :sob: \n-# I'd argue that hugging a pillow is better.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} hugs themselves :sob: \n-# I'd argue that hugging a pillow is better.", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == self.bot.user.id:
             await ctx.send("Hey I needed that hug... thank you <333")
