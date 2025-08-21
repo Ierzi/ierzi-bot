@@ -35,7 +35,13 @@ async def id(ctx: commands.Context, user: discord.Member):
 
 @bot.command()
 async def wiki(ctx: commands.Context):
+    """cool github wiki"""
     await ctx.send("https://github.com/Ierzi/ierzi-bot/wiki/")
+
+@bot.command()
+async def github(ctx: commands.Context):
+    """cool github repo"""
+    await ctx.send("https://github.com/Ierzi/ierzi-bot \nbtw i have no fucking clue how contributing on github works")
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
