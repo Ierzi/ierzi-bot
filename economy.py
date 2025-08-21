@@ -1,0 +1,42 @@
+import discord
+from discord.ext import commands
+from rich.console import Console
+import psycopg2
+import os
+
+console = Console()
+
+class Economy(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self.conn = psycopg2.connect(
+            host=os.getenv("PGHOST"),
+            database=os.getenv("PGDATABASE"),
+            user=os.getenv("PGUSER"),
+            password=os.getenv("PGPASSWORD"),
+            port=os.getenv("PGPORT")
+        )
+        self.cur = self.conn.cursor()
+        self.console = console
+    
+    async def get_balance(self, user_id: int) -> int:
+        self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
+        row = self.cur.fetchone()
+        if row:
+            return row[0]
+        else:
+            self.cur.execute("INSERT INTO economy (user_id, balance) VALUES (%s, %s)", (user_id, 0))
+            self.conn.commit()
+            return 0
+    
+    @commands.command
+    async def balance(self, ctx: commands.Context, user: discord.Member = None):
+        if not user:
+            user = ctx.author
+        
+        balance = await self.get_balance(user.id)
+        ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(Economy(bot))
+    console.print("Economy cog loaded.")
