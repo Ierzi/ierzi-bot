@@ -17,6 +17,8 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
+cur.execute("ALTER TABLE economy ADD COLUMN last_worked TIMESTAMP;")
+
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -57,9 +59,13 @@ class Economy(commands.Cog):
         balance = await self.get_balance(user.id)
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
-    @commands.command()
-    async def work(self, ctx: commands.Context): 
-        await ctx.send("im removing this command ffs")
+    # @commands.command()
+    # async def work(self, ctx: commands.Context): 
+    #     # Gets the last time the user worked
+    #     user_id = ctx.author.id
+    #     cur.execute("")
+    #     job = random.choice(self.jobs)
+
 
     @commands.command()
     async def daily(self, ctx: commands.Context): ...
