@@ -17,9 +17,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-cur.execute("ALTER TABLE economy ADD COLUMN last_daily TIMESTAMP;")
-conn.commit()
-
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -62,9 +59,10 @@ class Economy(commands.Cog):
     
     @commands.command()
     async def work(self, ctx: commands.Context): 
-        job = random.choice(self.jobs)
-        await ctx.send(f"You worked as a {job[0]} and gained {job[1]} coins!")
-        await self.add_money(ctx.author.id, job[1])
+        await ctx.send("im removing this command ffs")
+
+    @commands.command()
+    async def daily(self, ctx: commands.Context): ...
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
@@ -77,8 +75,6 @@ class Economy(commands.Cog):
         if not amount:
             await ctx.send("how much?")
             return
-        
-        cur.execute("SELECT ")
         
         await self.add_money(user.id, amount)
         await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account", allowed_mentions=discord.AllowedMentions.none())
