@@ -66,14 +66,14 @@ class Economy(commands.Cog):
         # Gets the last time the user worked
         user_id = ctx.author.id
         cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
-        last_worked = cur.fetchone()[0]
-        console.print(last_worked)
+        row = cur.fetchone()
+        console.print(row)
 
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
 
-        if last_worked:
-            last_worked = timedelta(last_worked)
+        if row and row[0]:
+            last_worked = row[0]
             if now - last_worked < cooldown:
                 remaining: timedelta = cooldown - (now - last_worked)
                 hours, remainder = divmod(int(remaining.total_seconds()), 3600)
