@@ -83,6 +83,8 @@ class Marriages(commands.Cog):
                 await ctx.send("<333")
                 await ctx.send(f"Congratulations {proposer.mention} and {self.bot.user.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none()) 
                 await self.add_marriage_list((proposer.id, self.bot.user.id))
+                return
+            
             await ctx.send("faggot")
             await ctx.send(f"{self.bot.user.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -134,8 +136,7 @@ class Marriages(commands.Cog):
             await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...", allowed_mentions=discord.AllowedMentions.none())
             self.console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
         else:
-            await ctx.send(f"{proposer.mention} has canceled the divorce proposal."), allowed_mentions=discord.AllowedMentions.none()
-
+            await ctx.send(f"{proposer.mention} has canceled the divorce proposal.", allowed_mentions=discord.AllowedMentions.none())
     # TODO: fix this
     # @commands.command()
     # async def listmarriages(self, ctx: commands.Context, page_number: int = 1):
@@ -186,8 +187,8 @@ class Marriages(commands.Cog):
     #         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    async def countmarriages(self, ctx: commands.Context, user: discord.Member):
-        if user is None:
+    async def countmarriages(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
             user = ctx.author
         
         marriages = await self.get_marriages()
@@ -208,7 +209,7 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def marriagestatus(self, ctx: commands.Context, user: discord.Member = None):
-        if user is None:
+        if user == None:
             user = ctx.author
 
         marriages = await self.get_marriages()
