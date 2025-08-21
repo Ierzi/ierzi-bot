@@ -18,6 +18,9 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
+cur.execute("ALTER TABLE economy ADD COLUMN last_worked TIMESTAMP;")
+conn.commit()
+
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -64,6 +67,7 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
         last_worked = cur.fetchone()[0]
+        console.print(last_worked)
 
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
