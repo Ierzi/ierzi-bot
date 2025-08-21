@@ -38,7 +38,8 @@ async def test(ctx: commands.Context):
     cool_button = Button(label="YouTube", url="youtube.com")
     view = View()
     view.add_item(cool_button)
-    await ctx.send(view=view)
+    await ctx.send("cool button", view=view)
+
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
 #     """Ignore this"""
