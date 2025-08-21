@@ -43,7 +43,7 @@ class Economy(commands.Cog):
             self.conn.commit()
             return 0
     
-    @commands.command
+    @commands.command()
     async def balance(self, ctx: commands.Context, user: discord.Member = None):
         if not user:
             user = ctx.author
