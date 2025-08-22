@@ -15,7 +15,7 @@ class AI(commands.Cog):
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
-        thinking = await ctx.send("The ai is thinking...")
+        thinking = await ctx.send("The ai is thinking...", allowed_mentions=discord.AllowedMentions.none())
 
         client = OpenAI(api_key=self.openai_key)
         response = client.responses.create(
@@ -37,7 +37,6 @@ class AI(commands.Cog):
         text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
         console.print(text)
         await thinking.edit(content=text)
-        await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AI(bot))

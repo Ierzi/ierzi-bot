@@ -40,7 +40,13 @@ async def id(ctx: commands.Context, user: discord.Member):
 @bot.command()
 async def wiki(ctx: commands.Context):
     """cool github wiki"""
-    await ctx.send("https://github.com/Ierzi/ierzi-bot/wiki/")
+    view = View()
+    wiki_button = Button(
+        label="Wiki",
+        url="https://github.com/Ierzi/ierzi-bot/wiki/"
+    )
+    view.add_item(wiki_button)
+    await ctx.send(view=view)
 
 @bot.command()
 async def github(ctx: commands.Context):

@@ -15,16 +15,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-cur.execute("""
-    CREATE TABLE IF NOT EXISTS marriages (
-        id SERIAL PRIMARY KEY,
-        user1_id BIGINT NOT NULL,
-        user2_id BIGINT NOT NULL
-    );
-""")
-
-conn.commit()
-
 console = Console()
 
 class Marriages(commands.Cog):
