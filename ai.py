@@ -59,6 +59,28 @@ class AI(commands.Cog):
         summary = response.choices[0].message.content
         await ctx.send(summary)
 
+    @commands.command()
+    async def tsmr(self, ctx: commands.Context):
+        reply = ctx.message.reference
+        if reply is None:
+            await ctx.send("You didn't reply to a message.")
+            return
+        
+        reply = await ctx.channel.fetch_message(reply.message_id)
+        reply_content = reply.content
+
+        client = OpenAI(api_key=self.openai_key)
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini-2025-04-14",
+            messages=[
+                {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
+                {"role": "user", "content": f"Expand this: {reply_content}"}
+            ],
+            max_tokens=2500
+        )
+
+        expanded_text = response.choices[0].message.content
+        await ctx.send(expanded_text)
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AI(bot))
