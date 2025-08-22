@@ -234,7 +234,7 @@ class Marriages(commands.Cog):
             await ctx.send("no.")
             return
         if user1.id == self.bot.user.id or user2.id == self.bot.user.id:
-            await ctx.send("no.")
+            await ctx.send("HELL NO :sob::sob:")
             return
         
         await self.add_marriage_list((user1.id, user2.id))

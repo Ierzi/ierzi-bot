@@ -38,7 +38,7 @@ class Fun(commands.Cog):
             await ctx.send(view=view)
             return
         
-        await ctx.send(random.choice(["no", "yes", "idk ask them"]))
+        await ctx.send(random.choice(["no", "yes"]))
     
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
@@ -66,7 +66,7 @@ class Fun(commands.Cog):
         await ctx.send(random.choice(["hi", "hello", "fuck you"]))
     
     @commands.command(name="2ball")
-    async def twoball(self, ctx: commands.Context, *, text: str):
+    async def twoball(self, ctx: commands.Context):
         """8ball but only 2 options, yes and no."""
         result = random.choice(["yes", "no"])
         await ctx.send(result)
