@@ -54,11 +54,12 @@ class AI(commands.Cog):
             messages=[
                 {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
                 {"role": "user", "content": f"Summarize this: {reply_content}"}
-            ]
+            ],
+            max_tokens=200
         )
 
         summary = response["choices"][0]["message"]["content"]
-        await ctx.reply(summary)
+        await ctx.send(summary)
 
 
 async def setup(bot: commands.Bot):
