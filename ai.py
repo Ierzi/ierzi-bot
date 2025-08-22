@@ -45,19 +45,18 @@ class AI(commands.Cog):
         
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
-
-        while await ctx.typing():
-            client = OpenAI(api_key=self.openai_key)
-            response = client.chat.completions.create(
-                model="gpt-4.1-mini-2025-04-14",
-                messages=[
-                    {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
-                    {"role": "user", "content": f"Summarize this: {reply_content}"}
-                ],
-                max_tokens=100
-            )
-
-        summary = response.choices[0].message.content
+        console.print(reply_content)
+        client = OpenAI(api_key=self.openai_key)
+        response = client.chat.completions.create(
+            model="gpt-4.1-mini-2025-04-14",
+            messages=[
+                {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
+                {"role": "user", "content": f"Summarize this: {reply_content}"}
+            ],
+            max_tokens=100
+        )
+        console.print(response)
+        summary = response.choices[0].message
         await ctx.send(summary)
 
 
