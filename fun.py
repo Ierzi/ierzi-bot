@@ -25,6 +25,9 @@ class Fun(commands.Cog):
         if user.id == 1399689963284467723: #the bot
             await ctx.send("no")
             return
+        if user.id == 902148645753856020: #maja
+            await ctx.send("yes")
+            return
         if user.id == ctx.author.id:
             view = View()
             button = Button(
