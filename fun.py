@@ -100,7 +100,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def define(self, ctx: commands.Context, *, word: str):
         request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
-        r = requests.get(request_url)
+        r = requests.get(request_url).json()
         try:
             meanings = r[0]['meanings']
         except Exception as e:
