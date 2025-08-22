@@ -1,4 +1,5 @@
 import discord
+from discord.ui import View, Button
 from discord.ext import commands
 import random
 from rich.console import Console
@@ -10,7 +11,10 @@ class Fun(commands.Cog):
         self.bot = bot
     
     @commands.command()
-    async def istrans(self, ctx: commands.Context, user: discord.Member):
+    async def istrans(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
+            user = ctx.author
+        
         if user.id == 1153301933231181824: #apex
             await ctx.send("no")
             return
@@ -19,6 +23,15 @@ class Fun(commands.Cog):
             return
         if user.id == 1399689963284467723: #the bot
             await ctx.send("no")
+            return
+        if user.id == ctx.author.id:
+            view = View()
+            button = Button(
+                label="Am I Trans?",
+                url="https://amitrans.org/"
+            )
+            view.add_item(button)
+            await ctx.send(view=view)
             return
         
         await ctx.send(random.choice(["no", "yes", "idk ask them"]))
