@@ -37,7 +37,10 @@ class Fun(commands.Cog):
         await ctx.send(random.choice(["no", "yes", "idk ask them"]))
     
     @commands.command()
-    async def isrich(self, ctx: commands.Context, user: discord.Member):
+    async def isrich(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
+            user = ctx.author
+        
         if user.id == 1206615811792576614 or user.id == 1344010392506208340:
             await ctx.send("yes")
             return
@@ -65,15 +68,15 @@ class Fun(commands.Cog):
         await ctx.send(result)
 
     # TODO: fix this ill go eep
-    # @commands.command
-    # async def guessnumber(self, ctx: commands.Context, *, guess: str):
-    #     """Guess the number between 0 and 10000."""
-    #     number = random.randint(0, 10000)
-    #     if number == int(guess):
-    #         await ctx.send(f"You guessed the right number! {number}")
-    #         return
+    @commands.command()
+    async def guessnumber(self, ctx: commands.Context, guess: int):
+        """Guess the number between 0 and 10000."""
+        number = random.randint(0, 10000)
+        if number == guess:
+            await ctx.send(f"You guessed the right number! {number}")
+            return
         
-    #     await ctx.send("no.")
+        await ctx.send("no.")
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))
