@@ -109,11 +109,11 @@ class Fun(commands.Cog):
             return
         
         message = f"{ctx.author.mention}: {word} \n\n"
-        for i, meaning in enumerate(meanings):
-            message += f"({meaning[i]['partOfSpeech']})\n"
-            definitions = meaning[i]['definitions']
+        for meaning in meanings:
+            message += f"({meaning['partOfSpeech']})\n"
+            definitions = meaning['definitions']
             for i, definition in enumerate(definitions):
-                d = definition[i]['definition']
+                d = definition['definition']
                 message += f"{i + 1}. {d} \n"
                 console.print(message)
             
