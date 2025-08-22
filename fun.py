@@ -4,6 +4,7 @@ from discord.ext import commands
 import random
 from rich.console import Console
 import requests
+import aiohttp
 
 console = Console()
 
@@ -84,25 +85,37 @@ class Fun(commands.Cog):
     @commands.command(name="ud")
     async def urban_dictionary(self, ctx: commands.Context, *, word: str):
         request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
-        r = requests.get(request_url)
-        if r.status_code != 200:
-            if r.status_code == 404:
-                console.print(f"{word} not found.")
-                await ctx.send("Word not found.")
-                return
-            console.print("Invalid status code.")
-            ctx.send(f"Invalid status code {r.status_code}")
-            return
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                data = await r.json()
+                definition = data['data'][0]['meaning']
+
+        # r = requests.get(request_url)
+        # if r.status_code != 200:
+        #     if r.status_code == 404:
+        #         console.print(f"{word} not found.")
+        #         await ctx.send("Word not found.")
+        #         return
+        #     console.print("Invalid status code.")
+        #     ctx.send(f"Invalid status code {r.status_code}")
+        #     return
         
-        r_json = r.json()
-        definition = r_json["data"][0]["meaning"]
+        # r_json = r.json()
+        # definition = r_json["data"][0]["meaning"]
 
         await ctx.send(f"{ctx.author.mention}: **{word}** \n\n{definition}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def define(self, ctx: commands.Context, *, word: str):
         request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
-        r = requests.get(request_url).json()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                r = await r.json()
+                
+        # r = requests.get(request_url).json()
+        
         try:
             meanings = r[0]['meanings']
         except Exception as e:
@@ -125,7 +138,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def cat(self, ctx: commands.Context):
         """Shows a cute cat picture :3"""
-        ...
+        
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))

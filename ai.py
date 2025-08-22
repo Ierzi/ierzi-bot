@@ -16,7 +16,6 @@ class AI(commands.Cog):
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
         
-        
         client = AsyncOpenAI(api_key=self.openai_key)
         response = await client.responses.create(
             model="gpt-5-mini-2025-08-07",
