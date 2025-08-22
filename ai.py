@@ -2,7 +2,7 @@ import os
 from rich.console import Console
 from discord.ext import commands
 import discord
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 console = Console()
 
@@ -17,8 +17,8 @@ class AI(commands.Cog):
         author = ctx.author
         
         
-        client = OpenAI(api_key=self.openai_key)
-        response = client.responses.create(
+        client = AsyncOpenAI(api_key=self.openai_key)
+        response = await client.responses.create(
             model="gpt-5-mini-2025-08-07",
             input=text,
             max_output_tokens=2000
@@ -46,8 +46,8 @@ class AI(commands.Cog):
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
-        client = OpenAI(api_key=self.openai_key)
-        response = client.chat.completions.create(
+        client = AsyncOpenAI(api_key=self.openai_key)
+        response = await client.chat.completions.create(
             model="gpt-4.1-mini-2025-04-14",
             messages=[
                 {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
@@ -69,8 +69,8 @@ class AI(commands.Cog):
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
-        client = OpenAI(api_key=self.openai_key)
-        response = client.chat.completions.create(
+        client = AsyncOpenAI(api_key=self.openai_key)
+        response = await client.chat.completions.create(
             model="gpt-4.1-mini-2025-04-14",
             messages=[
                 {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
