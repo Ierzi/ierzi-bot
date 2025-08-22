@@ -3,6 +3,7 @@ from discord.ui import View, Button
 from discord.ext import commands
 import random
 from rich.console import Console
+import requests
 
 console = Console()
 
@@ -67,7 +68,6 @@ class Fun(commands.Cog):
         result = random.choice(["yes", "no"])
         await ctx.send(result)
 
-    # TODO: fix this ill go eep
     @commands.command()
     async def guessnumber(self, ctx: commands.Context, guess: int):
         """Guess the number between 0 and 10000."""
@@ -77,6 +77,26 @@ class Fun(commands.Cog):
             return
         
         await ctx.send("no.")
+    
+    @commands.command(name="ud")
+    async def urban_dictionary(self, ctx: commands.Context, *, word: str):
+        request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
+        r = requests.get(request_url)
+        if r.status_code != 200:
+            if r.status_code == 404:
+                console.print(f"{word} not found.")
+                await ctx.send("Word not found.")
+                return
+            console.print("Invalid status code.")
+            ctx.send(f"Invalid status code {r.status_code}")
+            return
+        
+        r_json = r.json()
+        definition = r_json["data"][0]["meaning"]
+
+        console.print(f"[UD] - {word} definition: {definition}")
+        await ctx.send(f"{ctx.author.mention}: {word} \n\n{definition}")
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))
