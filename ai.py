@@ -55,10 +55,10 @@ class AI(commands.Cog):
                 {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
                 {"role": "user", "content": f"Summarize this: {reply_content}"}
             ],
-            max_tokens=200
+            max_tokens=100
         )
         console.print(response)
-        summary = response["choices"][0]["message"]["content"]
+        summary = response.choices[0].message
         await ctx.send(summary)
 
 
