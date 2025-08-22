@@ -34,7 +34,7 @@ class AI(commands.Cog):
 
         text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
         console.print(text)
-        await ctx.send(text)
+        await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
@@ -57,7 +57,7 @@ class AI(commands.Cog):
         )
 
         summary = response.choices[0].message.content
-        await ctx.send(summary)
+        await ctx.send(summary, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def tsmr(self, ctx: commands.Context):
@@ -80,7 +80,7 @@ class AI(commands.Cog):
         )
 
         expanded_text = response.choices[0].message.content
-        await ctx.send(expanded_text)
+        await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(AI(bot))
