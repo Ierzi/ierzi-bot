@@ -94,8 +94,7 @@ class Fun(commands.Cog):
         r_json = r.json()
         definition = r_json["data"][0]["meaning"]
 
-        console.print(f"[UD] - {word} definition: {definition}")
-        await ctx.send(f"{ctx.author.mention}: {word} \n\n{definition}", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention}: **{word}** \n\n{definition}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def define(self, ctx: commands.Context, *, word: str):
@@ -119,8 +118,6 @@ class Fun(commands.Cog):
             message += "\n"
         
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
-
-
 
 
 async def setup(bot: commands.Bot):
