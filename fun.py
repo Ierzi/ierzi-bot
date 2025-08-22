@@ -115,6 +115,7 @@ class Fun(commands.Cog):
             for i, definition in enumerate(definitions):
                 d = definition[i]['definition']
                 message += f"{i + 1}. {d} \n"
+                console.print(message)
             
             message += "\n"
         
