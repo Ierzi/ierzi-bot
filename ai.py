@@ -19,13 +19,24 @@ class AI(commands.Cog):
 
         client = OpenAI(api_key=self.openai_key)
         response = client.responses.create(
-            model="gpt-5-mini",
+            model="gpt-5-mini-2025-08-07",
             input=text,
             max_output_tokens=3000
         )
+        
+        if response.error:
+            console.print(response.error)
+            await thinking.delete()
+            await ctx.send("There was an error while generating the response.")
+            return
+        if response.output_text == "":
+            await thinking.delete()
+            await ctx.send("No output text. Probably an error.")
+            return
 
         text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
-        await thinking.delete()
+        console.print(text)
+        await thinking.edit(content=text)
         await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):
