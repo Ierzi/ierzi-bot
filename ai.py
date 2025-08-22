@@ -15,28 +15,26 @@ class AI(commands.Cog):
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
-        thinking = await ctx.send("The ai is thinking...", allowed_mentions=discord.AllowedMentions.none())
-
-        client = OpenAI(api_key=self.openai_key)
-        response = client.responses.create(
-            model="gpt-5-mini-2025-08-07",
-            input=text,
-            max_output_tokens=2000
-        )
+        
+        while await ctx.typing():
+            client = OpenAI(api_key=self.openai_key)
+            response = client.responses.create(
+                model="gpt-5-mini-2025-08-07",
+                input=text,
+                max_output_tokens=2000
+            )
         
         if response.error:
             console.print(response.error)
-            await thinking.delete()
             await ctx.send("There was an error while generating the response.")
             return
         if response.output_text == "":
-            await thinking.delete()
             await ctx.send("No output text. Probably an error.")
             return
 
         text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
         console.print(text)
-        await thinking.edit(content=text)
+        await ctx.send(text)
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
@@ -48,15 +46,16 @@ class AI(commands.Cog):
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
-        client = OpenAI(api_key=self.openai_key)
-        response = client.chat.completions.create(
-            model="gpt-4.1-mini-2025-04-14",
-            messages=[
-                {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
-                {"role": "user", "content": f"Summarize this: {reply_content}"}
-            ],
-            max_tokens=100
-        )
+        while await ctx.typing():
+            client = OpenAI(api_key=self.openai_key)
+            response = client.chat.completions.create(
+                model="gpt-4.1-mini-2025-04-14",
+                messages=[
+                    {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
+                    {"role": "user", "content": f"Summarize this: {reply_content}"}
+                ],
+                max_tokens=100
+            )
 
         summary = response.choices[0].message.content
         await ctx.send(summary)
