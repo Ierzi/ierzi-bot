@@ -47,7 +47,7 @@ class AI(commands.Cog):
         
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
-        console.print(reply_content)
+
         client = OpenAI(api_key=self.openai_key)
         response = client.chat.completions.create(
             model="gpt-4.1-mini-2025-04-14",
@@ -57,8 +57,8 @@ class AI(commands.Cog):
             ],
             max_tokens=100
         )
-        console.print(response)
-        summary = response.choices[0].message
+
+        summary = response.choices[0].message.content
         await ctx.send(summary)
 
 
