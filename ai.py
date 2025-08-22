@@ -57,7 +57,7 @@ class AI(commands.Cog):
             ],
             max_tokens=200
         )
-        console.print(summary)
+        console.print(response)
         summary = response["choices"][0]["message"]["content"]
         await ctx.send(summary)
 
