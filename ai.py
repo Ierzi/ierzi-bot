@@ -16,13 +16,13 @@ class AI(commands.Cog):
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
         
-        while await ctx.typing():
-            client = OpenAI(api_key=self.openai_key)
-            response = client.responses.create(
-                model="gpt-5-mini-2025-08-07",
-                input=text,
-                max_output_tokens=2000
-            )
+        
+        client = OpenAI(api_key=self.openai_key)
+        response = client.responses.create(
+            model="gpt-5-mini-2025-08-07",
+            input=text,
+            max_output_tokens=2000
+        )
         
         if response.error:
             console.print(response.error)
