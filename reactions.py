@@ -73,7 +73,7 @@ class Reactions(commands.Cog):
     async def kill(self, ctx: commands.Context, user: discord.Member):
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send("why do you wanna kill yourself so much:sob:")
+                await ctx.send("no")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -83,7 +83,8 @@ class Reactions(commands.Cog):
         if user.bot:
             await ctx.send("why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this message lmao")
             return
-        
+        if user.id == 1153301933231181824:
+            await ctx.send("no")
         await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
 
 async def setup(bot: commands.Bot):

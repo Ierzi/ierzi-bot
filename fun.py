@@ -28,6 +28,9 @@ class Fun(commands.Cog):
         if user.id == 902148645753856020: #maja
             await ctx.send("yes")
             return
+        if user.id == 1206615811792576614: #fa*t
+            await ctx.send("yes")
+            return
         if user.id == ctx.author.id:
             view = View()
             button = Button(
@@ -136,8 +139,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx: commands.Context):
-        """Shows a cute cat picture :3"""
-        
+        """Shows a cute cat picture :3 (doesnt work btw imma do this tomorrow)"""
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Fun(bot))
