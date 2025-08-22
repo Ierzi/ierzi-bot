@@ -233,6 +233,9 @@ class Marriages(commands.Cog):
         if ctx.author.id != 966351518020300841:
             await ctx.send("no.")
             return
+        if user1.id == self.bot.user.id or user2.id == self.bot.user.id:
+            await ctx.send("i refuse.")
+            return
         
         await self.add_marriage_list((user1.id, user2.id))
         await ctx.send(f"{user1.mention} and {user2.mention} are now married!", allowed_mentions=discord.AllowedMentions.none())
