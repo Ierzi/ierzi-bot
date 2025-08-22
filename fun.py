@@ -108,14 +108,13 @@ class Fun(commands.Cog):
             await ctx.send("Word not found / Error.")
             return
         
-        message = f"{ctx.author.mention}: {word} \n\n"
+        message = f"{ctx.author.mention}: **{word}** \n\n"
         for meaning in meanings:
-            message += f"({meaning['partOfSpeech']})\n"
+            message += f"**({meaning['partOfSpeech']})**\n"
             definitions = meaning['definitions']
             for i, definition in enumerate(definitions):
                 d = definition['definition']
                 message += f"{i + 1}. {d} \n"
-                console.print(message)
             
             message += "\n"
         
