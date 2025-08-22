@@ -64,7 +64,7 @@ class Fun(commands.Cog):
     
     @commands.command(name="2ball")
     async def twoball(self, ctx: commands.Context, *, text: str):
-        """8ball but only 2 options, yes and no"""
+        """8ball but only 2 options, yes and no."""
         result = random.choice(["yes", "no"])
         await ctx.send(result)
 
@@ -73,7 +73,7 @@ class Fun(commands.Cog):
         """Guess the number between 0 and 10000."""
         number = random.randint(0, 10000)
         if number == guess:
-            await ctx.send(f"You guessed the right number! {number}")
+            await ctx.send(f"Congrats {ctx.author.mention}, you guessed the right number {number}!")
             return
         
         await ctx.send("no.")
@@ -95,7 +95,31 @@ class Fun(commands.Cog):
         definition = r_json["data"][0]["meaning"]
 
         console.print(f"[UD] - {word} definition: {definition}")
-        await ctx.send(f"{ctx.author.mention}: {word} \n\n{definition}")
+        await ctx.send(f"{ctx.author.mention}: {word} \n\n{definition}", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    async def define(self, ctx: commands.Context, *, word: str):
+        request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+        r = requests.get(request_url)
+        try:
+            meanings = r[0]['meanings']
+        except Exception:
+            await ctx.send("Word not found / Error.")
+            return
+        
+        message = f"{ctx.author.mention}: {word} \n\n"
+        for i, meaning in enumerate(meanings):
+            message += f"({meaning[i]['partOfSpeech']})\n"
+            definitions = meaning[i]['definitions']
+            for i, definition in enumerate(definitions):
+                d = definition[i]['definition']
+                message += f"{i + 1}. {d} \n"
+            
+            message += "\n"
+        
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
+
+
 
 
 async def setup(bot: commands.Bot):
