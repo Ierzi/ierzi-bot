@@ -103,7 +103,8 @@ class Fun(commands.Cog):
         r = requests.get(request_url)
         try:
             meanings = r[0]['meanings']
-        except Exception:
+        except Exception as e:
+            console.print(e)
             await ctx.send("Word not found / Error.")
             return
         
