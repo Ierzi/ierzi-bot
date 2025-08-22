@@ -37,6 +37,13 @@ async def id(ctx: commands.Context, user: discord.Member):
     
     await ctx.send(f"{user.id}")
 
+@bot.event()
+async def on_command_error(ctx: commands.Context, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        ctx.send("Command on cooldown, fuck yall.")
+    else:
+        raise error
+
 @bot.command()
 async def wiki(ctx: commands.Context):
     """cool github wiki"""

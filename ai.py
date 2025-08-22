@@ -13,6 +13,7 @@ class AI(commands.Cog):
         self.openai_key = os.getenv("OPENAI_KEY")
     
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.guild)
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
         
@@ -37,6 +38,7 @@ class AI(commands.Cog):
         await ctx.send(text)
 
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.guild)
     async def tldr(self, ctx: commands.Context):
         reply = ctx.message.reference
         if reply is None:
