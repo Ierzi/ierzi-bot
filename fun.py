@@ -3,7 +3,6 @@ from discord.ui import View, Button
 from discord.ext import commands
 import random
 from rich.console import Console
-import requests
 import aiohttp
 
 console = Console()
@@ -115,7 +114,7 @@ class Fun(commands.Cog):
                 r = await r.json()
                 
         # r = requests.get(request_url).json()
-        
+
         try:
             meanings = r[0]['meanings']
         except Exception as e:

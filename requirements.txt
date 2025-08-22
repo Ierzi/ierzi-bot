@@ -3,4 +3,3 @@ rich
 dotenv
 openai
 psycopg2-binary
-requests
