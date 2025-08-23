@@ -3,6 +3,7 @@ from rich.console import Console
 from discord.ext import commands
 import discord
 from openai import AsyncOpenAI
+import asyncio
 
 console = Console()
 
@@ -75,11 +76,24 @@ class AI(commands.Cog):
                 {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
                 {"role": "user", "content": f"Expand this: {reply_content}"}
             ],
-            max_tokens=7500
+            max_tokens=2000
         )
 
-        console.print(response)
         expanded_text = response.choices[0].message.content
+
+        if len(expanded_text) > 2000:
+            splits = []
+            current_split = ""
+            for character in expanded_text:
+                current_split += character
+                if len(current_split) >= 1975 and character == " ":
+                    splits.append(current_split)
+                    current_split = ""
+            
+            for split in splits:
+                await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
+                await asyncio.sleep(1)
+                
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
 
