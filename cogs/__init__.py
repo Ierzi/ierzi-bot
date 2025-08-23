@@ -1,5 +1,5 @@
-import ai
-import economy
-import fun
-import marriages
-import reactions
+from . import ai
+from . import economy
+from . import fun
+from . import marriages
+from . import reactions
