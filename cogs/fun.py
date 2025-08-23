@@ -23,7 +23,7 @@ class Fun(commands.Cog):
             await ctx.send("yes")
             return
         if user.id == 1206615811792576614: #fa*t
-            await ctx.send("yes, transfem. yes, this message is personalized just for you <33")
+            await ctx.send("yes, transfem. yes, fact she/her is real. yes, this message is personalized just for him <33")
             return
         
         await ctx.send(random.choice(["no", "yes"]))
