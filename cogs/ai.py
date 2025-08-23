@@ -69,32 +69,38 @@ class AI(commands.Cog):
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
-        client = AsyncOpenAI(api_key=self.openai_key)
-        response = await client.chat.completions.create(
-            model="gpt-4.1-mini-2025-04-14",
-            messages=[
-                {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
-                {"role": "user", "content": f"Expand this: {reply_content}"}
-            ],
-            max_tokens=2000
-        )
+        async with ctx.typing():
+            client = AsyncOpenAI(api_key=self.openai_key)
+            response = await client.chat.completions.create(
+                model="gpt-4.1-mini-2025-04-14",
+                messages=[
+                    {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
+                    {"role": "user", "content": f"Expand this: {reply_content}"}
+                ],
+                max_tokens=2000
+            )
 
-        expanded_text = response.choices[0].message.content
+            expanded_text = response.choices[0].message.content
 
-        if len(expanded_text) > 2000:
             splits = []
-            current_split = ""
-            for character in expanded_text:
-                current_split += character
-                if len(current_split) >= 1975 and character == " ":
+            if len(expanded_text) > 2000:
+                splits = []
+                current_split = ""
+                for character in expanded_text:
+                    current_split += character
+                    if len(current_split) >= 1975 and character == " ":
+                        splits.append(current_split)
+                        current_split = ""
+
+                if current_split:
                     splits.append(current_split)
-                    current_split = ""
-            
-            for split in splits:
-                await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
-                await asyncio.sleep(1)
+        
+        if splits:
+                for split in splits:
+                    await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
+                    await asyncio.sleep(1)
                 return
-                
+        
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
 
