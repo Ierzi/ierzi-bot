@@ -18,23 +18,21 @@ class AI(commands.Cog):
         author = ctx.author
         
         client = AsyncOpenAI(api_key=self.openai_key)
-        response = await client.responses.create(
-            model="gpt-5-mini-2025-08-07",
-            input=text,
-            max_output_tokens=3500
-        )
+        async with ctx.typing():
+            response = await client.chat.completions.create(
+                model="gpt-5-mini-2025-08-07",
+                messages=[
+                    {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is too answer people's questions or requests. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
+                    {"role": "user", "content": f"{author.name} asked: {text}"}
+                ],
+                max_output_tokens=1000
+            )
         
-        if response.error:
-            console.print(response.error)
-            await ctx.send("There was an error while generating the response.")
-            return
-        if response.output_text == "":
-            await ctx.send("No output text. Probably an error.")
-            return
-
-        text = f"{author.mention}: {text} \n \n AI: {response.output_text}"
-        console.print(text)
-        await ctx.send(text, allowed_mentions=discord.AllowedMentions.none())
+        answer = response.choices[0].message.content
+        
+        output = f"{author.mention}: {text} \n \n AI: {answer}"
+        console.print(output)
+        await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
@@ -46,15 +44,16 @@ class AI(commands.Cog):
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
-        client = AsyncOpenAI(api_key=self.openai_key)
-        response = await client.chat.completions.create(
-            model="gpt-4.1-mini-2025-04-14",
-            messages=[
-                {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
-                {"role": "user", "content": f"Summarize this: {reply_content}"}
-            ],
-            max_tokens=200
-        )
+        async with ctx.typing():
+            client = AsyncOpenAI(api_key=self.openai_key)
+            response = await client.chat.completions.create(
+                model="gpt-4.1-mini-2025-04-14",
+                messages=[
+                    {"role": "system", "content": f"You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
+                    {"role": "user", "content": f"Summarize this: {reply_content}"}
+                ],
+                max_tokens=200
+            )
 
         summary = response.choices[0].message.content
         await ctx.send(summary, allowed_mentions=discord.AllowedMentions.none())
@@ -74,7 +73,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="gpt-4.1-mini-2025-04-14",
                 messages=[
-                    {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
+                    {"role": "system", "content": f"You're an helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
                     {"role": "user", "content": f"Expand this: {reply_content}"}
                 ],
                 max_tokens=2000
@@ -98,7 +97,7 @@ class AI(commands.Cog):
         if splits:
                 for split in splits:
                     await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.2)
                 return
         
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())

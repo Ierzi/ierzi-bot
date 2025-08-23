@@ -67,8 +67,8 @@ async def github(ctx: commands.Context):
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
-        "cool typing animations", "fix !work", "add more reactions", 
-        "!listmarrriages", "fix ai commands that works half the time", "custom emojis"
+        "debug thing with spendings ai", "fix !work", "add more reactions", 
+        "!listmarrriages",  "custom emojis"
     ] # the cat command is gonna piss off fact lmao
     message = "Features I wanna add: \n"
     for feature in features:
