@@ -78,6 +78,7 @@ class AI(commands.Cog):
             max_tokens=7500
         )
 
+        console.print(response)
         expanded_text = response.choices[0].message.content
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
