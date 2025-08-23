@@ -25,7 +25,7 @@ class AI(commands.Cog):
                     {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is too answer people's questions or requests. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
                     {"role": "user", "content": f"{author.name} asked: {text}"}
                 ],
-                max_output_tokens=1000
+                max_output_tokens=2000
             )
         
         answer = response.choices[0].message.content
