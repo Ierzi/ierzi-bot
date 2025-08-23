@@ -48,7 +48,7 @@ async def id(ctx: commands.Context, user: discord.Member):
     await ctx.send(user.id)
 
 @bot.command()
-async def profile(ctx: commands.Context, *user_id: int | list):
+async def profile(ctx: commands.Context, *user_id: int | tuple):
     if not user_id:
         await ctx.send("Gimme user ids, \n-# if you dont know what that is, ignore this")
     
