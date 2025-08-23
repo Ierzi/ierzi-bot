@@ -53,7 +53,7 @@ async def github(ctx: commands.Context):
     """cool github repo"""
     await ctx.send("https://github.com/Ierzi/ierzi-bot \n-# btw i have no fucking clue how contributing on github works")
 
-bot.command()
+@bot.command()
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = ["cool typing animations", "fix !work", "add more reactions", "!cat (gives cat pics)", "!listmarrriages", "fix ai commands that works half the time"]

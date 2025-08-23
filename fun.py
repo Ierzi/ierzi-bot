@@ -66,7 +66,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def roll(self, ctx: commands.Context, sides: int = 6):
         roll = random.randint(1, sides)
-        ctx.send(f"You rolled a {roll}")
+        await ctx.send(f"You rolled a {roll}")
 
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
