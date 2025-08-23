@@ -54,7 +54,7 @@ async def profile(ctx: commands.Context, user_id: int):
         await ctx.send("User not found.")
         return
     
-    await ctx.send(user, allowed_mentions=discord.AllowedMentions.none())
+    await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
 
 
 @bot.command()
