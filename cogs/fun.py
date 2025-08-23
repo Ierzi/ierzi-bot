@@ -35,18 +35,12 @@ class Fun(commands.Cog):
             return
         if user.id in [
             1279666598441123840, 1120940924910977064, 955623247725072476, 747918143745294356, 
-            893298676003393536, 980436567531335700, 730885117656039466, 966351518020300841, 
-            1220973198875693156
+            893298676003393536, 980436567531335700, 730885117656039466, 1220973198875693156
             ]: # way too many people
             await ctx.send("yes")
             return
         
         await ctx.send(random.choice(["no", "yes"]))
-
-    @commands.command()
-    async def roll(self, ctx: commands.Context, sides: int = 6):
-        roll = random.randint(1, sides)
-        await ctx.send(f"You rolled a {roll}")
 
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
@@ -69,6 +63,22 @@ class Fun(commands.Cog):
             return
         
         await ctx.send(random.choice(["yes", "no"]))
+    
+    @commands.command()
+    async def islesbian(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
+            user = ctx.author
+        
+        if user.id in [1387497689259835563, 1076823281442754652]: #ace
+            await ctx.send("yes")
+            return
+        
+        await ctx.send(random.choice(["yes", "no"]))
+
+    @commands.command()
+    async def roll(self, ctx: commands.Context, sides: int = 6):
+        roll = random.randint(1, sides)
+        await ctx.send(f"You rolled a {roll}")
 
     @commands.command()
     async def d20(self, ctx: commands.Context):
