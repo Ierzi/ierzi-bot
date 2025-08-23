@@ -16,11 +16,14 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [1153301933231181824, 966351518020300841, 1399689963284467723]: #apex
+        if user.id in [1153301933231181824, 966351518020300841, 1399689963284467723]: #apex, ierzi and the bot
             await ctx.send("no")
             return
-        if user.id in [902148645753856020, 1206615811792576614]: #maja
+        if user.id == 902148645753856020: #maja
             await ctx.send("yes")
+            return
+        if user.id == 1206615811792576614: #fa*t
+            await ctx.send("yes, transfem. yes, this message is personalized just for you <33")
             return
         
         await ctx.send(random.choice(["no", "yes"]))
@@ -69,7 +72,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514]: #ace and syndey lmao
+        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614]: #ace (2 accounts), syndey (lmao) and fa*t
             await ctx.send("yes")
             return
         
