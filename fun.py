@@ -64,6 +64,11 @@ class Fun(commands.Cog):
         await ctx.send(random.choice(["no", "yes"]))
 
     @commands.command()
+    async def roll(self, ctx: commands.Context, sides: int = 6):
+        roll = random.randint(1, sides)
+        ctx.send(f"You rolled a {roll}")
+
+    @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
         if user == None:
             user = ctx.author
