@@ -56,6 +56,17 @@ class Fun(commands.Cog):
         await ctx.send(random.choice(["yes", "no"]))
 
     @commands.command()
+    async def ishomophobic(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
+            user = ctx.author
+        
+        if user.id == 1206615811792576614:
+            await ctx.send("yes")
+            return
+        
+        await ctx.send(random.choice(["yes", "no"]))
+
+    @commands.command()
     async def d20(self, ctx: commands.Context):
         roll = random.randint(1, 20)
         await ctx.send(f"{roll}")
