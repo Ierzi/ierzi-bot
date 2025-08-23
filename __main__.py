@@ -48,6 +48,16 @@ async def id(ctx: commands.Context, user: discord.Member):
     await ctx.send(user.id)
 
 @bot.command()
+async def profile(ctx: commands.Context, user_id: int):
+    user = bot.get_user(user_id) or await bot.fetch_user(user_id)
+    if not user:
+        await ctx.send("User not found.")
+        return
+    
+    await ctx.send(user, allowed_mentions=discord.AllowedMentions.none())
+
+
+@bot.command()
 async def wiki(ctx: commands.Context):
     """cool github wiki"""
     view = View()
@@ -68,13 +78,12 @@ async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
         "debug thing with spendings ai", "fix !work", "add more reactions", 
-        "!listmarrriages",  "custom emojis"
+        "!listmarrriages",  "custom emojis", "song recommendation based on my playlist"
     ] # the cat command is gonna piss off fact lmao
     message = "Features I wanna add: \n"
     for feature in features:
         message += f"- {feature}\n"
     await ctx.send(message)
-
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
