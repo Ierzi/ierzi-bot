@@ -127,6 +127,7 @@ class Marriages(commands.Cog):
             self.console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
         else:
             await ctx.send(f"{proposer.mention} has canceled the divorce proposal.", allowed_mentions=discord.AllowedMentions.none())
+            
     # TODO: fix this
     # @commands.command()
     # async def listmarriages(self, ctx: commands.Context, page_number: int = 1):

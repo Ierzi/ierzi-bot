@@ -32,12 +32,10 @@ async def load_extensions():
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
     if not user:
-        await ctx.send(f"{ctx.author.id}")
+        await ctx.send(ctx.author.id)
         return
     
-    await ctx.send(f"{user.id}")
-
-
+    await ctx.send(user.id)
 
 @bot.command()
 async def wiki(ctx: commands.Context):
@@ -55,6 +53,11 @@ async def github(ctx: commands.Context):
     """cool github repo"""
     await ctx.send("https://github.com/Ierzi/ierzi-bot \n-# btw i have no fucking clue how contributing on github works")
 
+bot.command()
+async def roadmap(ctx: commands.Context):
+    """features i wanna add"""
+    features = ["cool typing animations", "fix !work", "add more reactions", "!cat (gives cat pics)", "!listmarrriages", "fix ai commands that works half the time"]
+    await ctx.send("Features I wanna add: \n" + "\n".join(features))
 
 
 # @bot.command()
