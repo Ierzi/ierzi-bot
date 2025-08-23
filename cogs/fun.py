@@ -69,7 +69,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [1387497689259835563, 1076823281442754652]: #ace
+        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514]: #ace and syndey lmao
             await ctx.send("yes")
             return
         

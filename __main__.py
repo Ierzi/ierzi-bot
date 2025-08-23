@@ -48,7 +48,15 @@ async def id(ctx: commands.Context, user: discord.Member):
     await ctx.send(user.id)
 
 @bot.command()
-async def profile(ctx: commands.Context, user_id: int):
+async def profile(ctx: commands.Context, *user_id: int | list):
+    if not user_id:
+        await ctx.send("Gimme user ids, \n-# if you dont know what that is, ignore this")
+    
+    if isinstance(user_id, list):
+        for id in user_id:
+            user = bot.get_user(id) or await bot.fetch_user(id)
+            await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
+
     user = bot.get_user(user_id) or await bot.fetch_user(user_id)
     if not user:
         await ctx.send("User not found.")
