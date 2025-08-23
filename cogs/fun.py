@@ -165,4 +165,17 @@ class Fun(commands.Cog):
     @commands.command()
     async def cat(self, ctx: commands.Context):
         """Shows a cute cat picture :3"""
+        request_url = "https://api.thecatapi.com/v1/images/search"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                r = await r.json()
         
+        cat_url = r[0]['url']
+
+        embed = discord.Embed(
+            title="Meow :3", 
+            color=discord.Color.yellow()
+        )
+        embed.set_image(url=cat_url)
+        await ctx.send(embed=embed)
