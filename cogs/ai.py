@@ -30,8 +30,9 @@ class AI(commands.Cog):
         
             answer = response.choices[0].message.content
 
+            splits = []
             if len(answer) > 2000:
-                splits = []
+
                 current_split = ""
                 for character in answer:
                     current_split += character
@@ -47,7 +48,7 @@ class AI(commands.Cog):
                 await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
                 await asyncio.sleep(0.2)
             return
-         
+        
         output = f"{author.mention}: {text} \n \n AI: {answer}"
         console.print(output)
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
