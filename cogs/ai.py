@@ -28,8 +28,26 @@ class AI(commands.Cog):
                 max_tokens=2000
             )
         
-        answer = response.choices[0].message.content
-        
+            answer = response.choices[0].message.content
+
+            if len(answer) > 2000:
+                splits = []
+                current_split = ""
+                for character in answer:
+                    current_split += character
+                    if len(current_split) >= 1975 and character == " ":
+                        splits.append(current_split)
+                        current_split = ""
+
+                if current_split:
+                    splits.append(current_split)
+
+        if splits:
+            for split in splits:
+                await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
+                await asyncio.sleep(0.2)
+            return
+         
         output = f"{author.mention}: {text} \n \n AI: {answer}"
         console.print(output)
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
