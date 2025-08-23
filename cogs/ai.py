@@ -49,7 +49,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="gpt-4.1-mini-2025-04-14",
                 messages=[
-                    {"role": "system", "content": f"You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
+                    {"role": "system", "content": f"You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                     {"role": "user", "content": f"Summarize this: {reply_content}"}
                 ],
                 max_tokens=200
@@ -73,7 +73,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="gpt-4.1-mini-2025-04-14",
                 messages=[
-                    {"role": "system", "content": f"You're an helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
+                    {"role": "system", "content": f"You're an helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                     {"role": "user", "content": f"Expand this: {reply_content}"}
                 ],
                 max_tokens=2000
