@@ -72,7 +72,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614]: #ace (2 accounts), syndey (lmao) and fa*t
+        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614, 1344010392506208340]: #ace (2 accounts), syndey (lmao) and fa*t (both accounts)
             await ctx.send("yes")
             return
         
