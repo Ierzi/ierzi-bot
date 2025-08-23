@@ -93,6 +93,7 @@ class AI(commands.Cog):
             for split in splits:
                 await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
                 await asyncio.sleep(1)
+                return
                 
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
