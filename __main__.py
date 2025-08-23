@@ -57,7 +57,10 @@ bot.command()
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = ["cool typing animations", "fix !work", "add more reactions", "!cat (gives cat pics)", "!listmarrriages", "fix ai commands that works half the time"]
-    await ctx.send("Features I wanna add: \n" + "\n".join(features))
+    message = "Features I wanna add: \n"
+    for feature in features:
+        message += f"- {feature}\n"
+    await ctx.send(message)
 
 
 # @bot.command()
