@@ -52,7 +52,7 @@ async def profile(ctx: commands.Context, *user_id: int | tuple):
     if not user_id:
         await ctx.send("Gimme user ids, \n-# if you dont know what that is, ignore this")
     
-    if isinstance(user_id, list):
+    if isinstance(user_id, tuple):
         for id in user_id:
             user = bot.get_user(id) or await bot.fetch_user(id)
             await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
