@@ -20,7 +20,7 @@ class AI(commands.Cog):
         response = await client.responses.create(
             model="gpt-5-mini-2025-08-07",
             input=text,
-            max_output_tokens=2000
+            max_output_tokens=3500
         )
         
         if response.error:
@@ -52,7 +52,7 @@ class AI(commands.Cog):
                 {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
                 {"role": "user", "content": f"Summarize this: {reply_content}"}
             ],
-            max_tokens=500
+            max_tokens=200
         )
 
         summary = response.choices[0].message.content
