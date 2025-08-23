@@ -16,29 +16,11 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id == 1153301933231181824: #apex
+        if user.id in [1153301933231181824, 966351518020300841, 1399689963284467723]: #apex
             await ctx.send("no")
             return
-        if user.id == 966351518020300841: #ierzi
-            await ctx.send("no")
-            return
-        if user.id == 1399689963284467723: #the bot
-            await ctx.send("no")
-            return
-        if user.id == 902148645753856020: #maja
+        if user.id in [902148645753856020, 1206615811792576614]: #maja
             await ctx.send("yes")
-            return
-        if user.id == 1206615811792576614: #fa*t
-            await ctx.send("yes")
-            return
-        if user.id == ctx.author.id:
-            view = View()
-            button = Button(
-                label="Am I Trans?",
-                url="https://amitrans.org/"
-            )
-            view.add_item(button)
-            await ctx.send(view=view)
             return
         
         await ctx.send(random.choice(["no", "yes"]))
@@ -48,20 +30,11 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id == 966351518020300841 or user.id == 1399689963284467723: #ierzi and the bot
+        if user.id in [966351518020300841, 1399689963284467723]: #ierzi and the bot
             await ctx.send("no")
             return
         if user.id in [1279666598441123840, 1120940924910977064, 955623247725072476, 747918143745294356, 893298676003393536]: # i have no fucking clue who these ppl are
             await ctx.send("yes")
-            return
-        if user.id == ctx.author.id:
-            view = View()
-            button = Button(
-                label="Am I Gay?",
-                url="https://www.amigay.org/"
-            )
-            view.add_item(button)
-            await ctx.send(view=view)
             return
         
         await ctx.send(random.choice(["no", "yes"]))
