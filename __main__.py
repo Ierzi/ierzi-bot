@@ -53,14 +53,15 @@ async def profile(ctx: commands.Context, *user_id: int | tuple):
         await ctx.send("Gimme user ids, \n-# if you dont know what that is, ignore this")
     
     if isinstance(user_id, tuple):
+        message = ""
         for id in user_id:
             user = bot.get_user(id) or await bot.fetch_user(id)
-            await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
+            message += f"{user.mention}\n"
+        
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
+        return
 
     user = bot.get_user(user_id) or await bot.fetch_user(user_id)
-    if not user:
-        await ctx.send("User not found.")
-        return
     
     await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
 
