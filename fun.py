@@ -44,6 +44,26 @@ class Fun(commands.Cog):
         await ctx.send(random.choice(["no", "yes"]))
     
     @commands.command()
+    async def isgay(self, ctx: commands.Context, user: discord.Member = None):
+        if user == None:
+            user = ctx.author
+        
+        if user.id == 966351518020300841 or user.id == 1399689963284467723: #ierzi and the bot
+            await ctx.send("no")
+            return
+        if user.id == ctx.author.id:
+            view = View()
+            button = Button(
+                label="Am I Gay?",
+                url="https://www.amigay.org/"
+            )
+            view.add_item(button)
+            await ctx.send(view=view)
+            return
+        
+        await ctx.send(random.choice(["no", "yes"]))
+
+    @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
         if user == None:
             user = ctx.author
