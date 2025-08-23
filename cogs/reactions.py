@@ -89,6 +89,4 @@ class Reactions(commands.Cog):
         
         await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Reactions(bot))
-    console.print("Reactions cog loaded.")
+

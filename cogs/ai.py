@@ -81,6 +81,4 @@ class AI(commands.Cog):
         expanded_text = response.choices[0].message.content
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(AI(bot))
-    console.print("AI cog loaded.")
+

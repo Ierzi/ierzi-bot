@@ -112,7 +112,3 @@ class Economy(commands.Cog):
         
         await self.add_money(user.id, amount)
         await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account", allowed_mentions=discord.AllowedMentions.none())
-
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Economy(bot))
-    console.print("Economy cog loaded.")

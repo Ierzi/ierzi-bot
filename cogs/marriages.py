@@ -256,6 +256,3 @@ class Marriages(commands.Cog):
         await ctx.send(f"{user1.mention} and {user2.mention} have been divorced.", allowed_mentions=discord.AllowedMentions.none())
         self.console.print(f"Forced divorce between {user1.name} and {user2.name} has been recorded.")
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Marriages(bot))
-    console.print("Marriages cog loaded.")

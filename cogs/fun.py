@@ -165,7 +165,4 @@ class Fun(commands.Cog):
     @commands.command()
     async def cat(self, ctx: commands.Context):
         """Shows a cute cat picture :3"""
-
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Fun(bot))
-    console.print("Fun cog loaded.")
+        

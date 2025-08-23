@@ -27,10 +27,15 @@ async def on_ready():
 async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot))
+    console.print("AI cog loaded.")
     await bot.add_cog(Economy(bot))
+    console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot))
+    console.print("Fun cog loaded.")
     await bot.add_cog(Marriages(bot))
+    console.print("Marriages cog loaded.")
     await bot.add_cog(Reactions(bot))
+    console.print("Reactions cog loaded.")
     console.print("All cogs loaded.")
 
 # Other commands
