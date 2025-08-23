@@ -52,7 +52,7 @@ class AI(commands.Cog):
                 {"role": "system", "content": "You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details."},
                 {"role": "user", "content": f"Summarize this: {reply_content}"}
             ],
-            max_tokens=100
+            max_tokens=500
         )
 
         summary = response.choices[0].message.content
@@ -75,7 +75,7 @@ class AI(commands.Cog):
                 {"role": "system", "content": "You're an helpful assistant that expands short texts into a well-detained and long explaination. Add a lot of details and complicated words."},
                 {"role": "user", "content": f"Expand this: {reply_content}"}
             ],
-            max_tokens=2500
+            max_tokens=7500
         )
 
         expanded_text = response.choices[0].message.content
