@@ -49,7 +49,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id == 1206615811792576614 or user.id == 1344010392506208340:
+        if user.id == 1206615811792576614 or user.id == 1344010392506208340: #fa*t
             await ctx.send("yes")
             return
         
@@ -60,7 +60,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id == 1206615811792576614:
+        if user.id == 1206615811792576614 or user.id == 1344010392506208340: #fa*t
             await ctx.send("yes")
             return
         
