@@ -5,9 +5,14 @@ from rich.console import Console
 import os
 from dotenv import load_dotenv
 import asyncio
+from cogs.ai import AI
+from cogs.economy import Economy
+from cogs.fun import Fun
+from cogs.marriages import Marriages
+from cogs.reactions import Reactions
 
 console = Console()
-# Load environment variables from .env file
+
 load_dotenv()
 token = os.getenv("TOKEN")
 
@@ -19,13 +24,13 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 async def on_ready():
     console.print(f"Logged in as {bot.user}")
 
-async def load_extensions():
+async def load_cogs():
     console.print("Loading cogs...")
-    await bot.load_extension("fun")
-    await bot.load_extension("marriages")
-    await bot.load_extension("ai")
-    await bot.load_extension("reactions")
-    await bot.load_extension("economy")
+    await bot.add_cog(AI(bot))
+    await bot.add_cog(Economy(bot))
+    await bot.add_cog(Fun(bot))
+    await bot.add_cog(Marriages(bot))
+    await bot.add_cog(Reactions(bot))
     console.print("All cogs loaded.")
 
 # Other commands
@@ -56,7 +61,10 @@ async def github(ctx: commands.Context):
 @bot.command()
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
-    features = ["cool typing animations", "fix !work", "add more reactions", "!cat (gives cat pics)", "!listmarrriages", "fix ai commands that works half the time"]
+    features = [
+        "cool typing animations", "fix !work", "add more reactions", "!cat (gives cat pics)", 
+        "!listmarrriages", "fix ai commands that works half the time", "custom emojis"
+    ] # the cat command is gonna piss off fact lmao
     message = "Features I wanna add: \n"
     for feature in features:
         message += f"- {feature}\n"
@@ -70,7 +78,7 @@ async def roadmap(ctx: commands.Context):
 #     console.print(marriages)
 
 async def main():
-    await load_extensions()
+    await load_cogs()
     await bot.start(token)
     console.print("Bot is ready.")
 
