@@ -127,7 +127,7 @@ class Economy(commands.Cog):
             return
         
         message = f"**Economy Leaderboard - Page {page}** \n"
-        for i, (user_id, balance) in enumerate():
+        for i, (user_id, balance) in enumerate(rows):
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
             message += f"**{i}. {user.mention}** - {balance} coins \n" 
 
