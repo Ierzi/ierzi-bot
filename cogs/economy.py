@@ -122,6 +122,7 @@ class Economy(commands.Cog):
         """, (offset,)
         )
         rows = self.cur.fetchall()
+        console.print(rows)
         if not rows:
             await ctx.send("No users found on this page.")
             return
