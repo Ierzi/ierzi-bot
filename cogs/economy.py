@@ -77,7 +77,7 @@ class Economy(commands.Cog):
         if row and row[0] is not None:
             # if row is none, user has never worked before, so they can work now
             # so if row is not none, user has worked before, so check if they can work again
-            last_worked = row[0]
+            last_worked = datetime(row[0])
             # Ensure last_worked is timezone-aware
             if last_worked.tzinfo is None:
                 last_worked = last_worked.replace(tzinfo=timezone.utc) # I have no fucking clue why !work doesnt work so i asked chatgpt IM SORRY IM SORRYYYY 
@@ -107,8 +107,31 @@ class Economy(commands.Cog):
         conn.commit()
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins!", allowed_mentions=discord.AllowedMentions.none())
 
-    # @commands.command(name="ecolb")
-    # async def eco_leaderboard():
+    @commands.command(name="ecolb")
+    async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
+        if page < 1:
+            await ctx.send("Page must be 1 or higher.")
+            return
+        
+        offset = (page - 1) * 10
+        self.cur.execute("""
+            SELECT user_id, balance FROM economy 
+            ORDER BY balance DESC
+            OFFSET %s
+            LIMIT 10  
+        """, (offset,)
+        )
+        rows = self.cur.fetchall()
+        if not rows:
+            await ctx.send("No users found on this page.")
+            return
+        
+        message = f"**Economy Leaderboard - Page {page}** \n"
+        for i, user_id, balance in enumerate(rows):
+            user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+            message += f"**{i}. {user.mention}** - {balance} coins \n" 
+
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())   
 
     # @commands.command()
     # async def daily(self, ctx: commands.Context): ...
