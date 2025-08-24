@@ -32,7 +32,6 @@ class AI(commands.Cog):
 
             splits = []
             if len(answer) > 2000:
-
                 current_split = ""
                 for character in answer:
                     current_split += character
@@ -50,7 +49,7 @@ class AI(commands.Cog):
             return
         
         output = f"{author.mention}: {text} \n \n AI: {answer}"
-        console.print(output)
+        self.console.print(output)
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
