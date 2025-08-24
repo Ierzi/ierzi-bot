@@ -82,7 +82,7 @@ class Economy(commands.Cog):
             if last_worked.tzinfo is None:
                 last_worked = last_worked.replace(tzinfo=timezone.utc) # I have no fucking clue why !work doesnt work so i asked chatgpt IM SORRY IM SORRYYYY 
 
-            if now - last_worked < cooldown: 
+            if (now - last_worked) < cooldown: 
                 # if now - last_worked is less than the cooldown, (for example, user worked 2 hours ago and 2 < 6)
                 # they can't work yet
                 # calculate the remaining time
@@ -154,11 +154,12 @@ class Economy(commands.Cog):
             if last_daily.tzinfo is None:
                 last_daily = last_daily.replace(tzinfo=timezone.utc)
 
-            if now - last_daily < cooldown: 
+            if (now - last_daily) < cooldown: 
                 # if now - last_daily is less than the cooldown, (for example, user claimed 2 hours ago and 2 < 6)
                 # they can't work yet
                 # calculate the remaining time
                 time_remaining = cooldown - (now - last_daily) 
+                console.print(time_remaining)
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(round(time_remaining.total_seconds(), 0)), 3600)
                 minutes, seconds = divmod(remainder, 60)
