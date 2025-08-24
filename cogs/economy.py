@@ -77,7 +77,7 @@ class Economy(commands.Cog):
         if row and row[0] is not None:
             # if row is none, user has never worked before, so they can work now
             # so if row is not none, user has worked before, so check if they can work again
-            last_worked = datetime(row[0])
+            last_worked: datetime = row[0]
             # Ensure last_worked is timezone-aware
             if last_worked.tzinfo is None:
                 last_worked = last_worked.replace(tzinfo=timezone.utc) # I have no fucking clue why !work doesnt work so i asked chatgpt IM SORRY IM SORRYYYY 
@@ -149,7 +149,7 @@ class Economy(commands.Cog):
         if row and row[0] is not None:
             # if row is none, user has never claimed his daily before, so they can claim it now
             # so if row is not none, user has claimed it before, so check if they can claim it again
-            last_daily = datetime(row[0])
+            last_daily: datetime = row[0]
 
             if last_daily.tzinfo is None:
                 last_daily = last_daily.replace(tzinfo=timezone.utc)
