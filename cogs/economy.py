@@ -163,6 +163,7 @@ class Economy(commands.Cog):
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(round(time_remaining.total_seconds(), 0)), 3600)
                 minutes, seconds = divmod(remainder, 60)
+                console.print(f"time shit {hours, minutes, seconds}")
                 await ctx.send(f"You already claimed your daily! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 
