@@ -71,7 +71,7 @@ class Economy(commands.Cog):
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
 
-        # * now is a datetime object, i have no clue what row[0] is (whys postgresql docs so complicated), and cooldown is a timedelta object
+        # * now is a datetime object, i have no clue what row[0] is (why are postgresql docs so complicated), and cooldown is a timedelta object
 
         # If the user has worked before, send a message saying how long until they can work again
         if row and row[0] is not None:
@@ -83,7 +83,7 @@ class Economy(commands.Cog):
                 # they can't work yet
                 # calculate the remaining time
                 # (i really gotta put this many comments cause im so lost :sob:)
-                time_remaining = cooldown - (now - last_worked) # example: 6 hours - (2 hours ago) = 4 hours remaining
+                time_remaining = timedelta(cooldown - (now - last_worked)) # example: 6 hours - (2 hours ago) = 4 hours remaining
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
                 minutes, seconds = divmod(remainder, 60)
