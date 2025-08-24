@@ -78,10 +78,10 @@ class Economy(commands.Cog):
             # if row is none, user has never worked before, so they can work now
             # so if row is not none, user has worked before, so check if they can work again
             last_worked = row[0]
-            console.print(f"now: {now}")
-            console.print(f"last worked: {row[0]}")
-            console.print(now - last_worked)
-            console.print(f"cooldown: {cooldown}")
+            # Ensure last_worked is timezone-aware
+            if last_worked.tzinfo is None:
+                last_worked = last_worked.replace(tzinfo=timezone.utc) # I have no fucking clue why !work doesnt work so i asked chatgpt IM SORRY IM SORRYYYY 
+
             if now - last_worked < cooldown: 
                 # if now - last_worked is less than the cooldown, (for example, user worked 2 hours ago and 2 < 6)
                 # they can't work yet
