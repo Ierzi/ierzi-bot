@@ -42,7 +42,7 @@ class AI(commands.Cog):
                 if current_split:
                     splits.append(current_split)
 
-        if splits:
+        if splits != []:
             for split in splits:
                 await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
                 await asyncio.sleep(0.2)
