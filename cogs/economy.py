@@ -89,9 +89,9 @@ class Economy(commands.Cog):
                 # (i really gotta put this many comments cause im so lost :sob:)
                 time_remaining = cooldown - (now - last_worked) # example: 6 hours - (17:00  - 15:00) = 4 hours remaining
                 # now just put the time into readable shit
-                hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
+                hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
+                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
                 return
 
         # If the user can work, give them a random job and pay them
