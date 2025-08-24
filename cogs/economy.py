@@ -140,7 +140,7 @@ class Economy(commands.Cog):
         row = self.cur.fetchone()
         console.print(row)
 
-        cooldown = timedelta(hours=6)
+        cooldown = timedelta(hours=24)
         now = datetime.now(timezone.utc)
 
         # * now is a datetime object, row[0] is a datetime object or None, and cooldown is a timedelta object
@@ -166,7 +166,7 @@ class Economy(commands.Cog):
                 hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 console.print(f"time shit {hours, minutes, seconds}")
-                await ctx.send(f"You already claimed your daily! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
+                await ctx.send(f"You already claimed your daily! \nYou can claim it in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 
         # If the user can work, give them a random job and pay them
