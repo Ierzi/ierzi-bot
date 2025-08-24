@@ -60,6 +60,15 @@ class Economy(commands.Cog):
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
     #TODO: fix this
+
+    @commands.command()
+    async def work(self, ctx: commands.Context):
+        user_id = ctx.author.id
+        self.cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
+        row = self.cur.fetchone()
+        console.print(row)
+
+
     # @commands.command()
     # async def work(self, ctx: commands.Context): 
     #     # Gets the last time the user worked

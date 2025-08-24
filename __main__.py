@@ -88,8 +88,8 @@ async def roadmap(ctx: commands.Context):
     features = [
         "debug thing with spendings ai", "fix !work", "add more reactions", 
         "!listmarrriages",  "custom emojis", "song recommendation based on my playlist",
-        "UPDATE THE WIKI"
-    ] # the cat command is gonna piss off fact lmao
+        "UPDATE THE WIKI", "cat videos"
+    ] 
     message = "Features I wanna add: \n"
     for feature in features:
         message += f"- {feature}\n"
