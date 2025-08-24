@@ -78,6 +78,7 @@ class Economy(commands.Cog):
             # if row is none, user has never worked before, so they can work now
             # so if row is not none, user has worked before, so check if they can work again
             last_worked = row[0]
+            console.print(f"now: {now}")
             if now - last_worked < cooldown: 
                 # if now - last_worked is less than the cooldown, (for example, user worked 2 hours ago and 2 < 6)
                 # they can't work yet
