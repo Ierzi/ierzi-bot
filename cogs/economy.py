@@ -127,11 +127,11 @@ class Economy(commands.Cog):
             return
         
         message = f"**Economy Leaderboard - Page {page}** \n"
-        for i, user_id, balance in enumerate(rows):
+        for i, (user_id, balance) in enumerate():
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
             message += f"**{i}. {user.mention}** - {balance} coins \n" 
 
-        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())   
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none()) 
 
     # @commands.command()
     # async def daily(self, ctx: commands.Context): ...
