@@ -122,7 +122,6 @@ class Economy(commands.Cog):
         """, (offset,)
         )
         rows = self.cur.fetchall()
-        console.print(rows)
         if not rows:
             await ctx.send("No users found on this page.")
             return
@@ -130,7 +129,7 @@ class Economy(commands.Cog):
         message = f"**Economy Leaderboard - Page {page}** \n"
         for i, (user_id, balance) in enumerate(rows):
             user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-            message += f"**{i}. {user.mention}** - {balance} coins \n" 
+            message += f"**{i + 1}. {user.mention}** - {balance} coins \n" 
 
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none()) 
 
