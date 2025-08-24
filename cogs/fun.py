@@ -23,7 +23,7 @@ class Fun(commands.Cog):
             await ctx.send("yes")
             return
         if user.id == 1206615811792576614: #fa*t
-            await ctx.send("yes, transfem. yes, fact she/her is real. yes, this message is personalized just for him <33")
+            await ctx.send("yes, transfem. yes, fact she/her is real. yes, this message is personalized just for her <33")
             return
         
         await ctx.send(random.choice(["no", "yes"]))
@@ -38,7 +38,7 @@ class Fun(commands.Cog):
             return
         if user.id in [
             1279666598441123840, 1120940924910977064, 955623247725072476, 747918143745294356, 
-            893298676003393536, 980436567531335700, 730885117656039466, 1220973198875693156
+            893298676003393536, 980436567531335700, 730885117656039466, 1220973198875693156     
             ]: # way too many people
             await ctx.send("yes")
             return
