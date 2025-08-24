@@ -149,19 +149,23 @@ class Economy(commands.Cog):
         if row and row[0] is not None:
             # if row is none, user has never claimed his daily before, so they can claim it now
             # so if row is not none, user has claimed it before, so check if they can claim it again
-            last_daily = datetime(row[0])
+            last_daily: datetime = row[0]
 
             if last_daily.tzinfo is None:
                 last_daily = last_daily.replace(tzinfo=timezone.utc)
 
-            if now - last_daily < cooldown: 
+            console.print(now - last_daily)
+            console.print((now - last_daily) < cooldown)
+            if (now - last_daily) < cooldown: 
                 # if now - last_daily is less than the cooldown, (for example, user claimed 2 hours ago and 2 < 6)
                 # they can't work yet
                 # calculate the remaining time
                 time_remaining = cooldown - (now - last_daily) 
+                console.print(time_remaining)
                 # now just put the time into readable shit
-                hours, remainder = divmod(int(round(time_remaining.total_seconds(), 0)), 3600)
+                hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
                 minutes, seconds = divmod(remainder, 60)
+                console.print(f"time shit {hours, minutes, seconds}")
                 await ctx.send(f"You already claimed your daily! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 
