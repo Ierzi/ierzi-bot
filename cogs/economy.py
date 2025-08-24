@@ -68,6 +68,42 @@ class Economy(commands.Cog):
         row = self.cur.fetchone()
         console.print(row)
 
+        cooldown = timedelta(hours=6)
+        now = datetime.now(timezone.utc)
+
+        # * now is a datetime object, i have no clue what row[0] is (whys postgresql docs so complicated), and cooldown is a timedelta object
+
+        # If the user has worked before, send a message saying how long until they can work again
+        if row and row[0] is not None:
+            # if row is none, user has never worked before, so they can work now
+            # so if row is not none, user has worked before, so check if they can work again
+            last_worked = row[0]
+            if now - last_worked < cooldown: 
+                # if now - last_worked is less than the cooldown, (for example, user worked 2 hours ago and 2 < 6)
+                # they can't work yet
+                # calculate the remaining time
+                # (i really gotta put this many comments cause im so lost :sob:)
+                time_remaining = cooldown - (now - last_worked) # example: 6 hours - (2 hours ago) = 4 hours remaining
+                # now just put the time into readable shit
+                hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
+                return
+
+        # If the user can work, give them a random job and pay them
+        job, raw_payment = random.choice(self.jobs)
+        payment = random.randint(raw_payment - 50, raw_payment + 50) # randomize the payement
+        self.cur.execute("""
+            INSERT INTO economy (user_id, balance, last_worked)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (user_id)
+            DO UPDATE SET balance = economy.balance + EXCLUDED.balance, last_worked = EXCLUDED.last_worked;
+        """, (user_id, payment, now)
+        )
+        conn.commit()
+        await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins!", allowed_mentions=discord.AllowedMentions.none())
+
+                
 
     # @commands.command()
     # async def work(self, ctx: commands.Context): 

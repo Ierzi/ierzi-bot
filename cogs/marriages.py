@@ -190,7 +190,7 @@ class Marriages(commands.Cog):
             return
         
         number_marriages = len(user_marriages) // 2
-        await ctx.send(f"{user} has {number_marriages} marriages.")
+        await ctx.send(f"{user.mention} has {number_marriages} marriages.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def totalmarriages(self, ctx: commands.Context):
