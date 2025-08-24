@@ -79,12 +79,14 @@ class Economy(commands.Cog):
             # so if row is not none, user has worked before, so check if they can work again
             last_worked = row[0]
             console.print(f"now: {now}")
+            console.print(f"last worked: {row[0]}")
+            console.print(now - last_worked)
+            console.print(f"cooldown: {cooldown}")
             if now - last_worked < cooldown: 
                 # if now - last_worked is less than the cooldown, (for example, user worked 2 hours ago and 2 < 6)
                 # they can't work yet
                 # calculate the remaining time
                 # (i really gotta put this many comments cause im so lost :sob:)
-                console.print(now - last_worked)
                 time_remaining = cooldown - (now - last_worked) # example: 6 hours - (17:00  - 15:00) = 4 hours remaining
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
