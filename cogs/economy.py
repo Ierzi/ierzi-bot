@@ -89,9 +89,9 @@ class Economy(commands.Cog):
                 # (i really gotta put this many comments cause im so lost :sob:)
                 time_remaining = cooldown - (now - last_worked) # example: 6 hours - (17:00  - 15:00) = 4 hours remaining
                 # now just put the time into readable shit
-                hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
+                hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
+                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 
         # If the user can work, give them a random job and pay them
@@ -133,8 +133,50 @@ class Economy(commands.Cog):
 
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none()) 
 
-    # @commands.command()
-    # async def daily(self, ctx: commands.Context): ...
+    @commands.command()
+    async def daily(self, ctx: commands.Context): 
+        user_id = ctx.author.id
+        self.cur.execute("SELECT last_daily FROM economy WHERE user_id = %s", (user_id,))
+        row = self.cur.fetchone()
+        console.print(row)
+
+        cooldown = timedelta(hours=6)
+        now = datetime.now(timezone.utc)
+
+        # * now is a datetime object, row[0] is a datetime object or None, and cooldown is a timedelta object
+
+        # If the user has claimed his daily before, send a message saying how long until they can claim it again
+        if row and row[0] is not None:
+            # if row is none, user has never claimed his daily before, so they can claim it now
+            # so if row is not none, user has claimed it before, so check if they can claim it again
+            last_daily = datetime(row[0])
+
+            if last_daily.tzinfo is None:
+                last_daily = last_daily.replace(tzinfo=timezone.utc)
+
+            if now - last_daily < cooldown: 
+                # if now - last_daily is less than the cooldown, (for example, user claimed 2 hours ago and 2 < 6)
+                # they can't work yet
+                # calculate the remaining time
+                time_remaining = cooldown - (now - last_daily) 
+                # now just put the time into readable shit
+                hours, remainder = divmod(int(round(time_remaining.total_seconds(), 0)), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                await ctx.send(f"You already claimed your daily! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
+                return
+
+        # If the user can work, give them a random job and pay them
+        payment = 1250
+        self.cur.execute("""
+            INSERT INTO economy (user_id, balance, last_daily)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (user_id)
+            DO UPDATE SET balance = economy.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
+        """, (user_id, payment, now)
+        )
+        conn.commit()
+        await ctx.send(f"{ctx.author.mention} claimed his daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
+
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
