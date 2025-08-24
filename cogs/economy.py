@@ -107,40 +107,6 @@ class Economy(commands.Cog):
         conn.commit()
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins!", allowed_mentions=discord.AllowedMentions.none())
 
-                
-
-    # @commands.command()
-    # async def work(self, ctx: commands.Context): 
-    #     # Gets the last time the user worked
-    #     user_id = ctx.author.id
-    #     cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
-    #     row = cur.fetchone()
-    #     console.print(row)
-
-    #     cooldown = timedelta(hours=6)
-    #     now = datetime.now(timezone.utc)
-
-    #     if row and row[0]:
-    #         last_worked = row[0]
-    #         if now - last_worked < cooldown:
-    #             remaining: timedelta = cooldown - (now - last_worked)
-    #             hours, remainder = divmod(int(remaining.total_seconds()), 3600)
-    #             minutes, seconds = divmod(remainder, 60)
-    #             await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
-    #             return 
-        
-    #     job, raw_payement = random.choice(self.jobs)
-    #     payement = random.randint(raw_payement - 50, raw_payement + 50)
-    #     cur.execute("""
-    #                 INSERT INTO economy (user_id, balance, last_daily) 
-    #                 VALUES (%s, %s, %s)
-    #                 ON CONFLICT (user_id)
-    #                 DO UPDATE SET balance = economy.balance + EXLCUDED.balance, last_daily = EXCLUDED.last_daily;
-    #     """, (user_id, payement, now))
-    #     conn.commit()
-
-    #     await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payement} coins!", allowed_mentions=discord.AllowedMentions.none())
-
     # @commands.command(name="ecolb")
     # async def eco_leaderboard():
 
