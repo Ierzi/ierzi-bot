@@ -30,6 +30,9 @@ class AI(commands.Cog):
         
             answer = response.choices[0].message.content
 
+            if answer is None:
+                await ctx.send("no answer (???)")
+
             splits = []
             if len(answer) > 2000:
                 current_split = ""
@@ -38,11 +41,10 @@ class AI(commands.Cog):
                     if len(current_split) >= 1975 and character == " ":
                         splits.append(current_split)
                         current_split = ""
-
                 if current_split:
                     splits.append(current_split)
 
-        if splits != []:
+        if splits:
             for split in splits:
                 await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
                 await asyncio.sleep(0.2)
