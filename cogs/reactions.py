@@ -74,7 +74,7 @@ class Reactions(commands.Cog):
             if ctx.author.id == 1153301933231181824: #apex 
                 await ctx.send(f"{ctx.author.mention} **KILLS** herself!!")
                 await asyncio.sleep(3)
-                await ctx.send("i lied. you cant die. im not letting u kill yourself.")
+                await ctx.send("i lied. you cant die. im not letting you kill yourself.")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -85,6 +85,11 @@ class Reactions(commands.Cog):
             await ctx.send("why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this message lmao")
             return
         if user.id == 1153301933231181824:
+            if ctx.author.id == 966351518020300841: #me
+                # im the only one who can kill her
+                await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
+                return
+            
             await ctx.send("no.")
             return
         
