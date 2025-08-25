@@ -16,14 +16,13 @@ class AI(commands.Cog):
     
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
-        author = ctx.author
-        
         async with ctx.typing():
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     url="https://openrouter.ai/api/v1/chat/completions",
                     headers={
-                        "Authorization": f"Bearer {self.openrouter_key}"
+                        "Authorization": f"Bearer {self.openrouter_key}",
+                        "Content-Type": "application/json"
                     },
                     data=json.dumps({
                         "model": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free", #great uncensored model? idk guest i need help
@@ -34,7 +33,7 @@ class AI(commands.Cog):
                     })
                 ) as response:
                     if response.status != 200:
-                        self.console.print(f"Error: {response.status}")
+                        self.console.print(f"Error {response.status}")
                         await ctx.send("error :(")
                         return
                     
