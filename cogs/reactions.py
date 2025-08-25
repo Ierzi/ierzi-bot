@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 from rich.console import Console
 import random
-
+import asyncio
 
 class Reactions(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -72,7 +72,9 @@ class Reactions(commands.Cog):
     async def kill(self, ctx: commands.Context, user: discord.Member):
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send("stop trying i am not letting u kill yourself")
+                await ctx.send(f"{ctx.author.mention} **KILLS** herself!!")
+                await asyncio.sleep(3)
+                await ctx.send("i lied. you cant die. im not letting u kill yourself.")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -83,7 +85,7 @@ class Reactions(commands.Cog):
             await ctx.send("why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this message lmao")
             return
         if user.id == 1153301933231181824:
-            await ctx.send("no")
+            await ctx.send("no.")
             return
         
         await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
