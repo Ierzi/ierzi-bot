@@ -18,44 +18,29 @@ class AI(commands.Cog):
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
         
-        client = AsyncOpenAI(api_key=self.openrouter_key, base_url="https://openrouter.ai/api/v1")
-
         async with ctx.typing():
-            response = await client.chat.completions.create(
-                model="cognitivecomputations/dolphin-mistral-24b-venice-edition:free", #cool uncensored model? i need help guest
-                messages=[
-                    {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is too answer people's questions or requests. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
-                    {"role": "user", "content": f"{author.name} asked: {text}"}
-                ]
-            )
-        
-            answer = response.choices[0].message.content
-
-            if answer is None:
-                await ctx.send("no answer (???)")
-
-            splits = []
-            if len(answer) > 2000:
-                current_split = ""
-                for character in answer:
-                    current_split += character
-                    if len(current_split) >= 1975 and character == " ":
-                        splits.append(current_split)
-                        current_split = ""
-
-                if current_split:
-                    splits.append(current_split)
-
-        self.console.print(splits)
-        self.console.print(bool(splits))
-        if splits:
-            for split in splits:
-                await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
-                await asyncio.sleep(0.2)
-            return
-        
-        output = f"{author.mention}: {text} \n \n AI: {answer}"
-        self.console.print(output)
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    url="https://openrouter.ai/api/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.openrouter_key}"
+                    },
+                    data=json.dumps({
+                        "model": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free", #great uncensored model? idk guest i need help
+                        "messages": [
+                            {"role": "system", "content": f"You're a helpful assistant that works in a Discord Bot. that answers people's questions. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
+                            {"role": "user", "content": f"{text}"}
+                        ]
+                    })
+                ) as response:
+                    if response.status != 200:
+                        self.console.print(f"Error: {response.status}")
+                        await ctx.send("error :(")
+                        return
+                    
+                    data = await response.json()
+                    output = data['choices'][0]['message']['content']
+                    
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
@@ -73,7 +58,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="gpt-4.1-mini-2025-04-14",
                 messages=[
-                    {"role": "system", "content": f"You're an helpful assistant that summarize messages. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
+                    {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                     {"role": "user", "content": f"Summarize this: {reply_content}"}
                 ],
                 max_tokens=200
@@ -97,7 +82,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="gpt-4.1-mini-2025-04-14",
                 messages=[
-                    {"role": "system", "content": f"You're an helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
+                    {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                     {"role": "user", "content": f"Expand this: {reply_content}"}
                 ],
                 max_tokens=3500
