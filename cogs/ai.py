@@ -16,17 +16,18 @@ class AI(commands.Cog):
     
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
+        self.console.print(text)
         async with ctx.typing():
             client = AsyncGroq(api_key=self.groq_key)
 
             response = await client.chat.completions.create(
                 model="openai/gpt-oss-20b",
                 messages=[
-                    {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
                     {"role": "user", "content": text}
                 ],
             )
 
+            self.console.print(response)
             output = response.choices[0].message.content
             
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
