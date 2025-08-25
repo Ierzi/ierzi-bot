@@ -15,10 +15,8 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-console = Console()
-
 class Marriages(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.cur = cur
         self.conn = conn

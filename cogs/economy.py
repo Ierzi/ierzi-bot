@@ -6,8 +6,6 @@ import os
 import random
 from datetime import datetime, timedelta, timezone
 
-console = Console()
-
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
     database=os.getenv("PGDATABASE"),
@@ -20,7 +18,7 @@ cur = conn.cursor()
 
 
 class Economy(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.conn = conn
         self.cur = cur
@@ -48,7 +46,7 @@ class Economy(commands.Cog):
         """, (user_id, amount)
         )
         conn.commit() #lowk had no idea how to make this so i asked chatgpt
-        console.print(f"Successfully added {amount} coins to {user_id}")
+        self.console.print(f"Successfully added {amount} coins to {user_id}")
 
 
     @commands.command()
@@ -66,7 +64,7 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         self.cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
-        console.print(row)
+        self.console.print(row)
 
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
@@ -138,7 +136,7 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         self.cur.execute("SELECT last_daily FROM economy WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
-        console.print(row)
+        self.console.print(row)
 
         cooldown = timedelta(hours=24)
         now = datetime.now(timezone.utc)
@@ -154,18 +152,18 @@ class Economy(commands.Cog):
             if last_daily.tzinfo is None:
                 last_daily = last_daily.replace(tzinfo=timezone.utc)
 
-            console.print(now - last_daily)
-            console.print((now - last_daily) < cooldown)
+            self.console.print(now - last_daily)
+            self.console.print((now - last_daily) < cooldown)
             if (now - last_daily) < cooldown: 
                 # if now - last_daily is less than the cooldown, (for example, user claimed 2 hours ago and 2 < 6)
                 # they can't work yet
                 # calculate the remaining time
                 time_remaining = cooldown - (now - last_daily) 
-                console.print(time_remaining)
+                self.console.print(time_remaining)
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                console.print(f"time shit {hours, minutes, seconds}")
+                self.console.print(f"time shit {hours, minutes, seconds}")
                 await ctx.send(f"You already claimed your daily! \nYou can claim it in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 

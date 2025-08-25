@@ -3,12 +3,11 @@ from discord.ext import commands
 from rich.console import Console
 import random
 
-console = Console()
 
 class Reactions(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
-        self.console = Console()
+        self.console = console
 
     @commands.command()
     async def kiss(self, ctx: commands.Context, user: discord.Member):

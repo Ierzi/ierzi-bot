@@ -4,14 +4,15 @@ from discord.ext import commands
 import discord
 from openai import AsyncOpenAI
 import asyncio
-
-console = Console()
+import aiohttp
+import json
 
 class AI(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.openai_key = os.getenv("OPENAI_KEY")
         self.openrouter_key = os.getenv("OPENROUTER_KEY")
+        self.console = console
     
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
@@ -45,8 +46,8 @@ class AI(commands.Cog):
                 if current_split:
                     splits.append(current_split)
 
-        console.print(splits)
-        console.print(bool(splits))
+        self.console.print(splits)
+        self.console.print(bool(splits))
         if splits:
             for split in splits:
                 await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
@@ -54,7 +55,7 @@ class AI(commands.Cog):
             return
         
         output = f"{author.mention}: {text} \n \n AI: {answer}"
-        console.print(output)
+        self.console.print(output)
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
