@@ -202,13 +202,13 @@ class Economy(commands.Cog):
         balance = await self.get_balance(user_id)
 
         if amount < 0:
-            await ctx.send("no.")
+            await ctx.send("You doubled your money! +-Infinity coins.")
             return
         if amount > balance:
             await ctx.send("You're too poor cro :broken_heart:")
             return
         if amount == 0:
-            await ctx.send("no.")
+            await ctx.send("You lost your money! -Infinity coins. \n-# skill issue icl")
             return
         
         if self._1in2():
