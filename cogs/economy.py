@@ -27,6 +27,9 @@ class Economy(commands.Cog):
         # All the jobs and how much they pay
         self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
     
+    def _1in2(self) -> bool:
+        return random.choice([True, False])
+
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
@@ -192,6 +195,32 @@ class Economy(commands.Cog):
         await self.add_money(user.id, amount)
         await self.add_money(author.id, -amount)
         await ctx.send(f"{author.mention} paid {user.mention} {amount} coins!", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    async def double(self, ctx: commands.Context, amount: int):
+        user_id = ctx.author.id
+        balance = await self.get_balance(user_id)
+
+        if amount < 0:
+            await ctx.send("no.")
+            return
+        if amount > balance:
+            await ctx.send("You're too poor cro :broken_heart:")
+            return
+        if amount == 0:
+            await ctx.send("no.")
+            return
+        
+        if self._1in2():
+            await self.add_money(user_id, amount)
+            await ctx.send(f"You doubled your money! +{amount} coins.")
+            return
+        else:
+            await self.add_money(user_id, -amount)
+            await ctx.send(f"You lost your money! -{amount} coins. \n-# skill issue icl")
+            return
+        
+
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
