@@ -14,23 +14,23 @@ class AI(commands.Cog):
         self.groq_key = os.getenv("GROQ_KEY")
         self.console = console
     
-    @commands.command()
-    async def aiask(self, ctx: commands.Context, *, text: str):
-        self.console.print(text)
-        client = AsyncGroq(api_key=self.groq_key)
+    # @commands.command()
+    # async def aiask(self, ctx: commands.Context, *, text: str):
+    #     self.console.print(text)
+    #     client = AsyncGroq(api_key=self.groq_key)
 
-        await ctx.typing()
-        response = await client.chat.completions.create(
-            model="openai/gpt-oss-20b",
-            messages=[
-                {"role": "user", "content": text}
-            ],
-        )
+    #     await ctx.typing()
+    #     response = await client.chat.completions.create(
+    #         model="openai/gpt-oss-20b",
+    #         messages=[
+    #             {"role": "user", "content": text}
+    #         ],
+    #     )
 
-        self.console.print(response)
-        output = response.choices[0].message.content
+    #     self.console.print(response)
+    #     output = response.choices[0].message.content
             
-        await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
+    #     await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
