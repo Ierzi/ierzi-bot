@@ -10,7 +10,6 @@ console = Console()
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
-        self.console = Console()
         self.openai_key = os.getenv("OPENAI_KEY")
         self.openrouter_key = os.getenv("OPENROUTER_KEY")
     
@@ -19,6 +18,7 @@ class AI(commands.Cog):
         author = ctx.author
         
         client = AsyncOpenAI(api_key=self.openrouter_key, base_url="https://openrouter.ai/api/v1")
+
         async with ctx.typing():
             response = await client.chat.completions.create(
                 model="cognitivecomputations/dolphin-mistral-24b-venice-edition:free", #cool uncensored model? i need help guest
@@ -54,7 +54,7 @@ class AI(commands.Cog):
             return
         
         output = f"{author.mention}: {text} \n \n AI: {answer}"
-        self.console.print(output)
+        console.print(output)
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
@@ -72,7 +72,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="gpt-4.1-mini-2025-04-14",
                 messages=[
-                    {"role": "system", "content": f"You're an helpful assistant that summarize messages. Make it concise but keep its meaning and the details. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
+                    {"role": "system", "content": f"You're an helpful assistant that summarize messages. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                     {"role": "user", "content": f"Summarize this: {reply_content}"}
                 ],
                 max_tokens=200
@@ -99,14 +99,13 @@ class AI(commands.Cog):
                     {"role": "system", "content": f"You're an helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                     {"role": "user", "content": f"Expand this: {reply_content}"}
                 ],
-                max_tokens=2000
+                max_tokens=3500
             )
 
             expanded_text = response.choices[0].message.content
 
             splits = []
             if len(expanded_text) > 2000:
-                splits = []
                 current_split = ""
                 for character in expanded_text:
                     current_split += character
