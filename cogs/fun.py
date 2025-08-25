@@ -8,8 +8,9 @@ import aiohttp
 console = Console()
 
 class Fun(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
+        self.console = console
     
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member = None):
