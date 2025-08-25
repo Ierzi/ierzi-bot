@@ -5,41 +5,30 @@ import discord
 from openai import AsyncOpenAI
 import asyncio
 import aiohttp
-import json
+from groq import AsyncGroq
 
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.openai_key = os.getenv("OPENAI_KEY")
-        self.openrouter_key = os.getenv("OPENROUTER_KEY")
+        self.groq_key = os.getenv("GROQ_KEY")
         self.console = console
     
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
         async with ctx.typing():
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    url="https://openrouter.ai/api/v1/chat/completions",
-                    headers={
-                        "Authorization": f"Bearer {self.openrouter_key}",
-                        "Content-Type": "application/json"
-                    },
-                    data=json.dumps({
-                        "model": "cognitivecomputations/dolphin-mistral-24b-venice-edition:free", #great uncensored model? idk guest i need help
-                        "messages": [
-                            {"role": "system", "content": f"You're a helpful assistant that works in a Discord Bot. that answers people's questions. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
-                            {"role": "user", "content": f"{text}"}
-                        ]
-                    })
-                ) as response:
-                    if response.status != 200:
-                        self.console.print(f"Error {response.status}")
-                        await ctx.send("error :(")
-                        return
-                    
-                    data = await response.json()
-                    output = data['choices'][0]['message']['content']
-                    
+            client = AsyncGroq(api_key=self.groq_key)
+
+            response = await client.chat.completions.create(
+                model="openai/gpt-oss-20b",
+                messages=[
+                    {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
+                    {"role": "user", "content": text}
+                ],
+            )
+
+            output = response.choices[0].message.content
+            
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
