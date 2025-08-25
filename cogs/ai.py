@@ -12,20 +12,20 @@ class AI(commands.Cog):
         self.bot = bot
         self.console = Console()
         self.openai_key = os.getenv("OPENAI_KEY")
+        self.openrouter_key = os.getenv("OPENROUTER_KEY")
     
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
         author = ctx.author
         
-        client = AsyncOpenAI(api_key=self.openai_key)
+        client = AsyncOpenAI(api_key=self.openrouter_key, base_url="https://openrouter.ai/api/v1")
         async with ctx.typing():
             response = await client.chat.completions.create(
-                model="gpt-5-mini-2025-08-07",
+                model="cognitivecomputations/dolphin-mistral-24b-venice-edition:free", #cool uncensored model? i need help guest
                 messages=[
                     {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is too answer people's questions or requests. Your user ID is {self.bot.user.id} and your name is Ierzi Bot."},
                     {"role": "user", "content": f"{author.name} asked: {text}"}
-                ],
-                max_tokens=2000
+                ]
             )
         
             answer = response.choices[0].message.content
@@ -41,9 +41,12 @@ class AI(commands.Cog):
                     if len(current_split) >= 1975 and character == " ":
                         splits.append(current_split)
                         current_split = ""
+
                 if current_split:
                     splits.append(current_split)
 
+        console.print(splits)
+        console.print(bool(splits))
         if splits:
             for split in splits:
                 await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
