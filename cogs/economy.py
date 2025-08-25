@@ -89,7 +89,7 @@ class Economy(commands.Cog):
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds")
+                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 
         # If the user can work, give them a random job and pay them
@@ -179,6 +179,16 @@ class Economy(commands.Cog):
         conn.commit()
         await ctx.send(f"{ctx.author.mention} claimed his daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
+        if amount < 0:
+            ctx.send("Amount must be greater than 0.")
+            return
+        
+        author = ctx.author
+        await self.add_money(user.id, amount)
+        await self.add_money(author.id, -amount)
+        await ctx.send(f"{author.mention} paid {user.mention} {amount} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
@@ -193,4 +203,4 @@ class Economy(commands.Cog):
             return
         
         await self.add_money(user.id, amount)
-        await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())

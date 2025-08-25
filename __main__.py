@@ -86,9 +86,12 @@ async def github(ctx: commands.Context):
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
-        "debug thing with spendings ai", "fix !work", "add more reactions", 
-        "!listmarrriages",  "custom emojis", "song recommendation based on my playlist",
-        "UPDATE THE WIKI", "cat videos", "switch to openrouter", "pay ppl"]
+        "debug thing with spendings ai", "fix !aiask", "add more reactions", 
+        "fix !listmarrriages",  "custom emojis", "song recommendation based on my playlist",
+        "UPDATE THE WIKI", "cat videos", "switch to openrouter", 
+        "counter that increases every time fact says something racist, homophobic, transphobic, sexist... you get it",
+        "achievements?", "other ai models"
+        ]
     message = "Features I wanna add: \n"
     for feature in features:
         message += f"- {feature}\n"
