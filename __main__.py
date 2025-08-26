@@ -107,7 +107,7 @@ async def roadmap(ctx: commands.Context):
 
 async def main():
     await load_cogs()
-    await console.print("Bot is ready.")
+    console.print("Bot is ready.")
     await bot.start(token)
 
 asyncio.run(main())
