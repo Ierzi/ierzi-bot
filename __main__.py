@@ -89,7 +89,7 @@ async def roadmap(ctx: commands.Context):
     features = [
         "debug thing with spendings ai", "fix !aiask", "add more reactions", 
         "fix !listmarrriages",  "custom emojis", "song recommendation based on my playlist",
-        "UPDATE THE WIKI", "cat videos", "switch to openrouter", 
+        "UPDATE THE WIKI", "cat videos", 
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist... you get it",
         "achievements?", "other ai models"
         ]

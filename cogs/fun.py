@@ -1,10 +1,9 @@
 import discord
-from discord.ui import View, Button
 from discord.ext import commands
 import random
 from rich.console import Console
 import aiohttp
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 console = Console()
 
@@ -28,8 +27,6 @@ class Fun(commands.Cog):
         messaage = f"Uptime: {int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s."
         self.console.print(messaage)
         await ctx.send(messaage)
-
-
 
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member = None):
