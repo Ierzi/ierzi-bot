@@ -107,6 +107,7 @@ async def roadmap(ctx: commands.Context):
 async def main():
     await load_cogs()
     await bot.start(token)
+    await bot.change_presence(status=discord.Status.dnd)
     console.print("Bot is ready.")
 
 asyncio.run(main())
