@@ -27,10 +27,10 @@ class AI(commands.Cog):
             ],
         )
 
-        self.console.print(response)
         output = response.choices[0].message.content
+        message = f"{ctx.author.mention} asked: {text}\n\nAI: {output}"
             
-        await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
