@@ -22,7 +22,7 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.dnd)
+    await bot.change_presence(status=discord.Status.idle)
     console.print(f"Logged in as {bot.user}")
 
 async def load_cogs():
