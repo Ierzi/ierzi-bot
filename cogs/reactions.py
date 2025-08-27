@@ -80,7 +80,7 @@ class Reactions(commands.Cog):
             await ctx.send("what did i do to you :pensive:")
             return
         if user.bot:
-            await ctx.send("why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this message lmao")
+            await ctx.send('why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this "joke" lmao')
             return
         if user.id == 1153301933231181824:
             if ctx.author.id == 966351518020300841: #me
