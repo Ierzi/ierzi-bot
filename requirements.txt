@@ -4,3 +4,4 @@ dotenv
 openai
 psycopg2-binary
 groq
+requests
