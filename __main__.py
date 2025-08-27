@@ -1,4 +1,5 @@
 import discord
+from discord import ButtonStyle, Interaction, Embed, Colour
 from discord.ext import commands
 from discord.ui import Button, View
 from rich.console import Console
@@ -19,7 +20,7 @@ token = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
 @bot.event
 async def on_ready():
@@ -101,6 +102,21 @@ async def roadmap(ctx: commands.Context):
         message += f"- {feature}\n"
     await ctx.send(message)
 
+# help command
+
+home_embed = Embed(
+    title="Help",
+    description="test command im reworking on the help menu"
+)
+
+class HelpView(View):
+    @discord.ui.button(label="Home", style=ButtonStyle.gray)
+    async def home_button(self, interaction: Interaction, button: Button):
+        await interaction.message.edit()
+
+@bot.command()
+async def help(ctx: commands.Context):
+    await ctx.send(embed=home_embed, view=HelpView())
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
