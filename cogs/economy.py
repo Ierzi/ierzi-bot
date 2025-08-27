@@ -185,7 +185,7 @@ class Economy(commands.Cog):
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
         if amount < 0:
-            await ctx.send("Amount must be greater than 0.")
+            await ctx.send("have you tried using coins that have a positive amount of atoms?")
             return
         if user.id == ctx.author.id:
             await ctx.send("cro what")
@@ -225,7 +225,7 @@ class Economy(commands.Cog):
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
         if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
+            await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
             return
         if not user:
             await ctx.send("who?")
