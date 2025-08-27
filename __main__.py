@@ -10,6 +10,7 @@ from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
+from cogs.songs import Songs
 
 console = Console()
 
@@ -37,6 +38,8 @@ async def load_cogs():
     console.print("Marriages cog loaded.")
     await bot.add_cog(Reactions(bot, console))
     console.print("Reactions cog loaded.")
+    await bot.add_cog(Songs(bot, console))
+    console.print("Songs cog loaded.")
     console.print("All cogs loaded.")
 
 # Other commands
