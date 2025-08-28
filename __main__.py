@@ -144,19 +144,19 @@ async def fill_embeds():
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
-                home_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
-                ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
-                economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
-                fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Marriages":
-                marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Reactions":
-                reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Songs":
-                songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+                songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
 
 @bot.command()
