@@ -109,7 +109,7 @@ def get_commands(bot: commands.Bot):
 
 home_embed = Embed(
     title="Help Menu",
-    description="test command im reworking on the help menu. click on the buttons below to switch pages. here's some uncategorized commands: \n"
+    description="Click on the buttons below to switch pages. Here are some uncategorized commands: \n\n"
 )
 
 ai_embed = Embed(
@@ -167,17 +167,53 @@ async def test_command(ctx: commands.Context):
     await fill_embeds()
     view = View()
     
-    home_button = Button(label="Home", style=ButtonStyle.grey)
+    home_button = Button(label="Home", style=ButtonStyle.green)
     async def home_button_callback(interaction: Interaction):
         await interaction.message.edit(embed=home_embed, view=view)
+        return
     home_button.callback = home_button_callback
     view.add_item(home_button)
 
-    ai_button = Button(label="AI", style=ButtonStyle.red)
+    ai_button = Button(label="AI", style=ButtonStyle.primary)
     async def ai_button_callback(interaction: Interaction):
         await interaction.message.edit(embed=ai_embed, view=view)
+        return
     ai_button.callback = ai_button_callback
     view.add_item(ai_button)
+
+    economy_button = Button(label="Economy", style=ButtonStyle.primary)
+    async def economy_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=economy_embed, view=view)
+        return
+    ai_button.callback = economy_button_callback
+    view.add_item(economy_button)
+
+    fun_button = Button(label="Fun", style=ButtonStyle.primary)
+    async def fun_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=fun_embed, view=view)
+        return
+    fun_button.callback = fun_button_callback
+    view.add_item(fun_button)
+
+    marriages_button = Button(label="Marriages", style=ButtonStyle.primary)
+    async def marriages_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=marriages_embed, view=view)
+        return
+    marriages_button.callback = marriages_button_callback
+    view.add_item(marriages_button)
+
+    reactions_button = Button(label="Reactions", style=ButtonStyle.primary)
+    async def reactions_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=reactions_embed, view=view)
+        return
+    reactions_button.callback = reactions_button_callback
+    view.add_item(reactions_button)
+
+    songs_button = Button(label="Songs", style=ButtonStyle.primary)
+    async def reactions_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=songs_embed, view=view)
+        return
+    view.add_item(songs_button)
 
     await ctx.send(embed=home_embed, view=view)
 
