@@ -53,3 +53,14 @@ class Songs(commands.Cog):
         song = random.choice(self.songs)
         title, album, artist = song
         await ctx.send(f"**{title}** - {album} - {artist}")
+    
+    @commands.command()
+    async def getsong(self, ctx: commands.Context, index: int):
+        """Gets a song based on an index."""
+        if index > len(self.songs):
+            await ctx.send(f"I don't have that many songs :sob: (only {len(self.songs)})")
+        if index < 0:
+            await ctx.send("whar?")
+        
+        title, album, artist = self.songs[index]
+        await ctx.send(f"**{title}** - {album} - {artist}")
