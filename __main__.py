@@ -107,9 +107,10 @@ def get_commands(bot: commands.Bot):
 
 home_embed = Embed(
     title="Help",
-    description="test command im reworking on the help menu, here's some commands that arent categorized"
+    description="test command im reworking on the help menu, here's some commands that arent categorized \n"
 )
-home_embed.description += " test"
+
+
 
 @bot.command()
 async def test_command(ctx: commands.Context):
