@@ -70,18 +70,6 @@ async def profile(ctx: commands.Context, *user_id: int | tuple):
     
     await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
 
-
-@bot.command()
-async def wiki(ctx: commands.Context):
-    """cool github wiki"""
-    view = View()
-    wiki_button = Button(
-        label="Wiki",
-        url="https://github.com/Ierzi/ierzi-bot/wiki/"
-    )
-    view.add_item(wiki_button)
-    await ctx.send(view=view)
-
 @bot.command()
 async def github(ctx: commands.Context):
     """cool github repo"""
@@ -93,7 +81,7 @@ async def roadmap(ctx: commands.Context):
     features = [
         "debug thing with spendings ai", "fix !aiask", "add more reactions", 
         "fix !listmarrriages",  "custom emojis", "song recommendation based on my playlist",
-        "UPDATE THE WIKI", "cat videos", "fix the marriage database that is so messy",  
+        "cat videos", "fix the marriage database that is so messy",  
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
         "achievements?", "other ai models"
         ]
