@@ -97,6 +97,11 @@ def get_commands(bot: commands.Bot):
     for cog_name, cog in bot.cogs.items():
         for command in cog.get_commands():
             all_commands.append((command.name, cog_name, command.help))
+    
+    no_cogs_commands = [cmd for cmd in bot.commands if cmd.cog is None]
+    if no_cogs_commands:
+        for command in no_cogs_commands:
+            all_commands.append((command.name, None, command.help))
 
     return all_commands
 
