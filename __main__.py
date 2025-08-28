@@ -169,13 +169,13 @@ async def test_command(ctx: commands.Context):
     
     home_button = Button(label="Home", style=ButtonStyle.grey)
     async def home_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=home_embed, view=view)
+        await interaction.edit_original_response(embed=home_embed, view=view)
     home_button.callback = home_button_callback
     view.add_item(home_button)
 
     ai_button = Button(label="AI", style=ButtonStyle.red)
     async def ai_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=ai_embed, view=view)
+        await interaction.edit_original_response(embed=ai_embed, view=view)
     ai_button.callback = ai_button_callback
     view.add_item(ai_button)
 
