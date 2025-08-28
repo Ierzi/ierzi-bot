@@ -60,11 +60,6 @@ class Songs(commands.Cog):
         if index > len(self.songs):
             await ctx.send(f"I don't have that many songs :sob: (only {len(self.songs)})")
             return
-        if index < 0:
-            if index == -1:
-                pass
-            await ctx.send("whar?")
-            return
-        
+
         title, album, artist = self.songs[index]
         await ctx.send(f"**{title}** - {album} - {artist}")
