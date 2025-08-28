@@ -107,18 +107,21 @@ def get_commands(bot: commands.Bot):
 
 home_embed = Embed(
     title="Help",
-    description="test command im reworking on the help menu"
+    description="test command im reworking on the help menu, here's some commands that arent categorized"
 )
+home_embed.description += " test"
 
 @bot.command()
 async def test_command(ctx: commands.Context):
     view = View()
     
-    button = Button(label="Home", style=ButtonStyle.grey)
+    home_button = Button(label="Home", style=ButtonStyle.grey)
     async def home_button_callback(interaction: Interaction):
-        await interaction.message.edit(content="you pressed the button wow", view=view)
-    button.callback = home_button_callback
-    view.add_item(button)
+        await interaction.message.edit(embed=home_embed, view=view)
+    home_button.callback = home_button_callback
+    view.add_item(home_button)
+
+    
 
     await ctx.send(embed=home_embed, view=view)
 
