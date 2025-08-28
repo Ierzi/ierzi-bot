@@ -26,9 +26,6 @@ class Economy(commands.Cog):
 
         # All the jobs and how much they pay
         self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
-    
-    def _1in2(self) -> bool:
-        return random.choice(True, False)
 
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
@@ -221,7 +218,7 @@ class Economy(commands.Cog):
             await ctx.send("You lost your money! -Infinity coins. \n-# skill issue icl")
             return
         
-        if self._1in2():
+        if random.choice([False, True]):
             await self.add_money(user_id, amount)
             await ctx.send(f"You doubled your money! +{amount} coins.")
             return
