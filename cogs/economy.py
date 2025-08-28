@@ -192,6 +192,9 @@ class Economy(commands.Cog):
         if amount < 0:
             await ctx.send("have you tried using coins that have a positive amount of atoms?")
             return
+        if amount == 0:
+            await ctx.send("wow so generous")
+            return
         if user.id == ctx.author.id:
             await ctx.send("cro what")
             return
@@ -202,6 +205,7 @@ class Economy(commands.Cog):
         await ctx.send(f"{author.mention} paid {user.mention} {amount} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def double(self, ctx: commands.Context, amount: int):
         """Gamble your coins with a chance to double them."""
         user_id = ctx.author.id
@@ -249,11 +253,9 @@ class Economy(commands.Cog):
             await self.add_money(user_id, prize)
             return
         else:
-            await ctx.send(f"-{amount} coins.")
+            await ctx.send(f"-{amount} coins. The correct side was {correct_side}")
             await self.add_money(user_id, -amount)
             return
-
-
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
