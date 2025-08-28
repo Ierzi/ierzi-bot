@@ -281,7 +281,16 @@ class Economy(commands.Cog):
             return
         
         n_tickets = int(message.content)
-        for _ in n_tickets:
+        if n_tickets == 1:
+            if random.random() < chance:
+                ctx.send(f"**You won {prize_money}!!!")
+                return
+            else:
+                ctx.send(f"You didn't win {prize_money}.")
+                return
+
+
+        for _ in range(1, n_tickets):
             if random.random() < chance:
                 ctx.send(f"**You won {prize_money}!!!")
                 return
