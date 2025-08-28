@@ -146,43 +146,21 @@ songs_embed = Embed(
 
 async def fill_embeds(): 
     all_commands = get_commands(bot)
-    all_commands_remove_dupes = []
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Marriages":
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Reactions":
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Songs":
-                if command_name in all_commands_remove_dupes:
-                    pass
-                all_commands_remove_dupes.append(command_name)
                 songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
 
@@ -262,11 +240,11 @@ async def help(ctx: commands.Context, category: str = None):
             case _:
                 await ctx.send("Invalid category.")
 
-# @bot.command()
-# async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
-#     """Ignore this"""
-#     marriages = await get_marriages()
-#     console.print(marriages)
+@bot.command()
+async def debug(ctx: commands.Context):
+    """Ignore this"""
+    commands = await get_commands()
+    ctx.send(commands)
 
 async def main():
     await load_cogs()
