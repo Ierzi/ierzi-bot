@@ -1,10 +1,12 @@
 import discord
+from discord import Embed
 from discord.ext import commands
 from rich.console import Console
 import psycopg2
 import os
 import random
 from datetime import datetime, timedelta, timezone
+import asyncio
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
@@ -59,7 +61,6 @@ class Economy(commands.Cog):
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
     #TODO: fix this
-
     @commands.command()
     async def work(self, ctx: commands.Context):
         """Work to gain some coins."""
@@ -253,6 +254,41 @@ class Economy(commands.Cog):
             await ctx.send(f"-{amount} coins. The correct side was {correct_side}")
             await self.add_money(user_id, -amount)
             return
+
+    @commands.command()
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def lottery(self, ctx: commands.Context):
+        """Participate in the lottery."""
+        prize_money = round(random.randint(100_000, 999_999), -3)
+        ticket_prize = 125 if prize_money < 499_999 else 100
+        chance = 0.001275 # 0.1275% chance
+        user_id = ctx.author.id
+        user_balance = await self.get_balance(user_id)
+
+        lottery_embed = Embed(
+            title="Lottery",
+            description=f"The prize money is {prize_money}. \nEach ticket costs {ticket_prize}. How many tickets would you like to buy? (max 10) \nWinning chance: {chance * 100}%"
+        )
+        await ctx.send(embed=lottery_embed)
+
+        def check(m: discord.Message):
+            return m.author.id == user_id and m.channel == ctx.channel and m.content.lower() in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+        
+        try:
+            message = await self.bot.wait_for('message', check=check, timeout=30.0)
+        except asyncio.TimeoutError:
+            await ctx.send("Timed out.")
+            return
+        
+        n_tickets = int(message)
+        for _ in n_tickets:
+            if random.random() < chance:
+                ctx.send(f"**You won {prize_money}!!!")
+                return
+            else:
+                ctx.send(f"You didn't win {prize_money}.")
+        
+
 
     # @commands.command()
     # async def test_randomness(self, ctx: commands.Context):

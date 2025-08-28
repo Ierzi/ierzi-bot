@@ -36,8 +36,6 @@ async def on_command_error(ctx: commands.Context, error):
     else:
         console.print(f"Ignored error in {ctx.command}: {error} ")
 
-
-
 async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
