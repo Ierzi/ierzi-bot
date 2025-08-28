@@ -248,11 +248,11 @@ async def help(ctx: commands.Context, category: str = None):
             case _:
                 await ctx.send("Invalid category.")
 
-@bot.command()
-async def debug(ctx: commands.Context):
-    """Ignore this"""
-    commands = await get_commands()
-    await ctx.send(commands)
+# @bot.command()
+# async def debug(ctx: commands.Context):
+#     """Ignore this"""
+#     commands = await get_commands()
+#     await ctx.send(commands)
 
 async def main():
     await load_cogs()
