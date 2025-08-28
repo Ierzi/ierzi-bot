@@ -254,30 +254,30 @@ class Economy(commands.Cog):
             await self.add_money(user_id, -amount)
             return
 
-    @commands.command()
-    async def test_randomness(self, ctx: commands.Context):
-        """a debug command to test random.choice randomness"""
-        opt_1 = 0
-        opt_2 = 0
-        for _ in range(100):
-            choice = random.choice([True, False])
-            if choice:
-                opt_1 += 1
-            else:
-                opt_2 += 1
+    # @commands.command()
+    # async def test_randomness(self, ctx: commands.Context):
+    #     """a debug command to test random.choice randomness"""
+    #     opt_1 = 0
+    #     opt_2 = 0
+    #     for _ in range(100):
+    #         choice = random.choice([True, False])
+    #         if choice:
+    #             opt_1 += 1
+    #         else:
+    #             opt_2 += 1
         
-        await ctx.send(f"Test 1 results: {opt_1} option 1, {opt_2} option 2.")
+    #     await ctx.send(f"Test 1 results: {opt_1} option 1, {opt_2} option 2.")
         
-        opt_1 = 0
-        opt_2 = 0
-        for _ in range(100):
-            choice = random.choice([False, True])
-            if choice:
-                opt_1 += 1
-            else:
-                opt_2 += 1
+    #     opt_1 = 0
+    #     opt_2 = 0
+    #     for _ in range(100):
+    #         choice = random.choice([False, True])
+    #         if choice:
+    #             opt_1 += 1
+    #         else:
+    #             opt_2 += 1
         
-        await ctx.send(f"Test 2 results: {opt_1} option 1, {opt_2} option 2.")
+    #     await ctx.send(f"Test 2 results: {opt_1} option 1, {opt_2} option 2.")
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
