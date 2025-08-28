@@ -225,7 +225,33 @@ class Economy(commands.Cog):
             await self.add_money(user_id, -amount)
             await ctx.send(f"You lost your money! -{amount} coins. \n-# skill issue icl")
             return
-        
+    
+    @commands.command()
+    async def dicebet(self, ctx: commands.Context, amount: int, guess: int):
+        """Roll a 6 sided dice, guess the correct side to win."""
+        user_id = ctx.author.id
+        balance = await self.get_balance(user_id)
+        if amount < 0:
+            ctx.send("gambling your debts?")
+            return
+        if amount > balance:
+            await ctx.send("check your balance again")
+            return
+        if amount == 0:
+            await ctx.send("if you just wanna roll a dice use !roll :broken_heart:")
+            return
+
+        correct_side = random.randint(1, 6)
+        prize = amount * 3
+        if correct_side == guess:
+            await ctx.send(f"You guessed the corect side! +{prize} coins.")
+            await self.add_money(user_id, prize)
+            return
+        else:
+            await ctx.send(f"-{amount} coins.")
+            await self.add_money(user_id, -amount)
+            return
+
 
 
     @commands.command()
