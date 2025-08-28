@@ -283,10 +283,10 @@ class Economy(commands.Cog):
         n_tickets = int(message.content)
         if n_tickets == 1:
             if random.random() < chance:
-                ctx.send(f"**You won {prize_money}!!!")
+                await ctx.send(f"**You won {prize_money}!!!")
                 return
             else:
-                ctx.send(f"You didn't win {prize_money}.")
+                await ctx.send(f"You didn't win {prize_money}.")
                 return
 
 
