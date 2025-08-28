@@ -49,6 +49,7 @@ async def load_cogs():
 # Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
+    """Gets the ID of an user."""
     if not user:
         await ctx.send(ctx.author.id)
         return
@@ -57,6 +58,7 @@ async def id(ctx: commands.Context, user: discord.Member):
 
 @bot.command()
 async def profile(ctx: commands.Context, *user_id: int | tuple):
+    """Gets the profile of an user based on an ID."""
     if user_id == None or user_id == ():
         await ctx.send("Gimme user ids. \n-# if you dont know what that is, ignore this")
     
@@ -186,6 +188,7 @@ async def fill_embeds():
 
 @bot.command()
 async def help(ctx: commands.Context, category: str = None):
+    """Shows this message."""
     await fill_embeds()
     view = View()
     
