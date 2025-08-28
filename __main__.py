@@ -104,6 +104,14 @@ async def roadmap(ctx: commands.Context):
 
 # help command
 
+def get_commands(bot: commands.Bot):
+    all_commands: list[tuple[str, str, str]] = [] # Format: Command name, cog name, command help
+    for cog_name, cog in bot.cogs.items():
+        for command in cog.get_commands():
+            all_commands.append((command.name, cog_name, command.help))
+
+    return all_commands
+
 home_embed = Embed(
     title="Help",
     description="test command im reworking on the help menu"
@@ -120,6 +128,11 @@ async def test_command(ctx: commands.Context):
     view.add_item(button)
 
     await ctx.send(embed=home_embed, view=view)
+
+@bot.command()
+async def test_command2(ctx: commands.Context):
+    all_commands = get_commands(bot)
+    await ctx.send(all_commands) 
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
