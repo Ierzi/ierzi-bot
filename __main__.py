@@ -114,8 +114,8 @@ async def test_command(ctx: commands.Context):
     view = View()
     
     button = Button(label="Home", style=ButtonStyle.grey)
-    async def home_button_callback(self, interaction: Interaction):
-        await interaction.message.edit("you pressed the button wow", view=view)
+    async def home_button_callback(interaction: Interaction):
+        await interaction.message.edit(content="you pressed the button wow", view=view)
     button.callback = home_button_callback
     view.add_item(button)
 
