@@ -267,7 +267,7 @@ class Economy(commands.Cog):
 
         lottery_embed = Embed(
             title="Lottery",
-            description=f"The prize money is {prize_money}. \nEach ticket costs {ticket_prize}. How many tickets would you like to buy? (max 10) \nWinning chance: {chance * 100}%"
+            description=f"The prize money is {prize_money}. \nEach ticket costs {ticket_prize}. \n\nWinning chance: {chance * 100}% \n\n**How many tickets would you like to buy? (max 10)**"
         )
         await ctx.send(embed=lottery_embed)
 
@@ -280,13 +280,14 @@ class Economy(commands.Cog):
             await ctx.send("Timed out.")
             return
         
-        n_tickets = int(message)
+        n_tickets = int(message.content)
         for _ in n_tickets:
             if random.random() < chance:
                 ctx.send(f"**You won {prize_money}!!!")
                 return
             else:
                 ctx.send(f"You didn't win {prize_money}.")
+                return
         
 
 
