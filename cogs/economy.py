@@ -247,7 +247,7 @@ class Economy(commands.Cog):
             return
 
         correct_side = random.randint(1, 6)
-        prize = amount * 3
+        prize = amount * 6
         if correct_side == guess:
             await ctx.send(f"You guessed the corect side! +{prize} coins.")
             await self.add_money(user_id, prize)
