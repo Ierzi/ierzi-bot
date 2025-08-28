@@ -43,7 +43,7 @@ async def load_cogs():
     start = time.time()
     await bot.add_cog(Songs(bot, console))
     end = time.time()
-    console.print(f"Songs cog loaded in {start - end} seconds.")
+    console.print(f"Songs cog loaded in {end - start} seconds.")
     console.print("All cogs loaded.")
 
 # Other commands
