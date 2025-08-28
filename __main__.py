@@ -43,7 +43,7 @@ async def load_cogs():
     start = time.time()
     await bot.add_cog(Songs(bot, console))
     end = time.time()
-    console.print(f"Songs cog loaded in {end - start} seconds.")
+    console.print(f"Songs cog loaded in {end - start:2f} seconds.")
     console.print("All cogs loaded.")
 
 # Other commands
@@ -144,21 +144,43 @@ songs_embed = Embed(
 
 async def fill_embeds(): 
     all_commands = get_commands(bot)
+    all_commands_remove_dupes = []
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Marriages":
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Reactions":
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Songs":
+                if command_name in all_commands_remove_dupes:
+                    pass
+                all_commands_remove_dupes.append(command_name)
                 songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
 
