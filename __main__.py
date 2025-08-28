@@ -91,7 +91,6 @@ async def roadmap(ctx: commands.Context):
     await ctx.send(message)
 
 # help command
-
 def get_commands(bot: commands.Bot):
     all_commands: list[tuple[str, str, str]] = [] # Format: Command name, cog name, command help
     for cog_name, cog in bot.cogs.items():
@@ -106,14 +105,63 @@ def get_commands(bot: commands.Bot):
     return all_commands
 
 home_embed = Embed(
-    title="Help",
-    description="test command im reworking on the help menu, here's some commands that arent categorized \n"
+    title="Help Menu",
+    description="test command im reworking on the help menu. click on the buttons below to switch pages. here's some uncategorized commands: \n"
 )
 
+ai_embed = Embed(
+    title="AI Commands",
+    description=""
+)
+
+economy_embed = Embed(
+    title="Economy Commands",
+    description=""
+)
+
+fun_embed = Embed(
+    title="Fun Commands",
+    description=""
+)
+
+marriages_embed = Embed(
+    title="Marriage Commands",
+    description=""
+)
+
+reactions_embed = Embed(
+    title="Reaction Commands",
+    description=""
+)
+
+songs_embed = Embed(
+    title="Songs Commands",
+    description=""
+)
+
+async def fill_embeds(): 
+    all_commands = get_commands(bot)
+    for command_name, cog_name, command_help in all_commands:
+        match cog_name:
+            case None:
+                home_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+            case "AI":
+                ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+            case "Economy":
+                economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+            case "Fun":
+                fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+            case "Marriages":
+                marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+            case "Reactions":
+                reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
+            case "Songs":
+                songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else "No description"} \n"
 
 
 @bot.command()
 async def test_command(ctx: commands.Context):
+    await fill_embeds()
     view = View()
     
     home_button = Button(label="Home", style=ButtonStyle.grey)
@@ -122,7 +170,11 @@ async def test_command(ctx: commands.Context):
     home_button.callback = home_button_callback
     view.add_item(home_button)
 
-    
+    ai_button = Button(label="AI", style=ButtonStyle.red)
+    async def ai_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=ai_embed, view=view)
+    ai_button.callback = ai_button_callback
+    view.add_item(ai_button)
 
     await ctx.send(embed=home_embed, view=view)
 
@@ -130,6 +182,7 @@ async def test_command(ctx: commands.Context):
 async def test_command2(ctx: commands.Context):
     all_commands = get_commands(bot)
     await ctx.send(all_commands) 
+
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
