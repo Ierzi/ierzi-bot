@@ -109,14 +109,17 @@ home_embed = Embed(
     description="test command im reworking on the help menu"
 )
 
-class HelpView(View):
-    @discord.ui.button(label="Home", style=ButtonStyle.gray)
-    async def home_button(self, interaction: Interaction, button: Button):
-        await interaction.message.edit()
-
 @bot.command()
 async def test_command(ctx: commands.Context):
-    await ctx.send(embed=home_embed, view=HelpView())
+    view = View()
+    
+    button = Button(label="Home", style=ButtonStyle.grey)
+    async def home_button_callback(self, interaction: Interaction):
+        await interaction.message.edit("you pressed the button wow", view=view)
+    button.callback = home_button_callback
+    view.add_item(button)
+
+    await ctx.send(embed=home_embed, view=view)
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
