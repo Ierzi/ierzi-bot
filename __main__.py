@@ -20,7 +20,7 @@ token = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+bot = commands.Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
@@ -115,7 +115,7 @@ class HelpView(View):
         await interaction.message.edit()
 
 @bot.command()
-async def help(ctx: commands.Context):
+async def test_command(ctx: commands.Context):
     await ctx.send(embed=home_embed, view=HelpView())
 
 # @bot.command()
