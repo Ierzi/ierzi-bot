@@ -145,6 +145,14 @@ songs_embed = Embed(
 )
 
 async def fill_embeds(): 
+    home_embed.description = "Click on the buttons below to switch pages. Here are some uncategorized commands: \n\n"
+    ai_embed.description = ""
+    economy_embed.description = ""
+    fun_embed.description = ""
+    marriages_embed.description = ""
+    reactions_embed.description = ""
+    songs_embed.description = ""
+
     all_commands = get_commands(bot)
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
