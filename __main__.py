@@ -185,7 +185,7 @@ async def test_command(ctx: commands.Context):
     async def economy_button_callback(interaction: Interaction):
         await interaction.message.edit(embed=economy_embed, view=view)
         return
-    ai_button.callback = economy_button_callback
+    economy_button.callback = economy_button_callback
     view.add_item(economy_button)
 
     fun_button = Button(label="Fun", style=ButtonStyle.primary)
@@ -210,9 +210,10 @@ async def test_command(ctx: commands.Context):
     view.add_item(reactions_button)
 
     songs_button = Button(label="Songs", style=ButtonStyle.primary)
-    async def reactions_button_callback(interaction: Interaction):
+    async def songs_button_callback(interaction: Interaction):
         await interaction.message.edit(embed=songs_embed, view=view)
         return
+    songs_button.callback = songs_button_callback
     view.add_item(songs_button)
 
     await ctx.send(embed=home_embed, view=view)
