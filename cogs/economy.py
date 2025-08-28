@@ -227,6 +227,7 @@ class Economy(commands.Cog):
             return
     
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def dicebet(self, ctx: commands.Context, amount: int, guess: int):
         """Roll a 6 sided dice, guess the correct side to win."""
         user_id = ctx.author.id

@@ -1,5 +1,5 @@
 import discord
-from discord import ButtonStyle, Interaction, Embed, Colour
+from discord import ButtonStyle, Interaction, Embed
 from discord.ext import commands
 from discord.ui import Button, View
 from rich.console import Console
@@ -23,10 +23,20 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 
+# Events
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
     console.print(f"Logged in as {bot.user}")
+
+@bot.event
+async def on_command_error(ctx: commands.Context, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        ctx.send(f"Try again in {round(error.retry_after, 2)} seconds.")
+    else:
+        console.print(f"Ignored error in {ctx.command}: {error} ")
+
+
 
 async def load_cogs():
     console.print("Loading cogs...")
