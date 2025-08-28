@@ -244,7 +244,7 @@ async def help(ctx: commands.Context, category: str = None):
 async def debug(ctx: commands.Context):
     """Ignore this"""
     commands = await get_commands()
-    ctx.send(commands)
+    await ctx.send(commands)
 
 async def main():
     await load_cogs()
