@@ -32,7 +32,7 @@ async def on_ready():
 @bot.event
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
-        ctx.send(f"Try again in {round(error.retry_after, 2)} seconds.")
+        await ctx.send(f"Try again in {round(error.retry_after, 2)} seconds.")
     else:
         console.print(f"Ignored error in {ctx.command}: {error} ")
 
