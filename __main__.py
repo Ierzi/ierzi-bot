@@ -163,7 +163,7 @@ async def fill_embeds():
 
 
 @bot.command()
-async def help(ctx: commands.Context):
+async def help(ctx: commands.Context, category: str = None):
     await fill_embeds()
     view = View()
     
@@ -205,7 +205,7 @@ async def help(ctx: commands.Context):
     reactions_button = Button(label="Reactions", style=ButtonStyle.primary)
     async def reactions_button_callback(interaction: Interaction):
         await interaction.message.edit(embed=reactions_embed, view=view)
-        
+
     reactions_button.callback = reactions_button_callback
     view.add_item(reactions_button)
 
@@ -216,7 +216,26 @@ async def help(ctx: commands.Context):
     songs_button.callback = songs_button_callback
     view.add_item(songs_button)
 
-    await ctx.send(embed=home_embed, view=view)
+    if category is None:
+        await ctx.send(embed=home_embed, view=view)
+    else:
+        match category.lower():
+            case "home":
+                await ctx.send(embed=home_embed)
+            case "ai":
+                await ctx.send(embed=ai_embed)
+            case "economy":
+                await ctx.send(embed=economy_embed)
+            case "fun":
+                await ctx.send(embed=fun_embed)
+            case "marriages":
+                await ctx.send(embed=marriages_embed)
+            case "reactions":
+                await ctx.send(embed=reactions_embed)
+            case "songs":
+                await ctx.send(embed=songs_embed)
+            case _:
+                await ctx.send("Invalid category.")
 
 # @bot.command()
 # async def debug(ctx: commands.Context, fake_n_marriages: int | None = None):
