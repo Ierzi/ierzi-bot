@@ -61,7 +61,7 @@ class Reactions(commands.Cog):
     async def slap(self, ctx: commands.Context, user: discord.Member):
         """Slap someone."""
         if user == ctx.author:
-            await ctx.send(f"this dumbass {ctx.author.mention} is slapping himself smh my head", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"this dumbass {ctx.author.mention} is slapping themselves smh my head", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == self.bot.user.id:
             await ctx.send("fuck you")
