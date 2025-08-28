@@ -61,6 +61,8 @@ class Reactions(commands.Cog):
     async def slap(self, ctx: commands.Context, user: discord.Member):
         """Slap someone."""
         if user == ctx.author:
+            if ctx.author.id == 1153301933231181824:
+                await ctx.send("you already harmed yourself way too many times")
             await ctx.send(f"this dumbass {ctx.author.mention} is slapping themselves smh my head", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == self.bot.user.id:
@@ -77,7 +79,7 @@ class Reactions(commands.Cog):
         """Kill someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send(f"you've been trying to kill yourself for the past week, isnt that a little concerning")
+                await ctx.send(f"why kill yourself when u can listen to https://www.youtube.com/watch?v=LA_UQnLyCjA&ab_channel=GiveonVEVO")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
