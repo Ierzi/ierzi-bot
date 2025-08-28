@@ -54,6 +54,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def balance(self, ctx: commands.Context, user: discord.Member = None):
+        """Check your balance."""
         if not user:
             user = ctx.author
 
@@ -64,6 +65,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def work(self, ctx: commands.Context):
+        """Work to gain some coins."""
         user_id = ctx.author.id
         self.cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
@@ -110,6 +112,7 @@ class Economy(commands.Cog):
 
     @commands.command(name="ecolb")
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
+        """View the economy leaderboard."""
         if page < 1:
             await ctx.send("Page must be 1 or higher.")
             return
@@ -136,6 +139,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def daily(self, ctx: commands.Context): 
+        """Get a daily reward."""
         user_id = ctx.author.id
         self.cur.execute("SELECT last_daily FROM economy WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
@@ -184,6 +188,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
+        """Pay someone."""
         if amount < 0:
             await ctx.send("have you tried using coins that have a positive amount of atoms?")
             return
@@ -198,6 +203,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def double(self, ctx: commands.Context, amount: int):
+        """Gamble your coins with a chance to double them."""
         user_id = ctx.author.id
         balance = await self.get_balance(user_id)
 
@@ -224,6 +230,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
+        """Spawns money out of thin air and gives it to someone. Can only be used by Ierzi, obviously."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
             return

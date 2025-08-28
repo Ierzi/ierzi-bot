@@ -16,6 +16,7 @@ class AI(commands.Cog):
     
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
+        """Ask something to an ai."""
         self.console.print(text)
         client = AsyncGroq(api_key=self.groq_key)
 
@@ -34,6 +35,7 @@ class AI(commands.Cog):
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
+        """Reply to a messgae to shorten it."""
         reply = ctx.message.reference
         if reply is None:
             await ctx.send("You didn't reply to a message.")
@@ -58,6 +60,7 @@ class AI(commands.Cog):
 
     @commands.command()
     async def tsmr(self, ctx: commands.Context):
+        """Reply to a message to expand it. The opposite of tldr lmao"""
         reply = ctx.message.reference
         if reply is None:
             await ctx.send("You didn't reply to a message.")

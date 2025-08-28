@@ -57,6 +57,7 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def marry(self, ctx: commands.Context, partner: discord.Member):
+        """Marry someone."""
         proposer = ctx.author
         marriages = await self.get_marriages()
 
@@ -100,6 +101,7 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def divorce(self, ctx: commands.Context, partner: discord.Member):
+        """Divorce someone."""
         proposer = ctx.author
         marriages = await self.get_marriages()
 
@@ -177,6 +179,7 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def countmarriages(self, ctx: commands.Context, user: discord.Member = None):
+        """Count the number of marriages a member has."""
         if user == None:
             user = ctx.author
         
@@ -192,12 +195,14 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def totalmarriages(self, ctx: commands.Context):
+        """Amount of marriages globally."""
         marriages = await self.get_marriages()
         number_marriages = len(marriages) // 2
         await ctx.send(f"There are {number_marriages} marriages." if number_marriages != 1 else f"There is 1 marriage.")
 
     @commands.command()
     async def marriagestatus(self, ctx: commands.Context, user: discord.Member = None):
+        """Check all the marriages of an user."""
         if user == None:
             user = ctx.author
 
@@ -222,6 +227,7 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def forcemarry(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+        """Can only be used by Ierzi. Force marry 2 people."""
         marriages = await self.get_marriages()
         if (user1.id, user2.id) in marriages or (user2.id, user1.id) in marriages:
             await ctx.send("does he know?")
@@ -242,6 +248,7 @@ class Marriages(commands.Cog):
 
     @commands.command()
     async def forcedivorce(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+        """Can only be used by Ierzi. Force divorce 2 people."""
         marriages = await self.get_marriages()
         if (user1.id, user2.id) not in marriages and (user2.id, user1.id) not in marriages:
             await ctx.send("they are not married lmao")

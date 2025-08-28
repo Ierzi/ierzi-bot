@@ -11,6 +11,7 @@ class Reactions(commands.Cog):
 
     @commands.command()
     async def kiss(self, ctx: commands.Context, user: discord.Member):
+        """Kiss someone."""
         if user == ctx.author:
             await ctx.send(f"{ctx.author.mention} kisses themselves... that's a bit sad.", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -26,6 +27,7 @@ class Reactions(commands.Cog):
     
     @commands.command()
     async def hug(self, ctx: commands.Context, user: discord.Member):
+        """Hug someone."""
         if user == ctx.author:
             await ctx.send(f"{ctx.author.mention} hugs themselves :sob: \n-# I'd argue that hugging a pillow is better.", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -39,6 +41,7 @@ class Reactions(commands.Cog):
     
     @commands.command()
     async def cuddle(self, ctx: commands.Context, user: discord.Member):
+        """Cuddle someone."""
         if user == ctx.author:
             await ctx.send(f"{ctx.author.mention} ain't got anyone to cuddle (lonely ass)", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -56,6 +59,7 @@ class Reactions(commands.Cog):
 
     @commands.command()
     async def slap(self, ctx: commands.Context, user: discord.Member):
+        """Slap someone."""
         if user == ctx.author:
             await ctx.send(f"this dumbass {ctx.author.mention} is slapping himself smh my head", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -70,6 +74,7 @@ class Reactions(commands.Cog):
 
     @commands.command()
     async def kill(self, ctx: commands.Context, user: discord.Member):
+        """Kill someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
                 await ctx.send(f"hi pexie also no")

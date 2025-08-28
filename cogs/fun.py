@@ -30,6 +30,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member = None):
+        """https://amitrans.org/"""
         if user == None:
             user = ctx.author
         
@@ -47,6 +48,7 @@ class Fun(commands.Cog):
     
     @commands.command()
     async def isgay(self, ctx: commands.Context, user: discord.Member = None):
+        """https://www.amigay.org/"""
         if user == None:
             user = ctx.author
         
@@ -64,6 +66,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
+        """no you're poor"""
         if user == None:
             user = ctx.author
         
@@ -75,6 +78,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def ishomophobic(self, ctx: commands.Context, user: discord.Member = None):
+        """i hope not?? :sob:"""
         if user == None:
             user = ctx.author
         
@@ -86,10 +90,11 @@ class Fun(commands.Cog):
     
     @commands.command()
     async def islesbian(self, ctx: commands.Context, user: discord.Member = None):
+        """women loves women"""
         if user == None:
             user = ctx.author
         
-        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614, 1344010392506208340]: #ace (2 accounts), syndey (lmao) and fa*t (both accounts)
+        if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614, 1344010392506208340]: #ace (both accounts), syndey (lmao) and fa*t (both accounts)
             await ctx.send("yes")
             return
         
@@ -97,21 +102,25 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def roll(self, ctx: commands.Context, sides: int = 6):
+        """Roll a dice."""
         roll = random.randint(1, sides)
         await ctx.send(f"You rolled a {roll}")
 
     @commands.command()
     async def d20(self, ctx: commands.Context):
+        """Dice 20"""
         roll = random.randint(1, 20)
         await ctx.send(f"{roll}")
     
     @commands.command()
     async def coinflip(self, ctx: commands.Context):
+        """Flip a coin."""
         result = random.choice(["heads", "tails"])
         await ctx.send(result)
     
     @commands.command()
     async def hello(self, ctx: commands.Context):
+        """hiiii"""
         await ctx.send(random.choice(["hi", "hello", "fuck you"]))
     
     @commands.command(name="2ball")
@@ -132,6 +141,7 @@ class Fun(commands.Cog):
     
     @commands.command(name="ud")
     async def urban_dictionary(self, ctx: commands.Context, *, word: str):
+        """Look up the meaning of a word in the Urban Dictionary."""
         request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
 
         async with aiohttp.ClientSession() as session:
@@ -156,6 +166,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def define(self, ctx: commands.Context, *, word: str):
+        """Look up the meaning of a word."""
         request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
         async with aiohttp.ClientSession() as session:
