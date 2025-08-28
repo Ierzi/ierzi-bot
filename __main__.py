@@ -12,6 +12,7 @@ from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.songs import Songs
+import time
 
 console = Console()
 
@@ -39,8 +40,10 @@ async def load_cogs():
     console.print("Marriages cog loaded.")
     await bot.add_cog(Reactions(bot, console))
     console.print("Reactions cog loaded.")
+    start = time.time()
     await bot.add_cog(Songs(bot, console))
-    console.print("Songs cog loaded.")
+    end = time.time()
+    console.print(f"Songs cog loaded in {start - end} seconds.")
     console.print("All cogs loaded.")
 
 # Other commands
