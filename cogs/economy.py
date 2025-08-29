@@ -115,23 +115,24 @@ class Economy(commands.Cog):
             await ctx.send("Page must be 1 or higher.")
             return
         
-        offset = (page - 1) * 10
-        self.cur.execute("""
-            SELECT user_id, balance FROM economy 
-            ORDER BY balance DESC
-            OFFSET %s
-            LIMIT 10  
-        """, (offset,)
-        )
-        rows = self.cur.fetchall()
-        if not rows:
-            await ctx.send("No users found on this page.")
-            return
-        
-        message = f"**Economy Leaderboard - Page {page}** \n"
-        for i, (user_id, balance) in enumerate(rows):
-            user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-            message += f"**{i + 1}. {user.mention}** - {balance} coins \n" 
+        async with ctx.typing():
+            offset = (page - 1) * 10
+            self.cur.execute("""
+                SELECT user_id, balance FROM economy 
+                ORDER BY balance DESC
+                OFFSET %s
+                LIMIT 10  
+            """, (offset,)
+            )
+            rows = self.cur.fetchall()
+            if not rows:
+                await ctx.send("No users found on this page.")
+                return
+            
+            message = f"**Economy Leaderboard - Page {page}** \n"
+            for i, (user_id, balance) in enumerate(rows):
+                user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+                message += f"**{i + 1}. {user.mention}** - {balance} coins \n" 
 
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none()) 
 
