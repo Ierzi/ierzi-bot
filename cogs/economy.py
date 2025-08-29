@@ -204,7 +204,7 @@ class Economy(commands.Cog):
         await ctx.send(f"{author.mention} paid {user.mention} {amount} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def double(self, ctx: commands.Context, amount: int):
         """Gamble your coins with a chance to double them."""
         user_id = ctx.author.id
@@ -230,7 +230,7 @@ class Economy(commands.Cog):
             return
     
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 3, commands.BucketType.user)
     async def dicebet(self, ctx: commands.Context, amount: int, guess: int):
         """Roll a 6 sided dice, guess the correct side to win."""
         user_id = ctx.author.id
