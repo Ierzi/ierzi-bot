@@ -63,3 +63,43 @@ class Songs(commands.Cog):
 
         title, album, artist = self.songs[index]
         await ctx.send(f"**{title}** - {album} - {artist}")
+    
+    async def async_get_page(self, index: int):
+        url = self.deezer_playlist_url if index == 0 else f"{self.deezer_playlist_url}?index={index * 25}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    self.console.print(f"Error while fetching playlist: {resp.status}")
+                    return []
+                
+                data = resp.json()
+                songs = []
+                for song in data['data']:
+                    title = song['title']
+                    album = song['album']['title']
+                    artist = song['artist']['name']
+                    songs.append((title, album, artist))
+                return songs
+
+    @commands.command()
+    async def fetchplaylist(self, ctx: commands.Context):
+        user_id = ctx.author.id
+        if user_id != 966351518020300841:
+            await ctx.send("no.")
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.deezer_playlist_url) as resp:
+                if resp.status != 200:
+                    await ctx.send(f"Error {resp.status} :(")
+                    return
+                
+                resp_json = await resp.json()
+                total_songs = resp_json['total']
+                all_songs = []
+                pages = (total_songs // 25) + 1
+                for page in range(pages):
+                    songs = await self.async_get_page(page)
+                    all_songs.extend(songs)
+                
+        self.songs = all_songs
+        ctx.message.add_reaction("👍")

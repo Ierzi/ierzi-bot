@@ -92,8 +92,8 @@ async def github(ctx: commands.Context):
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
-        "debug thing with spendings ai", "fix !aiask", "add more reactions", 
-        "fix !listmarrriages",  "custom emojis", "song recommendation based on my playlist",
+        "debug thing with spendings ai", "add more reactions", 
+        "fix !listmarrriages",  "custom emojis", 
         "cat videos", "fix the marriage database that is so messy",  
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
         "achievements?", "other ai models"
