@@ -62,7 +62,8 @@ class Reactions(commands.Cog):
         """Slap someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824:
-                await ctx.send("you already harmed yourself way too many times")
+                # im not even gonna send a message this is gonna piss her off
+                return
             await ctx.send(f"this dumbass {ctx.author.mention} is slapping themselves smh my head", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == self.bot.user.id:
@@ -70,6 +71,9 @@ class Reactions(commands.Cog):
             return
         if user.bot:
             await ctx.send(f"{ctx.author.mention} **SLAPS** {user.mention}! \n-# deserved icl cause im better", allowed_mentions=discord.AllowedMentions.none())
+            return
+        if user.id == 1153301933231181824:
+            await ctx.send("no.")
             return
         
         await ctx.send(f"{ctx.author.mention} **SLAPS** {user.mention}!", allowed_mentions=discord.AllowedMentions.none())
@@ -79,7 +83,7 @@ class Reactions(commands.Cog):
         """Kill someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send(f"why kill yourself when u can listen to https://www.youtube.com/watch?v=LA_UQnLyCjA&ab_channel=GiveonVEVO")
+                await ctx.send(f"why kill yourself when u can listen to https://www.youtube.com/watch?v=2p3zZoraK9g&ab_channel=SZAVEVO")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
