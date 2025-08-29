@@ -66,7 +66,7 @@ class Fun(commands.Cog):
 
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
-        """no you're poor"""
+        """no"""
         if user == None:
             user = ctx.author
         
@@ -141,7 +141,7 @@ class Fun(commands.Cog):
     
     @commands.command(name="ud")
     async def urban_dictionary(self, ctx: commands.Context, *, word: str):
-        """Look up the meaning of a word in the Urban Dictionary."""
+        """Look up the meaning of a word on the Urban Dictionary."""
         request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
 
         async with aiohttp.ClientSession() as session:
