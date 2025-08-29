@@ -260,15 +260,15 @@ class Economy(commands.Cog):
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def lottery(self, ctx: commands.Context):
         """Participate in the lottery."""
-        prize_money = round(random.randint(1_000_000, 9_999_999), -3)
-        ticket_prize = 125 if prize_money < 4_999_999 else 100
+        prize_money = round(random.randint(1000000, 9999999), -3)
+        ticket_price = 125 if prize_money < 4999999 else 100
         chance = 0.001275 # 0.1275% chance
         user_id = ctx.author.id
         user_balance = await self.get_balance(user_id)
 
         lottery_embed = Embed(
             title="Lottery",
-            description=f"The prize money is {prize_money:,} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**",
+            description=f"The prize money is {prize_money:,} coins. \nEach ticket costs {ticket_price} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**",
             color=Colour.green()
         )
         await ctx.send(embed=lottery_embed)
@@ -283,7 +283,7 @@ class Economy(commands.Cog):
             return
         
         n_tickets = int(message.content)
-        cost = n_tickets * ticket_prize
+        cost = n_tickets * ticket_price
         
         if cost > user_balance:
             await ctx.send("you're too poor cro :broken_heart:")
