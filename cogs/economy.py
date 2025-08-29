@@ -267,7 +267,7 @@ class Economy(commands.Cog):
 
         lottery_embed = Embed(
             title="Lottery",
-            description=f"The prize money is {prize_money} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**How many tickets would you like to buy? (max 10)**"
+            description=f"The prize money is {prize_money} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**"
         )
         await ctx.send(embed=lottery_embed)
 
@@ -281,8 +281,13 @@ class Economy(commands.Cog):
             return
         
         n_tickets = int(message.content)
-
-        await self.add_money(user_id, ticket_prize * n_tickets)
+        cost = n_tickets * ticket_prize
+        
+        if cost > user_balance:
+            await ctx.send("you're too poor cro :broken_heart:")
+            return
+        
+        await self.add_money(user_id, -cost)
 
         if n_tickets == 1:
             if random.random() < chance:
@@ -296,11 +301,11 @@ class Economy(commands.Cog):
 
         for _ in range(1, n_tickets):
             if random.random() < chance:
-                ctx.send(f"**You won {prize_money} coins!!!")
+                await ctx.send(f"**You won {prize_money} coins!!!")
                 await self.add_money(user_id, prize_money)
                 return
             else:
-                ctx.send(f"You didn't win {prize_money} coins.")
+                await ctx.send(f"You didn't win {prize_money} coins.")
                 return
         
 
