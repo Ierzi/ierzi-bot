@@ -108,4 +108,4 @@ class Songs(commands.Cog):
     @commands.command(aliases=("pl",))
     async def playlistlength(self, ctx: commands.Context):
         """Gives how many songs are in my playlist."""
-        await ctx.send(format(len(self.songs), ","))
+        await ctx.send(f"{format(len(self.songs), ',')} songs.")
