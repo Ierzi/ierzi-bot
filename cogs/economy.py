@@ -1,5 +1,5 @@
 import discord
-from discord import Embed
+from discord import Embed, Colour
 from discord.ext import commands
 from rich.console import Console
 import psycopg2
@@ -268,7 +268,8 @@ class Economy(commands.Cog):
 
         lottery_embed = Embed(
             title="Lottery",
-            description=f"The prize money is {prize_money:,} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**"
+            description=f"The prize money is {prize_money:,} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**",
+            color=Colour.green()
         )
         await ctx.send(embed=lottery_embed)
 
@@ -292,7 +293,7 @@ class Economy(commands.Cog):
 
         if n_tickets == 1:
             if random.random() < chance:
-                await ctx.send(f"**You won {prize_money:,} coins!!!")
+                await ctx.send(f"**You won {prize_money:,} coins!!!**")
                 await self.add_money(user_id, prize_money)
                 return
             else:
@@ -306,7 +307,7 @@ class Economy(commands.Cog):
                 win = True
         
         if win:
-            await ctx.send(f"**You won {prize_money:,} coins!!!")
+            await ctx.send(f"**You won {prize_money:,} coins!!!**")
             await self.add_money(user_id, prize_money)
             return
         else:
