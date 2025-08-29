@@ -83,6 +83,7 @@ class Songs(commands.Cog):
 
     @commands.command()
     async def fetchplaylist(self, ctx: commands.Context):
+        """Can only be used by Ierzi. Fetches the last songs added to my playlist."""
         user_id = ctx.author.id
         if user_id != 966351518020300841:
             await ctx.send("no.")
