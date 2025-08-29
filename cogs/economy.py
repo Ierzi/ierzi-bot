@@ -257,18 +257,18 @@ class Economy(commands.Cog):
             return
 
     @commands.command()
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def lottery(self, ctx: commands.Context):
         """Participate in the lottery."""
-        prize_money = round(random.randint(100_000, 999_999), -3)
-        ticket_prize = 125 if prize_money < 499_999 else 100
+        prize_money = round(random.randint(1_000_000, 9_999_999), -3)
+        ticket_prize = 125 if prize_money < 4_999_999 else 100
         chance = 0.001275 # 0.1275% chance
         user_id = ctx.author.id
         user_balance = await self.get_balance(user_id)
 
         lottery_embed = Embed(
             title="Lottery",
-            description=f"The prize money is {prize_money} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**"
+            description=f"The prize money is {prize_money:,} coins. \nEach ticket costs {ticket_prize} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**"
         )
         await ctx.send(embed=lottery_embed)
 
@@ -292,25 +292,26 @@ class Economy(commands.Cog):
 
         if n_tickets == 1:
             if random.random() < chance:
-                await ctx.send(f"**You won {prize_money} coins!!!")
+                await ctx.send(f"**You won {prize_money:,} coins!!!")
                 await self.add_money(user_id, prize_money)
                 return
             else:
-                await ctx.send(f"You didn't win {prize_money} coins.")
+                await ctx.send(f"You didn't win {prize_money:,} coins.")
                 return
 
-
+        # multiple tickets
+        win = False
         for _ in range(1, n_tickets):
             if random.random() < chance:
-                await ctx.send(f"**You won {prize_money} coins!!!")
-                await self.add_money(user_id, prize_money)
-                return
-            else:
-                await ctx.send(f"You didn't win {prize_money} coins.")
-                return
+                win = True
         
-
-
+        if win:
+            await ctx.send(f"**You won {prize_money:,} coins!!!")
+            await self.add_money(user_id, prize_money)
+            return
+        else:
+            await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
+            return
     # @commands.command()
     # async def test_randomness(self, ctx: commands.Context):
     #     """a debug command to test random.choice randomness"""
