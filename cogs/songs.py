@@ -72,7 +72,7 @@ class Songs(commands.Cog):
                     self.console.print(f"Error while fetching playlist: {resp.status}")
                     return []
                 
-                data = resp.json()
+                data = await resp.json()
                 songs = []
                 for song in data['data']:
                     title = song['title']
@@ -102,4 +102,4 @@ class Songs(commands.Cog):
                     all_songs.extend(songs)
                 
         self.songs = all_songs
-        ctx.message.add_reaction("👍")
+        await ctx.message.add_reaction("👍")
