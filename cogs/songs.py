@@ -58,7 +58,7 @@ class Songs(commands.Cog):
     async def getsong(self, ctx: commands.Context, index: int):
         """Gets a song based on an index."""
         if index > len(self.songs):
-            await ctx.send(f"I don't have that many songs :sob: (only {len(self.songs)})")
+            await ctx.send(f"I don't have that many songs :sob: (only {len(self.songs):,})")
             return
 
         title, album, artist = self.songs[index]
@@ -107,5 +107,5 @@ class Songs(commands.Cog):
     
     @commands.command(aliases="pl")
     async def playlistlength(self, ctx: commands.Context):
-        """How many songs are in my playlist"""
-        await ctx.send(len(self.songs))
+        """Gives how many songs are in my playlist."""
+        await ctx.send(format(len(self.songs), ","))
