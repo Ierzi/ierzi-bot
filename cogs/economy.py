@@ -129,12 +129,15 @@ class Economy(commands.Cog):
                 await ctx.send("No users found on this page.")
                 return
             
-            message = f"**Economy Leaderboard - Page {page}** \n"
+            ecolb_embed = Embed(
+                title=f"**Economy Leaderboard - Page {page}**",
+                description=""
+            )
             for i, (user_id, balance) in enumerate(rows):
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-                message += f"**{i + 1}. {user.mention}** - {balance} coins \n" 
+                ecolb_embed.description += f"**{i + 1}. {user.mention}** - {balance} coins \n" 
 
-        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none()) 
+        await ctx.send(embed=ecolb_embed, allowed_mentions=discord.AllowedMentions.none()) 
 
     @commands.command()
     async def daily(self, ctx: commands.Context): 
