@@ -264,7 +264,7 @@ class Economy(commands.Cog):
     async def lottery(self, ctx: commands.Context):
         """Participate in the lottery."""
         prize_money = round(random.randint(1000000, 9999999), -3)
-        ticket_price = 125 if prize_money < 4999999 else 100
+        ticket_price = 125 if prize_money > 4999999 else 100
         chance = 0.001275 # 0.1275% chance
         user_id = ctx.author.id
         user_balance = await self.get_balance(user_id)
