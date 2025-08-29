@@ -211,3 +211,8 @@ class Fun(commands.Cog):
         )
         embed.set_image(url=cat_url)
         await ctx.send(embed=embed)
+
+    @commands.command()
+    async def catvid(self, ctx: commands.Context):
+        """Shows a cute cat video :3"""
+        ...
