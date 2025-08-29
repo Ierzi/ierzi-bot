@@ -105,7 +105,7 @@ class Songs(commands.Cog):
         self.songs = all_songs
         await ctx.message.add_reaction("👍")
     
-    @commands.command(aliases="pl")
+    @commands.command(aliases=("pl",))
     async def playlistlength(self, ctx: commands.Context):
         """Gives how many songs are in my playlist."""
         await ctx.send(format(len(self.songs), ","))
