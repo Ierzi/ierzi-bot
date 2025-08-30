@@ -78,8 +78,8 @@ async def on_message(message: Message):
         else:
             now = datetime.now(timezone.utc)
 
-        # Sends a message to guest (for testing purposes this is me rn)
-        guest = await bot.fetch_user(966351518020300841)
+        # Sends a message to guest 
+        guest = await bot.fetch_user(747918143745294356)
         await guest.send("Ludwig is online.")
 
         data['last_online'] = now.isoformat()
