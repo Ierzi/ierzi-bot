@@ -5,12 +5,14 @@ from rich.console import Console
 import random
 import requests
 
+SongData = tuple[str, str, str] # Song title - Album - Artist
+
 class Songs(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
         self.deezer_playlist_url = "https://api.deezer.com/playlist/12419865223/tracks"
-        self.songs = []
+        self.songs: list[SongData] = []
         self.fetch_deezer_playlist()
 
     def get_page(self, index: int):
@@ -29,7 +31,6 @@ class Songs(commands.Cog):
         return songs
 
     def fetch_deezer_playlist(self):
-        # Song title - Album - Artist
         response = requests.get(self.deezer_playlist_url)
         if response.status_code == 200:
             data = response.json()

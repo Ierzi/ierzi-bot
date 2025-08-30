@@ -7,6 +7,7 @@ import os
 import random
 from datetime import datetime, timedelta, timezone
 import asyncio
+from typing import TypedDict
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
@@ -18,6 +19,11 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
+class ShopItem(TypedDict):
+    name: str
+    price: int
+    description: str
+
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
@@ -27,6 +33,12 @@ class Economy(commands.Cog):
 
         # All the jobs and how much they pay
         self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
+
+        # Shop
+        #TODO
+        self.shop_items: list[ShopItem] = [
+            {'name': 'Banana', 'price': 100, 'description': 'Useless item.'}
+        ]
 
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
@@ -316,30 +328,12 @@ class Economy(commands.Cog):
             await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
             return
         
-    # @commands.command()
-    # async def test_randomness(self, ctx: commands.Context):
-    #     """a debug command to test random.choice randomness"""
-    #     opt_1 = 0
-    #     opt_2 = 0
-    #     for _ in range(100):
-    #         choice = random.choice([True, False])
-    #         if choice:
-    #             opt_1 += 1
-    #         else:
-    #             opt_2 += 1
-        
-    #     await ctx.send(f"Test 1 results: {opt_1} option 1, {opt_2} option 2.")
-        
-    #     opt_1 = 0
-    #     opt_2 = 0
-    #     for _ in range(100):
-    #         choice = random.choice([False, True])
-    #         if choice:
-    #             opt_1 += 1
-    #         else:
-    #             opt_2 += 1
-        
-    #     await ctx.send(f"Test 2 results: {opt_1} option 1, {opt_2} option 2.")
+    @commands.command()
+    async def shop(self, ctx: commands.Context):
+        # I have no idea what to add so maybe a shop will help.
+        # Do !buy to buy an item
+        # This only shows the shop
+        ...
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
