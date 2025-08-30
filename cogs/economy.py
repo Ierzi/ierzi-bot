@@ -389,6 +389,25 @@ class Economy(commands.Cog):
         await self.update_items(user_id, item_name, 1)
         await ctx.send(f"You bought 1 {shop_item['name']} for {price} coins!")
 
+    async def fetch_inv(self, user_id: int):
+        self.cur.execute("SELECT item, amount FROM items WHERE user_id = %s", (user_id,))
+        rows = self.cur.fetchall()
+        return rows
+
+    @commands.command(aliases=("inv",))
+    async def inventory(self, ctx: commands.Context):
+        """See the items in your inventory."""
+        inventory_embed = Embed(
+            title=ctx.author.display_name,
+            description="",
+            color=Colour.blue()
+        )
+        inv = await self.fetch_inv(ctx.author.id)
+        for item in inv:
+            inventory_embed.description += f"{item[0]} - {item[1]}\n"
+        
+        await ctx.send(embed=inventory_embed)
+
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
         """Spawns money out of thin air and gives it to someone. Can only be used by Ierzi, obviously."""
