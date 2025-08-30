@@ -42,13 +42,15 @@ class Economy(commands.Cog):
         self.shop_item_names: list[str] = ['banana']
 
     async def update_items(self, user_id: int, item: str, amount: int):
-        self.cur.execute("""INSERT INTO items (user_id, item, amount)
-                            VALUES (%s, %s, %s)
-                            ON CONFLICT (user_id, item)
-                            DO UPDATE SET amount = items.amount + EXCLUDED.amount
-                         """, (user_id, item, amount))
-        
-        conn.commit()
+        self.cur.execute(
+            """INSERT INTO items (user_id, item, amount)
+               VALUES (%s, %s, %s)
+               ON CONFLICT (user_id, item)
+               DO UPDATE SET amount = items.amount + EXCLUDED.amount
+            """,
+            (user_id, item, amount)
+        )
+        self.conn.commit()
         self.console.print(f"Added {amount} {item} to {user_id}'s account")
 
     async def get_balance(self, user_id: int) -> int:
@@ -339,70 +341,70 @@ class Economy(commands.Cog):
             await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
             return
         
-    @commands.command()
-    async def shop(self, ctx: commands.Context):
-        """Shows all the items in the shop."""
-        # I have no idea what to add so maybe a shop will help.
-        # Do !buy to buy an item
-        # This only shows the shop
-        shop_embed = Embed(
-            title="Shop",
-            description="working on a shop rn, this is still a wip\n\n",
-            color=Colour.green()
-        )
-        for shop_item in self.shop_items:
-            shop_embed.description += f'{shop_item["name"]} - {shop_item["description"]} - {shop_item["price"]:,} coins.\n'
+    # @commands.command()
+    # async def shop(self, ctx: commands.Context):
+    #     """Shows all the items in the shop."""
+    #     # I have no idea what to add so maybe a shop will help.
+    #     # Do !buy to buy an item
+    #     # This only shows the shop
+    #     shop_embed = Embed(
+    #         title="Shop",
+    #         description="working on a shop rn, this is still a wip\n\n",
+    #         color=Colour.green()
+    #     )
+    #     for shop_item in self.shop_items:
+    #         shop_embed.description += f'{shop_item["name"]} - {shop_item["description"]} - {shop_item["price"]:,} coins.\n'
         
-        await ctx.send(embed=shop_embed)
+    #     await ctx.send(embed=shop_embed)
     
-    @commands.command()
-    async def buy(self, ctx: commands.Context, item: str):
-        """Buy an item in the shop."""
-        item_name = item.strip().lower()
-        if item_name not in [name.lower() for name in self.shop_item_names]:
-            await ctx.send("Item not in shop.")
-            return
+    # @commands.command()
+    # async def buy(self, ctx: commands.Context, item: str):
+    #     """Buy an item in the shop."""
+    #     item_name = item.strip().lower()
+    #     if item_name not in [name.lower() for name in self.shop_item_names]:
+    #         await ctx.send("Item not in shop.")
+    #         return
         
-        # Get the item price
-        shop_item = None
-        for s_item in self.shop_items:
-            if s_item["name"].lower() == item_name:
-                shop_item = s_item
-                break
+    #     # Get the item price
+    #     shop_item = None
+    #     for s_item in self.shop_items:
+    #         if s_item["name"].lower() == item_name:
+    #             shop_item = s_item
+    #             break
         
-        if shop_item is None:
-            await ctx.send("error???")
-            return
+    #     if shop_item is None:
+    #         await ctx.send("error???")
+    #         return
 
-        price = shop_item["price"]
-        user_id = ctx.author.id
-        balance = await self.get_balance(user_id)
-        if balance < price:
-            await ctx.send("check ur balance cro :broken_heart:")
-            return
+    #     price = shop_item["price"]
+    #     user_id = ctx.author.id
+    #     balance = await self.get_balance(user_id)
+    #     if balance < price:
+    #         await ctx.send("check ur balance cro :broken_heart:")
+    #         return
 
-        await self.add_money(user_id, -price)
-        await self.update_items(user_id, shop_item["name"], 1)
-        await ctx.send(f"You bought 1 {shop_item['name']} for {price} coins!")
+    #     await self.add_money(user_id, -price)
+    #     await self.update_items(user_id, shop_item["name"], 1)
+    #     await ctx.send(f"You bought 1 {shop_item['name']} for {price} coins!")
 
-    async def fetch_inv(self, user_id: int):
-        self.cur.execute("SELECT item, amount FROM items WHERE user_id = %s", (user_id,))
-        rows = self.cur.fetchall()
-        return rows
+    # async def fetch_inv(self, user_id: int):
+    #     self.cur.execute("SELECT item, amount FROM items WHERE user_id = %s", (user_id,))
+    #     rows = self.cur.fetchall()
+    #     return rows
 
-    @commands.command(aliases=("inv",))
-    async def inventory(self, ctx: commands.Context):
-        """See the items in your inventory."""
-        inventory_embed = Embed(
-            title=ctx.author.display_name,
-            description="",
-            color=Colour.blue()
-        )
-        inv = await self.fetch_inv(ctx.author.id)
-        for item in inv:
-            inventory_embed.description += f"{item[0]} - {item[1]}\n"
+    # @commands.command(aliases=("inv",))
+    # async def inventory(self, ctx: commands.Context):
+    #     """See the items in your inventory."""
+    #     inventory_embed = Embed(
+    #         title=ctx.author.display_name,
+    #         description="",
+    #         color=Colour.blue()
+    #     )
+    #     inv = await self.fetch_inv(ctx.author.id)
+    #     for item in inv:
+    #         inventory_embed.description += f"{item[0]} - {item[1]}\n"
         
-        await ctx.send(embed=inventory_embed)
+    #     await ctx.send(embed=inventory_embed)
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
