@@ -19,6 +19,15 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
+cur.execute("""CREATE TABLE IF NOT EXISTS items(
+                id SERIAL PRIMARY KEY,
+                user_id BGINT NOT NULL,
+                item TEXT NOT NULL,
+                amount INT
+            );"""
+)
+conn.commit()
+
 class ShopItem(TypedDict):
     name: str
     price: int
@@ -39,6 +48,9 @@ class Economy(commands.Cog):
         self.shop_items: list[ShopItem] = [
             {'name': 'Banana', 'price': 100, 'description': 'Useless item.'}
         ]
+
+    async def update_items(self, user_id: int, ):
+        ...
 
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
