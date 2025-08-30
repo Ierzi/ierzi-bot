@@ -358,16 +358,21 @@ class Economy(commands.Cog):
     @commands.command()
     async def buy(self, ctx: commands.Context, item: str):
         """Buy an item in the shop."""
-        if not item.strip().lower() in self.shop_item_names:
+        item_name = item.strip().lower()
+        if item_name not in [name.lower() for name in self.shop_item_names]:
             await ctx.send("Item not in shop.")
             return
         
         # Get the item price
-        item_name = item.strip().lower()
-        for item in self.shop_items:
-            if item["name"] == item_name:
-                shop_item = item
+        shop_item = None
+        for s_item in self.shop_items:
+            if s_item["name"].lower() == item_name:
+                shop_item = s_item
                 break
+        
+        if shop_item is None:
+            await ctx.send("error???")
+            return
 
         price = shop_item["price"]
         user_id = ctx.author.id
@@ -377,7 +382,7 @@ class Economy(commands.Cog):
             return
 
         await self.add_money(user_id, -price)
-        await self.update_items(user_id, item_name, 1)
+        await self.update_items(user_id, shop_item["name"], 1)
         await ctx.send(f"You bought 1 {shop_item['name']} for {price} coins!")
 
     async def fetch_inv(self, user_id: int):
