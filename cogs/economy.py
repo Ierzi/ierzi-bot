@@ -21,7 +21,7 @@ cur = conn.cursor()
 
 cur.execute("""CREATE TABLE IF NOT EXISTS items(
                 id SERIAL PRIMARY KEY,
-                user_id BGINT NOT NULL,
+                user_id BIGINT NOT NULL,
                 item TEXT NOT NULL,
                 amount INT
             );"""
