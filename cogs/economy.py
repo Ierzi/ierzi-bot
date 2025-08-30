@@ -7,7 +7,7 @@ import os
 import random
 from datetime import datetime, timedelta, timezone
 import asyncio
-from typing import TypedDict
+from typing import TypedDict, TypeVar
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
@@ -49,8 +49,15 @@ class Economy(commands.Cog):
             {'name': 'Banana', 'price': 100, 'description': 'Useless item.'}
         ]
 
-    async def update_items(self, user_id: int, ):
-        ...
+    async def update_items(self, user_id: int, item: str, amount: int):
+        self.cur.execute("""INSERT INTO items (user_id, item, amount)
+                            VALUES (%s, %s, %s)
+                            ON CONFLICT (user_id, item)
+                            DO UPDATE SET amount = items.quantity + EXCLUDED.quantity
+                         """, (user_id, item, amount))
+        
+        conn.commit()
+        self.console.print(f"Added {amount} {item} to {user_id}'s account")
 
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
@@ -345,7 +352,15 @@ class Economy(commands.Cog):
         # I have no idea what to add so maybe a shop will help.
         # Do !buy to buy an item
         # This only shows the shop
-        ...
+        shop_embed = Embed(
+            title="Shop",
+            description="working on a shop rn, this is still a wip\n\n",
+            color=Colour.green()
+        )
+        for shop_item in self.shop_items:
+            shop_embed.description += f'{shop_item["name"]} - {shop_item["description"]} - {shop_item["price"]:,}\n'
+        
+        await ctx.send(embed=shop_embed)
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
