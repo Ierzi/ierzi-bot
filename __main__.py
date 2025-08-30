@@ -32,8 +32,8 @@ cur = conn.cursor()
 cur.execute("""CREATE TABLE IF NOT EXISTS other(
             id SERIAL PRIMARY KEY,
             user_id BIGINT UNIQUE,
-            json_data JSON,
-            );""")
+            json_data JSON
+            )""")
 
 conn.commit()
 
