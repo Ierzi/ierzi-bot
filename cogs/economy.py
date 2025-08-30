@@ -45,7 +45,7 @@ class Economy(commands.Cog):
         self.cur.execute("""INSERT INTO items (user_id, item, amount)
                             VALUES (%s, %s, %s)
                             ON CONFLICT (user_id, item)
-                            DO UPDATE SET amount = items.quantity + EXCLUDED.quantity
+                            DO UPDATE SET amount = items.amount + EXCLUDED.amount
                          """, (user_id, item, amount))
         
         conn.commit()
