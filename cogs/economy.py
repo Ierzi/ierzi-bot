@@ -18,7 +18,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
@@ -277,7 +276,7 @@ class Economy(commands.Cog):
         await ctx.send(embed=lottery_embed)
 
         def check(m: discord.Message):
-            return m.author.id == user_id and m.channel == ctx.channel and m.content.lower() in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10"]
+            return m.author.id == user_id and m.channel == ctx.channel and m.content.lower() in [str(i) for i in range(10)]
         
         try:
             message = await self.bot.wait_for('message', check=check, timeout=30.0)
@@ -316,6 +315,7 @@ class Economy(commands.Cog):
         else:
             await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
             return
+        
     # @commands.command()
     # async def test_randomness(self, ctx: commands.Context):
     #     """a debug command to test random.choice randomness"""
