@@ -46,8 +46,9 @@ class Economy(commands.Cog):
         # Shop
         #TODO
         self.shop_items: list[ShopItem] = [
-            {'name': 'Banana', 'price': 100, 'description': 'Useless item.'}
+            {'name': 'Banana', 'price': 100, 'description': 'useless item'}
         ]
+        self.shop_item_names: list[str] = ['banana']
 
     async def update_items(self, user_id: int, item: str, amount: int):
         self.cur.execute("""INSERT INTO items (user_id, item, amount)
@@ -349,6 +350,7 @@ class Economy(commands.Cog):
         
     @commands.command()
     async def shop(self, ctx: commands.Context):
+        """Shows all the items in the shop."""
         # I have no idea what to add so maybe a shop will help.
         # Do !buy to buy an item
         # This only shows the shop
@@ -358,9 +360,34 @@ class Economy(commands.Cog):
             color=Colour.green()
         )
         for shop_item in self.shop_items:
-            shop_embed.description += f'{shop_item["name"]} - {shop_item["description"]} - {shop_item["price"]:,}\n'
+            shop_embed.description += f'{shop_item["name"]} - {shop_item["description"]} - {shop_item["price"]:,} coins.\n'
         
         await ctx.send(embed=shop_embed)
+    
+    @commands.command()
+    async def buy(self, ctx: commands.Context, item: str):
+        """Buy an item in the shop."""
+        if not item.strip().lower() in self.shop_item_names:
+            await ctx.send("Item not in shop.")
+            return
+        
+        # Get the item price
+        item_name = item.strip().lower()
+        for item in self.shop_items:
+            if item["name"] == item_name:
+                shop_item = item
+                break
+
+        price = shop_item["price"]
+        user_id = ctx.author.id
+        balance = await self.get_balance(user_id)
+        if balance < price:
+            await ctx.send("check ur balance cro :broken_heart:")
+            return
+
+        await self.add_money(user_id, -price)
+        await self.update_items(user_id, item_name, 1)
+        await ctx.send(f"You bought 1 {shop_item['name']} for {price} coins!")
 
     @commands.command()
     async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
