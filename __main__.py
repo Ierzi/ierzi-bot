@@ -1,5 +1,5 @@
 import discord
-from discord import ButtonStyle, Interaction, Embed
+from discord import ButtonStyle, Interaction, Embed, Message
 from discord.ext import commands
 from discord.ui import Button, View
 from rich.console import Console
@@ -13,8 +13,29 @@ from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.songs import Songs
 import time
+import psycopg2
+import json
+from datetime import datetime, timezone, timedelta
 
 console = Console()
+
+conn = psycopg2.connect(
+    host=os.getenv("PGHOST"),
+    database=os.getenv("PGDATABASE"),
+    user=os.getenv("PGUSER"),
+    password=os.getenv("PGPASSWORD"),
+    port=os.getenv("PGPORT")
+)
+
+cur = conn.cursor()
+
+cur.execute("""CREATE TABLE IF NOT EXISTS other(
+            id SERIAL PRIMARY KEY,
+            user_id BIGINT UNIQUE,
+            json_data JSON,
+            );""")
+
+conn.commit()
 
 load_dotenv()
 token = os.getenv("TOKEN")
@@ -28,6 +49,50 @@ bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
     console.print(f"Logged in as {bot.user}")
+
+# Sends a message to Guest when ludwig is online
+@bot.event
+async def on_message(message: Message):
+    if message.author.id == 893298676003393536: # ludwig
+        # See if we should send a message
+        cur.execute("SELECT json_data FROM other WHERE user_id = %s", (893298676003393536,))
+        row = cur.fetchone()
+        data = {}
+        if row and row[0]:
+            # Check last online presence
+            json_data = row[0]
+            data = json.loads(json_data)
+            last_online_str = data['last_online']
+            now = datetime.now(timezone.utc)
+            if last_online_str:
+                try:
+                    last_online = datetime.fromisoformat(last_online_str)
+                except Exception:
+                    await bot.process_commands(message)
+                    return
+                
+                hour = timedelta(hours=1)
+                if now - last_online < hour:
+                    await bot.process_commands(message)
+                    return
+        else:
+            now = datetime.now(timezone.utc)
+
+        # Sends a message to guest (for testing purposes this is me rn)
+        guest = await bot.fetch_user(966351518020300841)
+        await guest.send("Ludwig is online.")
+
+        data['last_online'] = now.isoformat()
+        return_json_data = json.dumps(data, default=str)
+        cur.execute("""INSERT INTO other (user_id, json_data) 
+                    VALUES (%s, %s) 
+                    ON CONFLICT (user_id) 
+                    DO UPDATE SET json_data = EXCLUDED.json_data
+                    """, (893298676003393536, return_json_data))
+        conn.commit()
+
+    await bot.process_commands(message)
+
 
 @bot.event
 async def on_command_error(ctx: commands.Context, error):
