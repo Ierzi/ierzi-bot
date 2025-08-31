@@ -29,6 +29,19 @@ class AI(commands.Cog):
         )
 
         output = response.choices[0].message.content
+        outputs = []
+        if len(output) > 4000:
+            current_split = ""
+            for char in output:
+                current_split += char
+                if len(current_split) > 1850 and char == " ":
+                    outputs.append(current_split)
+                    current_split = ""
+
+        if outputs:
+            for mess in outputs:
+                await ctx.send(mess, allowed_mentions=discord.AllowedMentions.none())
+                await asyncio.sleep(0.2)
         message = f"{ctx.author.mention} asked: {text}\n\nAI: {output}"
             
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
