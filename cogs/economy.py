@@ -258,7 +258,7 @@ class Economy(commands.Cog):
     
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
-    async def dicebet(self, ctx: commands.Context, amount: int, guess: int):
+    async def dicebet(self, ctx: commands.Context, amount: int):
         """Roll a 6 sided dice, guess the correct side to win."""
         user_id = ctx.author.id
         balance = await self.get_balance(user_id)
@@ -272,6 +272,8 @@ class Economy(commands.Cog):
             await ctx.send("if you just wanna roll a dice use !roll :broken_heart:")
             return
 
+        # I dont wanna write my whole code again so guess is a fixed value
+        guess = 2
         correct_side = random.randint(1, 6)
         prize = amount * 6
         if correct_side == guess:
@@ -279,7 +281,7 @@ class Economy(commands.Cog):
             await self.add_money(user_id, prize)
             return
         else:
-            await ctx.send(f"-{amount} coins. The correct side was {correct_side}")
+            await ctx.send(f"You guessed the wrong side. -{amount} coins.")
             await self.add_money(user_id, -amount)
             return
 
