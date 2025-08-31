@@ -53,6 +53,7 @@ async def on_ready():
 # Sends a message to Guest when ludwig is online
 @bot.event
 async def on_message(message: Message):
+    await bot.process_commands(message)
     if message.author.id == 893298676003393536: # ludwig
         # See if we should send a message
         cur.execute("SELECT json_data FROM other WHERE user_id = %s", (893298676003393536,))
@@ -68,12 +69,10 @@ async def on_message(message: Message):
                 try:
                     last_online = datetime.fromisoformat(last_online_str)
                 except Exception:
-                    await bot.process_commands(message)
                     return
                 
                 hour = timedelta(hours=1)
                 if now - last_online < hour:
-                    await bot.process_commands(message)
                     return
         else:
             now = datetime.now(timezone.utc)
@@ -91,7 +90,6 @@ async def on_message(message: Message):
                     """, (893298676003393536, return_json_data))
         conn.commit()
 
-    await bot.process_commands(message)
 
 
 @bot.event
