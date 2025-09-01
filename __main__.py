@@ -228,6 +228,9 @@ async def fill_embeds():
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
+                if command_name in ["download", "export", "import"]:
+                    # Testing commands to ignore
+                    continue
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
@@ -325,15 +328,34 @@ async def help(ctx: commands.Context, category: str = None):
 #     commands = await get_commands()
 #     await ctx.send(commands)
 
+
 # Exporting and importing database
+# Using Railway's volumes
+VOLUME_PATH = "/data"
+
 @bot.command()
 async def export(ctx: commands.Context):
+    """Ignore this"""
     # Marriages Table
     cur.execute("SELECT * FROM marriages")
     collums = [str(desc.name) for desc in cur.description]
     rows = [dict(zip(collums, row)) for row in cur.fetchall()]
-    console.print(rows)
+    # Saves it into a railway volume
+    with open(os.path.join(VOLUME_PATH, "export.txt")) as file:
+        file.write(str(rows))
+
     await ctx.message.add_reaction("👍")
+
+@bot.command()
+async def download(ctx: commands.Context):
+    """Ignore this"""
+    export_file = os.path.join(VOLUME_PATH, "export.txt")
+    # If the file doesnt exist
+    if not os.path.exists(export_file):
+        await ctx.send("export first")
+        return
+    
+    await ctx.send(file=discord.File(export_file))
 
 
 async def main():
