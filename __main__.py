@@ -90,8 +90,7 @@ async def on_message(message: Message):
                     """, (893298676003393536, return_json_data))
         conn.commit()
 
-
-
+# Error handling
 @bot.event
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
@@ -99,6 +98,7 @@ async def on_command_error(ctx: commands.Context, error):
     else:
         console.print(f"Ignored error in {ctx.command}: {error} ")
 
+# Cog loading
 async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
@@ -324,6 +324,17 @@ async def help(ctx: commands.Context, category: str = None):
 #     """Ignore this"""
 #     commands = await get_commands()
 #     await ctx.send(commands)
+
+# Exporting and importing database
+@bot.command()
+async def export(ctx: commands.Context):
+    # Marriages Table
+    cur.execute("SELECT * FROM marriages")
+    collums = [str(desc.name) for desc in cur.description]
+    rows = [dict(zip(collums, row)) for row in cur.fetchall()]
+    console.print(rows)
+    await ctx.message.add_reaction("👍")
+
 
 async def main():
     await load_cogs()
