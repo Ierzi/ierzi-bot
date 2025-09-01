@@ -55,8 +55,11 @@ async def on_ready():
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.send(f"Try again in {round(error.retry_after, 2)} seconds.")
+    if isinstance(error, commands.CommandNotFound):
+        # useless error
+        return
     else:
-        console.print(f"Ignored error in {ctx.command}: {error} ")
+        console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
 # Cog loading
 async def load_cogs():
