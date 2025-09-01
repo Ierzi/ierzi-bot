@@ -50,46 +50,6 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
     console.print(f"Logged in as {bot.user}")
 
-# Sends a message to Guest when ludwig is online
-@bot.event
-async def on_message(message: Message):
-    await bot.process_commands(message)
-    if message.author.id == 893298676003393536: # ludwig
-        # See if we should send a message
-        cur.execute("SELECT json_data FROM other WHERE user_id = %s", (893298676003393536,))
-        row = cur.fetchone()
-        data = {}
-        if row and row[0]:
-            # Check last online presence
-            json_data = row[0]
-            data = json.loads(json_data)
-            last_online_str = data['last_online']
-            now = datetime.now(timezone.utc)
-            if last_online_str:
-                try:
-                    last_online = datetime.fromisoformat(last_online_str)
-                except Exception:
-                    return
-                
-                hour = timedelta(hours=1)
-                if now - last_online < hour:
-                    return
-        else:
-            now = datetime.now(timezone.utc)
-
-        # Sends a message to guest 
-        guest = await bot.fetch_user(747918143745294356)
-        await guest.send("Ludwig is online.")
-
-        data['last_online'] = now.isoformat()
-        return_json_data = json.dumps(data, default=str)
-        cur.execute("""INSERT INTO other (user_id, json_data) 
-                    VALUES (%s, %s) 
-                    ON CONFLICT (user_id) 
-                    DO UPDATE SET json_data = EXCLUDED.json_data
-                    """, (893298676003393536, return_json_data))
-        conn.commit()
-
 # Error handling
 @bot.event
 async def on_command_error(ctx: commands.Context, error):
