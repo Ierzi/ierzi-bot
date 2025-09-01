@@ -333,22 +333,54 @@ async def help(ctx: commands.Context, category: str = None):
 # Using Railway's volumes
 VOLUME_PATH = "/data"
 
-@bot.command()
-async def export(ctx: commands.Context):
-    """Ignore this"""
-    # Marriages Table
-    cur.execute("SELECT * FROM marriages")
-    collums = [str(desc.name) for desc in cur.description]
-    rows = [dict(zip(collums, row)) for row in cur.fetchall()]
-    # Saves it into a railway volume
-    with open(os.path.join(VOLUME_PATH, "export.txt"), "w") as file:
-        file.write(str(rows))
+# Marriage dict is formatted like this
+# {'id': 5, 'user1_id': 1206615811792576614, 'user2_id': 1387497689259835563}
 
+
+@bot.command()
+async def export(ctx: commands.Context, table: str):
+    """Ignore this"""
+    rows = None
+    table_name = table.lower()
+    # Marriages Table
+    if table_name == "marriages":
+        cur.execute("SELECT * FROM marriages")
+        collums = [str(desc.name) for desc in cur.description]
+        rows = [dict(zip(collums, row)) for row in cur.fetchall()]
+
+        with open(os.path.join(VOLUME_PATH, "export_marriages.txt"), "w") as file:
+            file.write(str(rows))
+
+    # Economy Table
+    elif table_name == "economy":
+        cur.execute("SELECT * FROM economy")
+        collums = [str(desc.name) for desc in cur.description]
+        rows = [dict(zip(collums, row)) for row in cur.fetchall()]
+
+        with open(os.path.join(VOLUME_PATH, "export_economy.txt"), "w") as file:
+            file.write(str(rows))
+
+    # Im removing the items table
+
+    # Other Table
+    elif table_name == "other":
+        cur.execute("SELECT * FROM other")
+        collums = [str(desc.name) for desc in cur.description]
+        rows = [dict(zip(collums, row)) for row in cur.fetchall()]
+
+        with open(os.path.join(VOLUME_PATH, "export_other.txt"), "w") as file:
+            file.write(str(rows))
+    
     await ctx.message.add_reaction("👍")
 
 @bot.command()
-async def download(ctx: commands.Context):
+async def download(ctx: commands.Context, table: str):
     """Ignore this"""
+    table_name = table.lower()
+    if table_name not in ["marriages", "economy", "other"]:
+        await ctx.send("invalid table name")
+        return
+    
     export_file = os.path.join(VOLUME_PATH, "export.txt")
     # If the file doesnt exist
     if not os.path.exists(export_file):
