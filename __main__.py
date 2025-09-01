@@ -341,7 +341,7 @@ async def export(ctx: commands.Context):
     collums = [str(desc.name) for desc in cur.description]
     rows = [dict(zip(collums, row)) for row in cur.fetchall()]
     # Saves it into a railway volume
-    with open(os.path.join(VOLUME_PATH, "export.txt")) as file:
+    with open(os.path.join(VOLUME_PATH, "export.txt"), "w") as file:
         file.write(str(rows))
 
     await ctx.message.add_reaction("👍")
