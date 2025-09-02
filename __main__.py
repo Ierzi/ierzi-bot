@@ -305,6 +305,10 @@ async def export(ctx: commands.Context, table: str):
     """Ignore this"""
     rows = None
     table_name = table.lower()
+    if table_name not in ["marriages", "economy", "other"]:
+        await ctx.send("invalid table name")
+        return
+    
     # Marriages Table
     if table_name == "marriages":
         cur.execute("SELECT * FROM marriages")
@@ -344,7 +348,7 @@ async def download(ctx: commands.Context, table: str):
         await ctx.send("invalid table name")
         return
     
-    export_file = os.path.join(VOLUME_PATH, "export.txt")
+    export_file = os.path.join(VOLUME_PATH, f"export_{table_name}.txt")
     # If the file doesnt exist
     if not os.path.exists(export_file):
         await ctx.send("export first")
