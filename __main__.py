@@ -360,13 +360,15 @@ async def load(ctx: commands.Context, table: str):
     
     try:
         # Parse the string representation of a list of dictionaries
-        data = ast.literal_eval(data_str)
+        # Since the data contains datetime objects, we need to use eval() with datetime in scope
+        import datetime
+        data = eval(data_str, {"__builtins__": {}, "datetime": datetime})
         
         if not isinstance(data, list):
             await ctx.send("Data should be a list of dictionaries")
             return
             
-    except (ValueError, SyntaxError) as e:
+    except (ValueError, SyntaxError, NameError) as e:
         await ctx.send(f"Error parsing data: {e}")
         return
 
@@ -382,8 +384,8 @@ async def load(ctx: commands.Context, table: str):
 
     cur.execute("""CREATE TABLE IF NOT EXISTS marriages (
         id SERIAL PRIMARY KEY,
-        user1_id BIGINT REFERENCES users(user_id),
-        user2_id BIGINT REFERENCES users(user_id)
+        user1_id REFERENCES users(user_id),
+        user2_id REFERENCES users(user_id)
     );""")
     conn.commit()
 
