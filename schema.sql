@@ -6,8 +6,8 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     balance INT DEFAULT 0,
-    last_daily TIMESTAMPTZ,
-    last_worked TIMESTAMPTZ
+    last_daily TIMESTAMP,
+    last_worked TIMESTAMP
 );
 
 

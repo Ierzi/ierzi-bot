@@ -16,6 +16,7 @@ import time
 import psycopg2
 import json
 from datetime import datetime, timezone, timedelta
+import ast
 
 console = Console()
 
@@ -29,13 +30,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-cur.execute("""CREATE TABLE IF NOT EXISTS other(
-            id SERIAL PRIMARY KEY,
-            user_id BIGINT UNIQUE,
-            json_data JSON
-            )""")
-
-conn.commit()
 
 load_dotenv()
 token = os.getenv("TOKEN")
@@ -191,7 +185,7 @@ async def fill_embeds():
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
-                if command_name in ["download", "export", "import"]:
+                if command_name in ["download", "export", "load"]:
                     # Testing commands to ignore
                     continue
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
@@ -305,7 +299,7 @@ async def export(ctx: commands.Context, table: str):
     """Ignore this"""
     rows = None
     table_name = table.lower()
-    if table_name not in ["marriages", "economy", "other"]:
+    if table_name not in ["marriages", "economy"]:
         await ctx.send("invalid table name")
         return
     
@@ -329,14 +323,6 @@ async def export(ctx: commands.Context, table: str):
 
     # Im removing the items table
 
-    # Other Table
-    elif table_name == "other":
-        cur.execute("SELECT * FROM other")
-        collums = [str(desc.name) for desc in cur.description]
-        rows = [dict(zip(collums, row)) for row in cur.fetchall()]
-
-        with open(os.path.join(VOLUME_PATH, "export_other.txt"), "w") as file:
-            file.write(str(rows))
     
     await ctx.message.add_reaction("👍")
 
@@ -344,7 +330,7 @@ async def export(ctx: commands.Context, table: str):
 async def download(ctx: commands.Context, table: str):
     """Ignore this"""
     table_name = table.lower()
-    if table_name not in ["marriages", "economy", "other"]:
+    if table_name not in ["marriages", "economy"]:
         await ctx.send("invalid table name")
         return
     
@@ -356,6 +342,91 @@ async def download(ctx: commands.Context, table: str):
     
     await ctx.send(file=discord.File(export_file))
 
+@bot.command()
+async def load(ctx: commands.Context, table: str):
+    """Load dictionary data from attachment into database"""
+    table_name = table.lower()
+    if table_name not in ["marriages", "economy"]:
+        await ctx.send("invalid table name")
+        return
+    
+    if not ctx.message.attachments:
+        await ctx.send("Please attach a file with the data to import")
+        return
+        
+    attachment = ctx.message.attachments[0]
+    data_bytes = await attachment.read()
+    data_str = data_bytes.decode()
+    
+    try:
+        # Parse the string representation of a list of dictionaries
+        data = ast.literal_eval(data_str)
+        
+        if not isinstance(data, list):
+            await ctx.send("Data should be a list of dictionaries")
+            return
+            
+    except (ValueError, SyntaxError) as e:
+        await ctx.send(f"Error parsing data: {e}")
+        return
+
+    # Create the tables based on schema.sql
+    cur.execute("""CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        user_id BIGINT NOT NULL,
+        balance INT DEFAULT 0,
+        last_daily TIMESTAMP,
+        last_worked TIMESTAMP
+    );""")
+    conn.commit()
+
+    cur.execute("""CREATE TABLE IF NOT EXISTS marriages (
+        id SERIAL PRIMARY KEY,
+        user1_id BIGINT REFERENCES users(user_id),
+        user2_id BIGINT REFERENCES users(user_id)
+    );""")
+    conn.commit()
+
+    # Load data based on table type
+    try:
+        if table_name == "economy":
+            # Clear existing data
+            cur.execute("DELETE FROM users")
+            
+            # Insert economy data into users table
+            for record in data:
+                cur.execute("""
+                    INSERT INTO users (user_id, balance, last_daily, last_worked) 
+                    VALUES (%s, %s, %s, %s)
+                """, (
+                    record['user_id'],
+                    record.get('balance', 0),
+                    record.get('last_daily'),
+                    record.get('last_worked')
+                ))
+                
+        elif table_name == "marriages":
+            # Clear existing data
+            cur.execute("DELETE FROM marriages")
+            
+            # Insert marriage data
+            for record in data:
+                cur.execute("""
+                    INSERT INTO marriages (user1_id, user2_id) 
+                    VALUES (%s, %s)
+                """, (
+                    record['user1_id'],
+                    record['user2_id']
+                ))
+                
+        
+        conn.commit()
+        await ctx.send(f"Successfully loaded {len(data)} records into {table_name} table")
+        
+    except Exception as e:
+        conn.rollback()
+        await ctx.send(f"Error loading data: {e}")
+    
 
 async def main():
     await load_cogs()
