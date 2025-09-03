@@ -373,7 +373,11 @@ async def load(ctx: commands.Context, table: str):
         return
 
     # Create the tables based on schema.sql
-    cur.execute("""CREATE TABLE IF NOT EXISTS users (
+    # Drop and recreate tables to ensure proper constraints
+    cur.execute("DROP TABLE IF EXISTS marriages CASCADE;")
+    cur.execute("DROP TABLE IF EXISTS users CASCADE;")
+    
+    cur.execute("""CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         user_id BIGINT NOT NULL UNIQUE,
         balance INT DEFAULT 0,
@@ -382,7 +386,7 @@ async def load(ctx: commands.Context, table: str):
     );""")
     conn.commit()
 
-    cur.execute("""CREATE TABLE IF NOT EXISTS marriages (
+    cur.execute("""CREATE TABLE marriages (
         id SERIAL PRIMARY KEY,
         user1_id BIGINT REFERENCES users(user_id),
         user2_id BIGINT REFERENCES users(user_id)
