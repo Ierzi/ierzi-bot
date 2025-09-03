@@ -41,18 +41,6 @@ class Economy(commands.Cog):
         ]
         self.shop_item_names: list[str] = ['banana']
 
-    async def update_items(self, user_id: int, item: str, amount: int):
-        self.cur.execute(
-            """INSERT INTO items (user_id, item, amount)
-               VALUES (%s, %s, %s)
-               ON CONFLICT (user_id, item)
-               DO UPDATE SET amount = items.amount + EXCLUDED.amount
-            """,
-            (user_id, item, amount)
-        )
-        self.conn.commit()
-        self.console.print(f"Added {amount} {item} to {user_id}'s account")
-
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
@@ -91,7 +79,6 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         self.cur.execute("SELECT last_worked FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
-        self.console.print(row)
 
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
@@ -169,7 +156,6 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         self.cur.execute("SELECT last_daily FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
-        self.console.print(row)
 
         cooldown = timedelta(hours=24)
         now = datetime.now(timezone.utc)
@@ -185,18 +171,14 @@ class Economy(commands.Cog):
             if last_daily.tzinfo is None:
                 last_daily = last_daily.replace(tzinfo=timezone.utc)
 
-            self.console.print(now - last_daily)
-            self.console.print((now - last_daily) < cooldown)
             if (now - last_daily) < cooldown: 
                 # if now - last_daily is less than the cooldown, (for example, user claimed 2 hours ago and 2 < 6)
                 # they can't work yet
                 # calculate the remaining time
                 time_remaining = cooldown - (now - last_daily) 
-                self.console.print(time_remaining)
                 # now just put the time into readable shit
                 hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                self.console.print(f"time shit {hours, minutes, seconds}")
                 await ctx.send(f"You already claimed your daily! \nYou can claim it in {hours} hours, {minutes} minutes and {seconds} seconds.")
                 return
 
