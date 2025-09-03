@@ -54,21 +54,21 @@ class Economy(commands.Cog):
         self.console.print(f"Added {amount} {item} to {user_id}'s account")
 
     async def get_balance(self, user_id: int) -> int:
-        self.cur.execute("SELECT balance FROM economy WHERE user_id = %s", (user_id,))
+        self.cur.execute("SELECT balance FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
         if row:
             return row[0]
         else:
-            self.cur.execute("INSERT INTO economy (user_id, balance) VALUES (%s, %s)", (user_id, 0))
+            self.cur.execute("INSERT INTO users (user_id, balance) VALUES (%s, %s)", (user_id, 0))
             self.conn.commit()
             return 0
     
     async def add_money(self, user_id: int, amount: int):
         cur.execute("""
-            INSERT INTO economy (user_id, balance)
+            INSERT INTO users (user_id, balance)
             VALUES (%s, %s)
             ON CONFLICT (user_id)
-            DO UPDATE SET balance = economy.balance + EXCLUDED.balance;
+            DO UPDATE SET balance = users.balance + EXCLUDED.balance;
         """, (user_id, amount)
         )
         conn.commit() #lowk had no idea how to make this so i asked chatgpt
@@ -89,7 +89,7 @@ class Economy(commands.Cog):
     async def work(self, ctx: commands.Context):
         """Work to gain some coins."""
         user_id = ctx.author.id
-        self.cur.execute("SELECT last_worked FROM economy WHERE user_id = %s", (user_id,))
+        self.cur.execute("SELECT last_worked FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
         self.console.print(row)
 
@@ -123,10 +123,10 @@ class Economy(commands.Cog):
         job, raw_payment = random.choice(self.jobs)
         payment = random.randint(raw_payment - 50, raw_payment + 50) # randomize the payement
         self.cur.execute("""
-            INSERT INTO economy (user_id, balance, last_worked)
+            INSERT INTO users (user_id, balance, last_worked)
             VALUES (%s, %s, %s)
             ON CONFLICT (user_id)
-            DO UPDATE SET balance = economy.balance + EXCLUDED.balance, last_worked = EXCLUDED.last_worked;
+            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_worked = EXCLUDED.last_worked;
         """, (user_id, payment, now)
         )
         conn.commit()
@@ -142,7 +142,7 @@ class Economy(commands.Cog):
         async with ctx.typing():
             offset = (page - 1) * 10
             self.cur.execute("""
-                SELECT user_id, balance FROM economy 
+                SELECT user_id, balance FROM users 
                 ORDER BY balance DESC
                 OFFSET %s
                 LIMIT 10  
@@ -167,7 +167,7 @@ class Economy(commands.Cog):
     async def daily(self, ctx: commands.Context): 
         """Get a daily reward."""
         user_id = ctx.author.id
-        self.cur.execute("SELECT last_daily FROM economy WHERE user_id = %s", (user_id,))
+        self.cur.execute("SELECT last_daily FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
         self.console.print(row)
 
@@ -203,10 +203,10 @@ class Economy(commands.Cog):
         # If the user can work, give them a random job and pay them
         payment = 1250
         self.cur.execute("""
-            INSERT INTO economy (user_id, balance, last_daily)
+            INSERT INTO users (user_id, balance, last_daily)
             VALUES (%s, %s, %s)
             ON CONFLICT (user_id)
-            DO UPDATE SET balance = economy.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
+            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
         """, (user_id, payment, now)
         )
         conn.commit()
