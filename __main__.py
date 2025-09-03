@@ -376,6 +376,9 @@ async def load(ctx: commands.Context, table: str):
     # Drop and recreate tables to ensure proper constraints
     cur.execute("DROP TABLE IF EXISTS marriages CASCADE;")
     cur.execute("DROP TABLE IF EXISTS users CASCADE;")
+    cur.execute("DROP TABLE IF EXISTS other CASCADE;")
+    cur.execute("DROP TABLE IF EXISTS items CASCADE;")
+    cur.execute("DROP TABLE IF EXISTS economy CASCADE;")    
     
     cur.execute("""CREATE TABLE users (
         id SERIAL PRIMARY KEY,
