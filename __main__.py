@@ -415,15 +415,37 @@ async def load(ctx: commands.Context, table: str):
             # Clear existing data
             cur.execute("DELETE FROM marriages")
             
-            # Insert marriage data
+            # Insert marriage data, but first ensure users exist
+            missing_users = set()
             for record in data:
+                user1_id = record['user1_id']
+                user2_id = record['user2_id']
+                
+                # Check if users exist, if not create them with default values
+                cur.execute("SELECT user_id FROM users WHERE user_id = %s", (user1_id,))
+                if not cur.fetchone():
+                    cur.execute("""
+                        INSERT INTO users (user_id, balance, last_daily, last_worked) 
+                        VALUES (%s, 0, NULL, NULL) ON CONFLICT (user_id) DO NOTHING
+                    """, (user1_id,))
+                    missing_users.add(user1_id)
+                
+                cur.execute("SELECT user_id FROM users WHERE user_id = %s", (user2_id,))
+                if not cur.fetchone():
+                    cur.execute("""
+                        INSERT INTO users (user_id, balance, last_daily, last_worked) 
+                        VALUES (%s, 0, NULL, NULL) ON CONFLICT (user_id) DO NOTHING
+                    """, (user2_id,))
+                    missing_users.add(user2_id)
+                
+                # Now insert the marriage
                 cur.execute("""
                     INSERT INTO marriages (user1_id, user2_id) 
                     VALUES (%s, %s)
-                """, (
-                    record['user1_id'],
-                    record['user2_id']
-                ))
+                """, (user1_id, user2_id))
+            
+            if missing_users:
+                await ctx.send(f"Created {len(missing_users)} missing users with default values: {missing_users}")
                 
         
         conn.commit()
