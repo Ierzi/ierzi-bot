@@ -409,9 +409,9 @@ async def load(ctx: commands.Context, table: str):
                     VALUES (%s, %s, %s, %s)
                 """, (
                     record['user_id'],
-                    record.get('balance', 0),
-                    record.get('last_daily'),
-                    record.get('last_worked')
+                    record['balance'],
+                    record['last_daily'],
+                    record['last_worked']
                 ))
                 
         elif table_name == "marriages":
