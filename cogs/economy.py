@@ -7,7 +7,7 @@ import os
 import random
 from datetime import datetime, timedelta, timezone
 import asyncio
-from typing import TypedDict, TypeVar
+from typing import TypedDict
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
@@ -409,8 +409,9 @@ class Economy(commands.Cog):
     #     await ctx.send(embed=inventory_embed)
 
     @commands.command()
-    async def give_money(self, ctx: commands.Context, user: discord.Member, amount: int):
+    async def give_money(self, ctx: commands.Context, user: discord.Member | int, amount: int):
         """Spawns money out of thin air and gives it to someone. Can only be used by Ierzi, obviously."""
+        # user or user id 
         if ctx.author.id != 966351518020300841:
             await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
             return
@@ -421,5 +422,14 @@ class Economy(commands.Cog):
             await ctx.send("how much?")
             return
         
-        await self.add_money(user.id, amount)
-        await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
+        if isinstance(user, discord.Member):
+            await self.add_money(user.id, amount)
+            await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
+        if isinstance(user, int):
+            # user id
+            await self.add_money(user, amount)
+            profile = self.bot.get_user(user) or await self.bot.fetch_user(user)
+            await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
+            return
