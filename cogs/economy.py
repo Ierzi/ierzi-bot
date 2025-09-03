@@ -431,5 +431,5 @@ class Economy(commands.Cog):
             # user id
             await self.add_money(user, amount)
             profile = self.bot.get_user(user) or await self.bot.fetch_user(user)
-            await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"Successfully added {amount} coins to {profile.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
             return
