@@ -375,7 +375,7 @@ async def load(ctx: commands.Context, table: str):
     # Create the tables based on schema.sql
     cur.execute("""CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
-        user_id BIGINT NOT NULL,
+        user_id BIGINT NOT NULL UNIQUE,
         balance INT DEFAULT 0,
         last_daily TIMESTAMP,
         last_worked TIMESTAMP
