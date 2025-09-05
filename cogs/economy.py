@@ -176,9 +176,9 @@ class Economy(commands.Cog):
 
         # * now is a datetime object, row[0] is a datetime object or None, and cooldown is a timedelta object
 
-        # If the user has claimed his daily before, send a message saying how long until they can claim it again
+        # If the user has claimed THEIR daily before, send a message saying how long until they can claim it again
         if row and row[0] is not None:
-            # if row is none, user has never claimed his daily before, so they can claim it now
+            # if row is none, user has never claimed THEIR daily before, so they can claim it now
             # so if row is not none, user has claimed it before, so check if they can claim it again
             last_daily: datetime = row[0]
 
@@ -210,7 +210,7 @@ class Economy(commands.Cog):
         """, (user_id, payment, now)
         )
         conn.commit()
-        await ctx.send(f"{ctx.author.mention} claimed his daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} claimed THEIR daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
