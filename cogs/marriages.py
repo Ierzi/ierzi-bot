@@ -122,7 +122,7 @@ class Marriages(commands.Cog):
         
         if msg.content.lower() == "yes":
             # fa*t cant divorce 
-            if user.id == 1206615811792576614:
+            if proposer.id == 1206615811792576614:
                 await ctx.send("Not now big guy~")
                 return
                 
