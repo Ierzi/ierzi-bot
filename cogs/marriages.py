@@ -246,7 +246,7 @@ class Marriages(commands.Cog):
             marriage_status += message if message not in marriage_status else ""
             count += 1
         
-        marriage_status += f"\nTotal marriages: {count // 2}"
+        marriage_status += f"\n\nTotal marriages: {count // 2}"
         await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
