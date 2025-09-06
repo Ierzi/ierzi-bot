@@ -183,6 +183,12 @@ class Marriages(commands.Cog):
     #         await think.delete()
     #         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
+    # TODO
+    # @commands.command()
+    # async def aremarried(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+    #     await self.get_marriages()
+
+
     @commands.command()
     async def countmarriages(self, ctx: commands.Context, user: discord.Member = None):
         """Count the number of marriages a member has."""
