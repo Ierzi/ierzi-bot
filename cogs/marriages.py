@@ -242,7 +242,7 @@ class Marriages(commands.Cog):
         for pair in user_marriages:
             partner_id = pair[0] if pair[1] == user.id else pair[1]
             partner = self.bot.get_user(partner_id) or await self.bot.fetch_user(partner_id)
-            message = f"{user.mention} is married to {partner.mention}.\n"
+            message = f"{user.mention} is married to {partner.mention}, " if count == 0 else f"{partner.mention}, "
             marriage_status += message if message not in marriage_status else ""
             count += 1
         
