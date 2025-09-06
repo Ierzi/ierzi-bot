@@ -110,18 +110,26 @@ class Reactions(commands.Cog):
         if user == ctx.author:
             await ctx.send("why tf do you wanna pat yourself..")
             return
-        if user.id == self.bot.user.id:
-            await ctx.message.add_reaction("❌")
-            await asyncio.sleep(0.5)
-            await ctx.message.reply("no.")
         if user.bot:
             await ctx.send("can you pick a real person??:sob:")
             return
         
         await ctx.send(f"{ctx.author.mention} pats {user.mention} 👏", allowed_mentions=discord.AllowedMentions.none())
     
-    # TODO
-    # @commands.command()
-    # async def flirt(self, ctx: commands.Context, user: discord.Member):
-    #     """Flirt with someone."""
-    #     
+    @commands.command()
+    async def flirt(self, ctx: commands.Context, user: discord.Member):
+        """Flirt with someone."""
+        if user == ctx.author:
+            await ctx.send("how does that even work")
+            return
+        if user.id == self.bot.user.id:
+            await ctx.message.add_reaction("❌")
+            await asyncio.sleep(0.5)
+            await ctx.message.reply("no.")
+            return
+        if user.bot:
+            await ctx.send("vros NOT gonna flirt back :broken_heart:")
+            return
+
+        await ctx.send(f"{ctx.author.mention} flirts with {user.mention} 😘", allowed_mentions=discord.AllowedMentions.none())
+    
