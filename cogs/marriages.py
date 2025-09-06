@@ -23,6 +23,13 @@ class Marriages(commands.Cog):
         self.console = console
 
     async def add_marriage_list(self, marriage_pair: tuple[int]):
+        # Ensure both users exist in the users table first
+        for user_id in marriage_pair:
+            self.cur.execute(
+                "INSERT INTO users (user_id, balance) VALUES (%s, %s) ON CONFLICT (user_id) DO NOTHING",
+                (user_id, 0)
+            )
+        
         self.cur.execute(
             "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
             (marriage_pair[0], marriage_pair[1])
