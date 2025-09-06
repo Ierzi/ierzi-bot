@@ -145,7 +145,7 @@ class Economy(commands.Cog):
             )
             for i, (user_id, balance) in enumerate(rows):
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-                ecolb_embed.description += f"**{i + 1}. {user.mention}** - {balance:,} coins \n" 
+                ecolb_embed.description += f"**{i + 1 + (page * 10) - 10}. {user.mention}** - {balance:,} coins \n" 
 
         await ctx.send(embed=ecolb_embed, allowed_mentions=discord.AllowedMentions.none()) 
 
