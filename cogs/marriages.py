@@ -121,13 +121,19 @@ class Marriages(commands.Cog):
             return
         
         if msg.content.lower() == "yes":
+            # fa*t cant divorce 
+            if proposer.id == 1206615811792576614:
+                await ctx.send("Not now big guy~")
+                return
+                
             # Remove the marriage from the list
             await self.remove_marriage_list((proposer.id, partner.id))
             await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...", allowed_mentions=discord.AllowedMentions.none())
             self.console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
         else:
             await ctx.send(f"{proposer.mention} has canceled the divorce proposal.", allowed_mentions=discord.AllowedMentions.none())
-            
+
+    
     # TODO: fix this
     # @commands.command()
     # async def listmarriages(self, ctx: commands.Context, page_number: int = 1):
