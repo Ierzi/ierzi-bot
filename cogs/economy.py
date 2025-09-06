@@ -72,7 +72,6 @@ class Economy(commands.Cog):
         balance = await self.get_balance(user.id)
         await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
     
-    #TODO: fix this
     @commands.command()
     async def work(self, ctx: commands.Context):
         """Work to gain some coins."""
@@ -119,7 +118,7 @@ class Economy(commands.Cog):
         conn.commit()
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins!", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(name="ecolb")
+    @commands.command(name="ecolb", aliases=("lb", "leaderboard")) # since there's no other leaderboards
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
         """View the economy leaderboard."""
         if page < 1:
