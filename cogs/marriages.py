@@ -109,8 +109,13 @@ class Marriages(commands.Cog):
             await ctx.send("You are not married to this person!")
             return
         
+        # fact cant divorce guest
+        if ctx.author.id == 1206615811792576614 and partner.id == 747918143745294356: 
+            await ctx.send("Not now big guy~")
+            return
+
         await ctx.send(f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. ", allowed_mentions=discord.AllowedMentions.none())
-        
+
         def check(m: discord.Message):
             return m.author.id == proposer.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
 
@@ -121,11 +126,6 @@ class Marriages(commands.Cog):
             return
         
         if msg.content.lower() == "yes":
-            # fa*t cant divorce 
-            if proposer.id == 1206615811792576614:
-                await ctx.send("Not now big guy~")
-                return
-                
             # Remove the marriage from the list
             await self.remove_marriage_list((proposer.id, partner.id))
             await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...", allowed_mentions=discord.AllowedMentions.none())
