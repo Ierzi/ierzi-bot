@@ -191,9 +191,14 @@ class Marriages(commands.Cog):
     #         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
 
     # TODO
-    # @commands.command()
-    # async def aremarried(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
-    #     await self.get_marriages()
+    @commands.command()
+    async def aremarried(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+        marriages = await self.get_marriages()
+        if (user1, user2) in marriages:
+            await ctx.message.reply("Yes, they are married.")
+            return
+        
+        await ctx.message.reply("No, they aren't married.")
 
 
     @commands.command()
