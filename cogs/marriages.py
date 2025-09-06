@@ -236,16 +236,20 @@ class Marriages(commands.Cog):
         if not user_marriages:
             await ctx.send(f"{user.mention} is not married.", allowed_mentions=discord.AllowedMentions.none())
             return
-        
+
         marriage_status = ""
         count = 0
-        for pair in user_marriages:
-            partner_id = pair[0] if pair[1] == user.id else pair[1]
-            partner = self.bot.get_user(partner_id) or await self.bot.fetch_user(partner_id)
-            message = f"{user.mention} is married to {partner.mention}, " if count == 0 else f"{partner.mention}, "
-            marriage_status += message if message not in marriage_status else ""
-            count += 1
-        
+        async with ctx.typing():
+            for pair in user_marriages:
+                partner_id = pair[0] if pair[1] == user.id else pair[1]
+                partner = self.bot.get_user(partner_id) or await self.bot.fetch_user(partner_id)
+                message = f"{user.mention} is married to {partner.mention}, " if count == 0 else f"{partner.mention}, "
+                marriage_status += message if message not in marriage_status else ""
+                count += 1
+
+        if marriage_status.endswith(", "):
+            marriage_status = marriage_status[:-2]
+
         marriage_status += f"\n\nTotal marriages: {count // 2}"
         await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
 
