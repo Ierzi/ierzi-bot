@@ -72,7 +72,7 @@ class Reactions(commands.Cog):
         if user.bot:
             await ctx.send(f"{ctx.author.mention} **SLAPS** {user.mention}! \n-# deserved icl cause im better", allowed_mentions=discord.AllowedMentions.none())
             return
-        if user.id == 1153301933231181824:
+        if user.id == 1153301933231181824: # apex
             await ctx.send("no.")
             return
         
@@ -88,12 +88,12 @@ class Reactions(commands.Cog):
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == self.bot.user.id:
-            await ctx.send("what did i do to you :pensive:")
+            await ctx.send("why?? :(")
             return
         if user.bot:
             await ctx.send('why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this "joke" lmao')
             return
-        if user.id == 1153301933231181824:
+        if user.id == 1153301933231181824: # apex
             if ctx.author.id == 966351518020300841: #me
                 # im the only one who can kill her
                 await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
@@ -104,4 +104,24 @@ class Reactions(commands.Cog):
         
         await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
 
-
+    @commands.command()
+    async def pat(self, ctx: commands.Context, user: discord.Member):
+        """Pat someone's head."""
+        if user == ctx.author:
+            await ctx.send("why tf do you wanna pat yourself..")
+            return
+        if user.id == self.bot.user.id:
+            await ctx.message.add_reaction("❌")
+            await asyncio.sleep(0.5)
+            await ctx.message.reply("no.")
+        if user.bot:
+            await ctx.send("can you pick a real person??:sob:")
+            return
+        
+        await ctx.send(f"{ctx.author.mention} pats {user.mention} 👏", allowed_mentions=discord.AllowedMentions.none())
+    
+    # TODO
+    # @commands.command()
+    # async def flirt(self, ctx: commands.Context, user: discord.Member):
+    #     """Flirt with someone."""
+    #     
