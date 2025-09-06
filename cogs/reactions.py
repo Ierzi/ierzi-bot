@@ -158,4 +158,19 @@ class Reactions(commands.Cog):
             return
         
         await ctx.send(f"{ctx.author.mention} PUNCHES {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
+    
+    @commands.command()
+    async def feed(self, ctx: commands.Context, user: discord.Member):
+        """Feed someone."""
+        food_emoji = random.choice(["🥫", "🍲", "🍛", "🍅", "🍜", "🍔", "🥗", "🫔", "🥑", "🥪", "🥖 (baguette)", "🥩", "🌯", "🍟", "🍕", "🌭", "🥙", "🍗"]) #why is there so many food emojis
+        if user == ctx.author:
+            await ctx.send(f"{ctx.author.mention} feeds themselves 😋{food_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            return
+        if user.id == self.bot.user.id:
+            await ctx.send("no thanks.")
+            return
+        if user.bot:
+            await ctx.send(f"{ctx.author.mention} feeds.. the bot? or something? idfk", allowed_mentions=discord.AllowedMentions.none())
+            return
         
+        await ctx.send(f"{ctx.author.mention} feeds {user.mention} 😋{food_emoji}", allowed_mentions=discord.AllowedMentions.none())
