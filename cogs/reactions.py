@@ -3,11 +3,13 @@ from discord.ext import commands
 from rich.console import Console
 import random
 import asyncio
+from pathlib import Path
 
 class Reactions(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
+        self.assets_folder = Path(__file__).resolve().parent.parent / "assets"
 
     @commands.command()
     async def kiss(self, ctx: commands.Context, user: discord.Member):
@@ -133,3 +135,27 @@ class Reactions(commands.Cog):
 
         await ctx.send(f"{ctx.author.mention} flirts with {user.mention} 😘", allowed_mentions=discord.AllowedMentions.none())
     
+    @commands.command()
+    async def punch(self, ctx: commands.Context, user: discord.Member):
+        """Punch someone."""
+        if user == ctx.author:
+            if ctx.author.id == 1153301933231181824:
+                await ctx.send("btw you're the only one not allowed to punch yourself")
+                return
+            
+            await ctx.send(f"{ctx.author.mention} PUNCHES themselves!", allowed_mentions=discord.AllowedMentions.none())
+            return
+
+        if user.id == self.bot.user.id:
+            what_file = self.assets_folder / "what.jpg"
+            await ctx.send(file=discord.File(what_file.resolve()))
+            return
+        if user.bot:
+            await ctx.send(f"{ctx.author.mention} PUNCHES {user.mention}! \n-# deserved icl cause im the best bot here")
+            return
+        if user.id == 1153301933231181824: # apex
+            await ctx.message.add_reaction("❌")
+            return
+        
+        await ctx.send(f"{ctx.author.mention} PUNCHES {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
+        
