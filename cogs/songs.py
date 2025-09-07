@@ -1,4 +1,3 @@
-import discord
 import aiohttp
 from discord.ext import commands
 from rich.console import Console

@@ -14,9 +14,6 @@ from cogs.reactions import Reactions
 from cogs.songs import Songs
 import time
 import psycopg2
-import json
-from datetime import datetime, timezone, timedelta
-import ast
 
 console = Console()
 

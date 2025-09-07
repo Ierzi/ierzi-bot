@@ -4,7 +4,6 @@ from discord.ext import commands
 import discord
 from openai import AsyncOpenAI
 import asyncio
-import aiohttp
 from groq import AsyncGroq
 
 class AI(commands.Cog):
