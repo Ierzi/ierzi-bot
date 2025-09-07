@@ -1,5 +1,5 @@
 import discord
-from discord import ButtonStyle, Interaction, Embed, Message
+from discord import ButtonStyle, Interaction, Embed
 from discord.ext import commands
 from discord.ui import Button, View
 from rich.console import Console
