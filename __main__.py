@@ -55,7 +55,7 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_message(message: Message):
     if message.poll and message.channel.id == 783638604454821892: # my testing channel
-        message.create_thread(name=message.poll.question)
+        await message.create_thread(name=message.poll.question)
     
     await bot.process_commands(message)
 
