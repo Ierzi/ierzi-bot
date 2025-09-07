@@ -1,5 +1,5 @@
 import discord
-from discord import ButtonStyle, Interaction, Embed
+from discord import ButtonStyle, Interaction, Embed, Message
 from discord.ext import commands
 from discord.ui import Button, View
 from rich.console import Console
@@ -51,6 +51,13 @@ async def on_command_error(ctx: commands.Context, error):
         return
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
+
+@bot.event
+async def on_message(message: Message):
+    if message.poll and message.channel.id == 783638604454821892: # my testing channel
+        message.create_thread(name=message.poll.question)
+    
+    await bot.process_commands(message)
 
 # Cog loading
 async def load_cogs():
