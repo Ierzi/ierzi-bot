@@ -6,14 +6,17 @@ from rich.console import Console
 import os
 from dotenv import load_dotenv
 import asyncio
+import time
+import psycopg2
+
+# Cogs
 from cogs.ai import AI
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.songs import Songs
-import time
-import psycopg2
+from cogs.search import Search
 
 console = Console()
 
@@ -76,6 +79,8 @@ async def load_cogs():
     await bot.add_cog(Songs(bot, console))
     end = time.time()
     console.print(f"Songs cog loaded in {round(end - start, 2)} seconds.")
+    await bot.add_cog(Search(bot, console))
+    console.print("Search cog loaded.")
     console.print("All cogs loaded.")
 
 # Other commands
@@ -176,6 +181,11 @@ songs_embed = Embed(
     description=""
 )
 
+search_embed = Embed(
+    title="Search Commands",
+    description=""
+)
+
 async def fill_embeds(): 
     home_embed.description = "Click on the buttons below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
@@ -205,15 +215,17 @@ async def fill_embeds():
                 reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Songs":
                 songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+            case "Search":
+                search_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
 
 @bot.command()
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
     await fill_embeds()
-    view = View()
+    view = View(timeout=300)
     
-    home_button = Button(label="Home", style=ButtonStyle.green)
+    home_button = Button(label="Home", style=ButtonStyle.primary)
     async def home_button_callback(interaction: Interaction):
         await interaction.message.edit(embed=home_embed, view=view)
 
@@ -262,6 +274,13 @@ async def help(ctx: commands.Context, category: str = None):
     songs_button.callback = songs_button_callback
     view.add_item(songs_button)
 
+    search_button = Button(label="Search", style=ButtonStyle.primary)
+    async def search_button_callback(interaction: Interaction):
+        await interaction.message.edit(embed=search_embed, view=view)
+    
+    search_button.callback = search_button_callback
+    view.add_item(search_button)
+
     if category is None:
         await ctx.send(embed=home_embed, view=view)
     else:
@@ -280,6 +299,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=reactions_embed)
             case "songs":
                 await ctx.send(embed=songs_embed)
+            case "search":
+                await ctx.send(embed=search_embed)
             case _:
                 await ctx.send("Invalid category.")
 
