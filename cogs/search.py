@@ -2,11 +2,13 @@ import discord
 from discord.ext import commands
 from rich.console import Console
 import aiohttp
+from wikipediaapi import Wikipedia
 
 class Search(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
+        self.wiki_wiki = Wikipedia("IerziBot (ierziytb@gmail.com)")
 
     @commands.command(name="ud")
     async def urban_dictionary(self, ctx: commands.Context, *, word: str):
@@ -62,6 +64,12 @@ class Search(commands.Cog):
         
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
-    # TODO    
-    # @commands.command()
-    # async def wiki()
+    @commands.command()
+    async def wiki(self, ctx: commands.Context, *, article: str):
+        """Look up something on Wikipedia (only gives the summary)."""
+        page = self.wiki_wiki.page(article)
+        if not page.exists():
+            await ctx.send("Page doesn't exist.")
+            return
+        
+        await ctx.send(f"{ctx.author.mention}: **{article}** \n\n{page.summary}", allowed_mentions=discord.AllowedMentions.none())
