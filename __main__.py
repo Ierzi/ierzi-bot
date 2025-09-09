@@ -1,7 +1,7 @@
 import discord
-from discord import ButtonStyle, Interaction, Embed, Message
+from discord import Interaction, Embed, Message, SelectOption
 from discord.ext import commands
-from discord.ui import Button, View, Select
+from discord.ui import View, Select
 from rich.console import Console
 import os
 from dotenv import load_dotenv
@@ -225,14 +225,14 @@ async def help(ctx: commands.Context, category: str = None):
     view = View(timeout=300) # 5 minutes
 
     help_options = [
-        discord.SelectOption(label="Home", description="Homepage and uncategorized commands"),
-        discord.SelectOption(label="AI", description="AI commands"),
-        discord.SelectOption(label="Economy", description="Economy commands"),
-        discord.SelectOption(label="Fun", description="Fun commands"),
-        discord.SelectOption(label="Marriages", description="Marriage commands"),
-        discord.SelectOption(label="Reactions", description="Reaction commands"),
-        discord.SelectOption(label="Songs", description="Songs commands"),
-        discord.SelectOption(label="Search", description="Search commands"),
+        SelectOption(label="Home", description="Homepage and uncategorized commands"),
+        SelectOption(label="AI", description="AI commands"),
+        SelectOption(label="Economy", description="Economy commands"),
+        SelectOption(label="Fun", description="Fun commands"),
+        SelectOption(label="Marriages", description="Marriage commands"),
+        SelectOption(label="Reactions", description="Reaction commands"),
+        SelectOption(label="Songs", description="Songs commands"),
+        SelectOption(label="Search", description="Search commands"),
     ]
     help_select = Select(
         placeholder="select category",
