@@ -24,7 +24,7 @@ from dotenv import load_dotenv
 import asyncio
 import time
 # I've heard there's an async version of this but ion wanna remake my whole bot for this :wilted_rose:
-# It's not like a ton of ppl are using it anyway
+# It's not like a ton of ppl are using my bot anyway
 import psycopg2
 
 console = Console()
