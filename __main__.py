@@ -1,13 +1,10 @@
+# Ierzi Bot
+
+# Discord.py Improrts
 import discord
-from discord import Interaction, Embed, Message, SelectOption
+from discord import Interaction, Embed, Message, SelectOption, Game
 from discord.ext import commands
 from discord.ui import View, Select
-from rich.console import Console
-import os
-from dotenv import load_dotenv
-import asyncio
-import time
-import psycopg2
 
 # Cogs
 from cogs.ai import AI
@@ -17,6 +14,18 @@ from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.songs import Songs
 from cogs.search import Search
+
+# Other
+from rich.console import Console
+# Both of these are useless since im hosting on railway, so I don't need to load the env
+# (if yall wanna selfhost this idk)
+import os
+from dotenv import load_dotenv
+import asyncio
+import time
+# I've heard there's an async version of this but ion wanna remake my whole bot for this :wilted_rose:
+# It's not like a ton of ppl are using it anyway
+import psycopg2
 
 console = Console()
 
@@ -41,6 +50,7 @@ bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
+    await fill_embeds()
     console.print(f"Logged in as {bot.user}")
 
 # Error handling
@@ -116,6 +126,7 @@ async def github(ctx: commands.Context):
     """cool github repo"""
     await ctx.send("https://github.com/Ierzi/ierzi-bot \n-# btw i have no fucking clue how contributing on github works")
 
+#TODO: all of this
 @bot.command()
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
@@ -124,7 +135,7 @@ async def roadmap(ctx: commands.Context):
         "fix !listmarrriages",  "custom emojis", 
         "fix the marriage database that is so messy",  
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
-        "achievements?", "other ai models"
+        "achievements?", "other ai models", "pronouns"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
@@ -221,7 +232,6 @@ async def fill_embeds():
 @bot.command()
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
-    await fill_embeds()
     view = View(timeout=300) # 5 minutes
 
     help_options = [
