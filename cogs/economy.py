@@ -323,7 +323,43 @@ class Economy(commands.Cog):
         else:
             await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
             return
+    
+    @commands.command(name="robbank")
+    async def rob_bank(self, ctx: commands.Context):
+        """Rob a bank (no way)."""
+        # You have a 33% chance of robbing a bank.
+        rob_money = random.randint(500, 1000)
+        if random.random() < 0.33:
+            await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins!", allowed_mentions=discord.AllowedMentions.none())
+            await self.add_money(ctx.author.id, rob_money)
+        else:
+            lose_money = rob_money // 2
+            await ctx.send(f"🚨 The police caught {ctx.author.mention} and they lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
+            await self.add_money(ctx.author.id, -lose_money)
+    
+    @commands.command(name="robuser")
+    async def rob_user(self, ctx: commands.Context, user: discord.Member):
+        """Rob someone 1000 coins. If you fail you give them 500 coins."""
+        # You have a 25% chance of robbing someone
+        # cause its not nice lmao
+        if not user:
+            await ctx.send("who?")
+            return
         
+        balance = self.get_balance(user.id)
+        if balance < 1000:
+            await ctx.send("pick someone else, cros too poor :broken_heart:")
+            return
+        
+        if random.random() < 0.25:
+            await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}!", allowed_mentions=discord.AllowedMentions.none())
+            await self.add_money(ctx.author.id, 1000)
+            await self.add_money(user.id, -1000)
+        else:
+            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins :broken_heart:", allowed_mentions=discord.AllowedMentions.none())
+            await self.add_money(ctx.author.id, -500)
+
+
     # @commands.command()
     # async def shop(self, ctx: commands.Context):
     #     """Shows all the items in the shop."""
