@@ -235,7 +235,7 @@ async def help(ctx: commands.Context, category: str = None):
         discord.SelectOption(label="Search", description="Search commands"),
     ]
     help_select = Select(
-        placeholder=category.title() if category else "Home",
+        placeholder="select category",
         options=help_options
     )
 
