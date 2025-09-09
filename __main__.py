@@ -186,7 +186,7 @@ search_embed = Embed(
 )
 
 async def fill_embeds(): 
-    home_embed.description = "Click on the buttons below to switch pages. Here are some uncategorized commands: \n\n"
+    home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
     economy_embed.description = ""
     fun_embed.description = ""
