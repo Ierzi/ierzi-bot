@@ -1,7 +1,7 @@
 import discord
 from discord import ButtonStyle, Interaction, Embed, Message
 from discord.ext import commands
-from discord.ui import Button, View
+from discord.ui import Button, View, Select
 from rich.console import Console
 import os
 from dotenv import load_dotenv
@@ -194,6 +194,7 @@ async def fill_embeds():
     marriages_embed.description = ""
     reactions_embed.description = ""
     songs_embed.description = ""
+    search_embed.description = ""
 
     all_commands = get_commands(bot)
     for command_name, cog_name, command_help in all_commands:
