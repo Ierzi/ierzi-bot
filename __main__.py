@@ -20,6 +20,7 @@ from cogs.search import Search
 
 console = Console()
 
+load_dotenv()
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
     database=os.getenv("PGDATABASE"),
@@ -30,8 +31,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-
-load_dotenv()
 token = os.getenv("TOKEN")
 
 intents = discord.Intents.default()
@@ -221,90 +220,74 @@ async def fill_embeds():
 
 
 @bot.command()
+@bot.command()
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
     await fill_embeds()
-    view = View(timeout=300)
-    
-    home_button = Button(label="Home", style=ButtonStyle.primary)
-    async def home_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=home_embed, view=view)
+    view = View(timeout=300) # 5 minutes
 
-    home_button.callback = home_button_callback
-    view.add_item(home_button)
+    help_options = [
+        discord.SelectOption(label="Home", description="Homepage and uncategorized commands"),
+        discord.SelectOption(label="AI", description="AI commands"),
+        discord.SelectOption(label="Economy", description="Economy commands"),
+        discord.SelectOption(label="Fun", description="Fun commands"),
+        discord.SelectOption(label="Marriages", description="Marriage commands"),
+        discord.SelectOption(label="Reactions", description="Reaction commands"),
+        discord.SelectOption(label="Songs", description="Songs commands"),
+        discord.SelectOption(label="Search", description="Search commands"),
+    ]
+    help_select = Select(
+        placeholder=category.title() if category else "Home",
+        options=help_options
+    )
 
-    ai_button = Button(label="AI", style=ButtonStyle.primary)
-    async def ai_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=ai_embed, view=view)
+    async def help_select_callback(interaction: Interaction):
+        selected = help_select.values[0].lower()
+        match selected:
+            case "home":
+                await interaction.response.edit_message(embed=home_embed)
+            case "ai":
+                await interaction.response.edit_message(embed=ai_embed)
+            case "economy":
+                await interaction.response.edit_message(embed=economy_embed)
+            case "fun":
+                await interaction.response.edit_message(embed=fun_embed)
+            case "marriages":
+                await interaction.response.edit_message(embed=marriages_embed)
+            case "reactions":
+                await interaction.response.edit_message(embed=reactions_embed)
+            case "songs":
+                await interaction.response.edit_message(embed=songs_embed)
+            case "search":
+                await interaction.response.edit_message(embed=search_embed)
+            case _:
+                await interaction.response.send_message("Invalid category.", ephemeral=True)
 
-    ai_button.callback = ai_button_callback
-    view.add_item(ai_button)
-
-    economy_button = Button(label="Economy", style=ButtonStyle.primary)
-    async def economy_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=economy_embed, view=view)
-
-    economy_button.callback = economy_button_callback
-    view.add_item(economy_button)
-
-    fun_button = Button(label="Fun", style=ButtonStyle.primary)
-    async def fun_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=fun_embed, view=view)
-
-    fun_button.callback = fun_button_callback
-    view.add_item(fun_button)
-
-    marriages_button = Button(label="Marriages", style=ButtonStyle.primary)
-    async def marriages_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=marriages_embed, view=view)
-
-    marriages_button.callback = marriages_button_callback
-    view.add_item(marriages_button)
-
-    reactions_button = Button(label="Reactions", style=ButtonStyle.primary)
-    async def reactions_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=reactions_embed, view=view)
-
-    reactions_button.callback = reactions_button_callback
-    view.add_item(reactions_button)
-
-    songs_button = Button(label="Songs", style=ButtonStyle.primary)
-    async def songs_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=songs_embed, view=view)
-
-    songs_button.callback = songs_button_callback
-    view.add_item(songs_button)
-
-    search_button = Button(label="Search", style=ButtonStyle.primary)
-    async def search_button_callback(interaction: Interaction):
-        await interaction.message.edit(embed=search_embed, view=view)
-    
-    search_button.callback = search_button_callback
-    view.add_item(search_button)
+    help_select.callback = help_select_callback
+    view.add_item(help_select)
 
     if category is None:
         await ctx.send(embed=home_embed, view=view)
     else:
         match category.lower():
             case "home":
-                await ctx.send(embed=home_embed)
+                await ctx.send(embed=home_embed, view=view)
             case "ai":
-                await ctx.send(embed=ai_embed)
+                await ctx.send(embed=ai_embed, view=view)
             case "economy":
-                await ctx.send(embed=economy_embed)
+                await ctx.send(embed=economy_embed, view=view)
             case "fun":
-                await ctx.send(embed=fun_embed)
+                await ctx.send(embed=fun_embed, view=view)
             case "marriages":
-                await ctx.send(embed=marriages_embed)
+                await ctx.send(embed=marriages_embed, view=view)
             case "reactions":
-                await ctx.send(embed=reactions_embed)
+                await ctx.send(embed=reactions_embed, view=view)
             case "songs":
-                await ctx.send(embed=songs_embed)
+                await ctx.send(embed=songs_embed, view=view)
             case "search":
-                await ctx.send(embed=search_embed)
+                await ctx.send(embed=search_embed, view=view)
             case _:
                 await ctx.send("Invalid category.")
-
 # @bot.command()
 # async def debug(ctx: commands.Context):
 #     """Ignore this"""
