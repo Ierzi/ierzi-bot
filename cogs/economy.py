@@ -354,10 +354,10 @@ class Economy(commands.Cog):
             await self.add_money(user_id, -lose_money)
         
         self.cur.execute("""
-            INSERT INTO users (user_id, balance, last_robbed)
+            INSERT INTO users (user_id, balance, last_robbed_bank)
             VALUES (%s, %s, %s)
             ON CONFLICT (user_id)
-            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
+            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_robbed_bank = EXCLUDED.last_robbed_bank;
         """, (user_id, rob_money if success else 0, now)
         )
         conn.commit()
@@ -378,7 +378,7 @@ class Economy(commands.Cog):
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc)
         
-        output = await self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
+        output = await self.cooldown(user_id, 'last_robbed_user', cooldown, now)
         if not output[0]: # Cooldown
             hours, minutes, seconds = output[1:4]
             await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
@@ -393,6 +393,16 @@ class Economy(commands.Cog):
         else:
             await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins :broken_heart:", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, -500)
+        
+        # record last_robbed_user timestamp without changing balance further
+        self.cur.execute("""
+            INSERT INTO users (user_id, last_robbed_user)
+            VALUES (%s, %s)
+            ON CONFLICT (user_id)
+            DO UPDATE SET last_robbed_user = EXCLUDED.last_robbed_user;
+        """, (user_id, now)
+        )
+        conn.commit()
 
 
     # @commands.command()
