@@ -73,7 +73,7 @@ class Economy(commands.Cog):
         row = self.cur.fetchone()
 
         if row and row[0] is not None:
-            last_action: datetime = datetime.strptime(row[0])
+            last_action: datetime = row[0]
             if last_action.tzinfo is None:
                 last_action = last_action.replace(tzinfo=timezone.utc)
             
@@ -335,7 +335,7 @@ class Economy(commands.Cog):
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc)
 
-        output = self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
+        output = await self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
         if not output[0]: # Cooldown
             hours, minutes, seconds = output[1:4]
             await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
@@ -367,7 +367,7 @@ class Economy(commands.Cog):
             await ctx.send("who?")
             return
         
-        balance = self.get_balance(user.id)
+        balance = await self.get_balance(user.id)
         if balance < 1000:
             await ctx.send("pick someone else, cros too poor :broken_heart:")
             return
@@ -376,7 +376,7 @@ class Economy(commands.Cog):
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc)
         
-        output = self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
+        output = await self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
         if not output[0]: # Cooldown
             hours, minutes, seconds = output[1:4]
             await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
