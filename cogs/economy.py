@@ -69,12 +69,12 @@ class Economy(commands.Cog):
                        now: datetime
                        ) -> output_data:
         # All cooldowns are in the users table
-        self.cur.execute("SELECT %s FROM users WHERE user_id = %s", (cooldown_type, user_id))
+        self.cur.execute(f"SELECT {cooldown_type} FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
 
         if row and row[0] is not None:
             last_action = row[0]
-            
+
             if isinstance(last_action, str):
                 last_action = datetime.fromisoformat(last_action)
 
