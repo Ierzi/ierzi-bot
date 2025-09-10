@@ -89,7 +89,7 @@ class Economy(commands.Cog):
 
                 return False, hours, minutes, seconds
         
-        return True
+        return True, None, None, None
 
 
     async def add_money(self, user_id: int, amount: int):
@@ -175,8 +175,6 @@ class Economy(commands.Cog):
     async def daily(self, ctx: commands.Context): 
         """Get a daily reward."""
         user_id = ctx.author.id
-        self.cur.execute("SELECT last_daily FROM users WHERE user_id = %s", (user_id,))
-        row = self.cur.fetchone()
 
         cooldown = timedelta(hours=24)
         now = datetime.now(timezone.utc)
