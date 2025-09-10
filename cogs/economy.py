@@ -19,13 +19,6 @@ conn = psycopg2.connect(
 
 cur = conn.cursor()
 
-cur.execute("""
-            ALTER TABLE users
-            ADD COLUMN last_robbed_bank TIMESTAMP,
-            ADD COLUMN last_robbed_user TIMESTAMP;
-""")
-conn.commit()
-
 # -- Types
 
 # Cooldown function
@@ -80,7 +73,7 @@ class Economy(commands.Cog):
         row = self.cur.fetchone()
 
         if row and row[0] is not None:
-            last_action: datetime = row[0]
+            last_action: datetime = datetime.strptime(row[0])
             if last_action.tzinfo is None:
                 last_action = last_action.replace(tzinfo=timezone.utc)
             
