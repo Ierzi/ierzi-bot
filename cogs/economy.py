@@ -73,7 +73,11 @@ class Economy(commands.Cog):
         row = self.cur.fetchone()
 
         if row and row[0] is not None:
-            last_action: datetime = row[0]
+            last_action = row[0]
+            
+            if isinstance(last_action, str):
+                last_action = datetime.fromisoformat(last_action)
+
             if last_action.tzinfo is None:
                 last_action = last_action.replace(tzinfo=timezone.utc)
             
