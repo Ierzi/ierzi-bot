@@ -7,7 +7,9 @@ CREATE TABLE users (
     user_id BIGINT NOT NULL UNIQUE,
     balance INT DEFAULT 0,
     last_daily TIMESTAMP,
-    last_worked TIMESTAMP
+    last_worked TIMESTAMP,
+    last_robbed_bank TIMESTAMP,
+    last_robbed_user TIMESTAMP
 );
 
 

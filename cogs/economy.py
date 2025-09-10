@@ -7,7 +7,7 @@ import os
 import random
 from datetime import datetime, timedelta, timezone
 import asyncio
-from typing import TypedDict
+from typing import TypedDict, Literal, Optional
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
@@ -18,6 +18,23 @@ conn = psycopg2.connect(
 )
 
 cur = conn.cursor()
+
+cur.execute("""
+            ALTER TABLE users
+            ADD COLUMN last_robbed_bank TIMESTAMP,
+            ADD COLUMN last_robbed_user TIMESTAMP;
+""")
+conn.commit()
+
+# -- Types
+
+# Cooldown function
+_output = bool
+_hours = Optional[int]
+_minutes = Optional[int]
+_seconds = Optional[int]
+output_data = tuple[_output, _hours, _minutes, _seconds]
+
 
 class ShopItem(TypedDict):
     name: str
@@ -41,6 +58,7 @@ class Economy(commands.Cog):
         ]
         self.shop_item_names: list[str] = ['banana']
 
+    # Helper functions
     async def get_balance(self, user_id: int) -> int:
         self.cur.execute("SELECT balance FROM users WHERE user_id = %s", (user_id,))
         row = self.cur.fetchone()
@@ -51,6 +69,32 @@ class Economy(commands.Cog):
             self.conn.commit()
             return 0
     
+    async def cooldown(self, 
+                       user_id: int, 
+                       cooldown_type: Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"],
+                       cooldown_time: timedelta,
+                       now: datetime
+                       ) -> output_data:
+        # All cooldowns are in the users table
+        self.cur.execute("SELECT %s FROM users WHERE user_id = %s", (cooldown_type, user_id))
+        row = self.cur.fetchone()
+
+        if row and row[0] is not None:
+            last_action: datetime = row[0]
+            if last_action.tzinfo is None:
+                last_action = last_action.replace(tzinfo=timezone.utc)
+            
+            if (now - last_action) < cooldown_time:
+                time_remaining = cooldown_time - (now - last_action)
+
+                hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
+                minutes, seconds = divmod(remainder, 60)
+
+                return False, hours, minutes, seconds
+        
+        return True
+
+
     async def add_money(self, user_id: int, amount: int):
         cur.execute("""
             INSERT INTO users (user_id, balance)
@@ -76,34 +120,14 @@ class Economy(commands.Cog):
     async def work(self, ctx: commands.Context):
         """Work to gain some coins."""
         user_id = ctx.author.id
-        self.cur.execute("SELECT last_worked FROM users WHERE user_id = %s", (user_id,))
-        row = self.cur.fetchone()
-
         cooldown = timedelta(hours=6)
         now = datetime.now(timezone.utc)
 
-        # * now is a datetime object, row[0] is a datetime object or None, and cooldown is a timedelta object
-
-        # If the user has worked before, send a message saying how long until they can work again
-        if row and row[0] is not None:
-            # if row is none, user has never worked before, so they can work now
-            # so if row is not none, user has worked before, so check if they can work again
-            last_worked: datetime = row[0]
-            # Ensure last_worked is timezone-aware
-            if last_worked.tzinfo is None:
-                last_worked = last_worked.replace(tzinfo=timezone.utc) # I have no fucking clue why !work doesnt work so i asked chatgpt IM SORRY IM SORRYYYY 
-
-            if (now - last_worked) < cooldown: 
-                # if now - last_worked is less than the cooldown, (for example, user worked 2 hours ago and 2 < 6)
-                # they can't work yet
-                # calculate the remaining time
-                # (i really gotta put this many comments cause im so lost :sob:)
-                time_remaining = cooldown - (now - last_worked) # example: 6 hours - (17:00  - 15:00) = 4 hours remaining
-                # now just put the time into readable shit
-                hours, remainder = divmod(int(time_remaining.total_seconds()), 3600)
-                minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"You already worked! \nYou can work in {hours} hours, {minutes} minutes and {seconds} seconds.")
-                return
+        output = await self.cooldown(ctx.author.id, 'last_worked', cooldown, now)
+        if not output[0]: # Cooldown
+            hours, minutes, seconds = output[1:4]
+            await ctx.send(f"You already worked! \nYou can work again in {hours} hours, {minutes} minutes and {seconds} seconds.")
+            return
 
         # If the user can work, give them a random job and pay them
         job, raw_payment = random.choice(self.jobs)
@@ -119,6 +143,7 @@ class Economy(commands.Cog):
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard")) # since there's no other leaderboards
+    @commands.cooldown(1, 5, commands.BucketType.user) # cause its a heavy command that freezes(?) the bot for a few seconds
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
         """View the economy leaderboard."""
         if page < 1:
@@ -159,29 +184,12 @@ class Economy(commands.Cog):
         cooldown = timedelta(hours=24)
         now = datetime.now(timezone.utc)
 
-        # * now is a datetime object, row[0] is a datetime object or None, and cooldown is a timedelta object
+        output = await self.cooldown(ctx.author.id, 'last_daily', cooldown, now)
+        if not output[0]: # Cooldown
+            hours, minutes, seconds = output[1:4]
+            await ctx.send(f"You already claimed your daily! \nYou can claim it again in {hours} hours, {minutes} minutes and {seconds} seconds.")
+            return
 
-        # If the user has claimed THEIR daily before, send a message saying how long until they can claim it again
-        if row and row[0] is not None:
-            # if row is none, user has never claimed THEIR daily before, so they can claim it now
-            # so if row is not none, user has claimed it before, so check if they can claim it again
-            last_daily: datetime = row[0]
-
-            if last_daily.tzinfo is None:
-                last_daily = last_daily.replace(tzinfo=timezone.utc)
-
-            if (now - last_daily) < cooldown: 
-                # if now - last_daily is less than the cooldown, (for example, user claimed 2 hours ago and 2 < 6)
-                # they can't work yet
-                # calculate the remaining time
-                time_remaining = cooldown - (now - last_daily) 
-                # now just put the time into readable shit
-                hours, remainder = divmod(int(round(time_remaining.total_seconds())), 3600)
-                minutes, seconds = divmod(remainder, 60)
-                await ctx.send(f"You already claimed your daily! \nYou can claim it in {hours} hours, {minutes} minutes and {seconds} seconds.")
-                return
-
-        # If the user can work, give them a random job and pay them
         payment = 1250
         self.cur.execute("""
             INSERT INTO users (user_id, balance, last_daily)
@@ -324,24 +332,44 @@ class Economy(commands.Cog):
             await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
             return
     
+    # TODO: add cooldown fucntionality (2 hours for both)
     @commands.command(name="robbank")
     async def rob_bank(self, ctx: commands.Context):
         """Rob a bank (no way)."""
-        # You have a 33% chance of robbing a bank.
         rob_money = random.randint(500, 1000)
+        success = False
+        user_id = ctx.author.id
+        cooldown = timedelta(hours=2)
+        now = datetime.now(timezone.utc)
+
+        output = self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
+        if not output[0]: # Cooldown
+            hours, minutes, seconds = output[1:4]
+            await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
+            return
+
+        # You have a 33% chance of robbing a bank.
         if random.random() < 0.33:
             await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins!", allowed_mentions=discord.AllowedMentions.none())
-            await self.add_money(ctx.author.id, rob_money)
+            await self.add_money(user_id, rob_money)
+            success = True
         else:
             lose_money = rob_money // 2
             await ctx.send(f"🚨 The police caught {ctx.author.mention} and they lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
-            await self.add_money(ctx.author.id, -lose_money)
+            await self.add_money(user_id, -lose_money)
+        
+        self.cur.execute("""
+            INSERT INTO users (user_id, balance, last_robbed)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (user_id)
+            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
+        """, (user_id, rob_money if success else 0, now)
+        )
+        conn.commit()
     
     @commands.command(name="robuser")
     async def rob_user(self, ctx: commands.Context, user: discord.Member):
         """Rob someone 1000 coins. If you fail you give them 500 coins."""
-        # You have a 25% chance of robbing someone
-        # cause its not nice lmao
         if not user:
             await ctx.send("who?")
             return
@@ -351,6 +379,18 @@ class Economy(commands.Cog):
             await ctx.send("pick someone else, cros too poor :broken_heart:")
             return
         
+        user_id = ctx.author.id
+        cooldown = timedelta(hours=2)
+        now = datetime.now(timezone.utc)
+        
+        output = self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
+        if not output[0]: # Cooldown
+            hours, minutes, seconds = output[1:4]
+            await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
+            return
+        
+        # You have a 25% chance of robbing someone
+        # cause its not nice lmao (and you're also stealing a lot of money)
         if random.random() < 0.25:
             await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}!", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, 1000)
