@@ -214,7 +214,7 @@ async def fill_embeds():
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
-                if command_name in ["download", "export", "load"]:
+                if command_name in ["download", "export", "load", 'phrase_pronouns', 'pronouns_set']:
                     # Testing commands to ignore
                     continue
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
