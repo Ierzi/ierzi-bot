@@ -10,10 +10,10 @@ from enum import Enum
 # only have the most common pronouns yet
 #TODO: add more pronouns
 SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them', 'any'] # any will probably use they/them
-type pronoun = str
-type pronouns = str
-type _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
-type _returned_pronouns_data = _pronouns_data | pronoun
+pronoun = str
+pronouns = str
+_pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
+_returned_pronouns_data = _pronouns_data | pronoun
 
 class PronounEnum(Enum):
     SUBJECT = 1
@@ -24,7 +24,6 @@ class PronounEnum(Enum):
     ALL = 6
 
 ALL = PronounEnum.ALL
-
 
 pronouns_data: dict[str, _pronouns_data] = {
     'he/him': ('he', 'him', 'his', 'his', 'himself'),
