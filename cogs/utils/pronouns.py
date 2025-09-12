@@ -10,8 +10,8 @@ from enum import Enum
 # only have the most common pronouns yet
 #TODO: add more pronouns
 SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them', 'any'] # any will probably use they/them
-pronoun = str
-pronouns = str
+pronoun = str #he
+pronouns = str #he/him
 _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
 _returned_pronouns_data = _pronouns_data | pronoun
 
@@ -77,6 +77,7 @@ async def get_pronoun(
     
     cur.execute("SELECT pronouns FROM users WHERE user_id = %s", (user_id,))
     row = cur.fetchone()
+    console.print(row)
 
     if row and row[0]:
         _pronouns: pronouns = row[0]

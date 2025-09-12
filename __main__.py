@@ -311,12 +311,12 @@ async def help(ctx: commands.Context, category: str = None):
 async def pronouns_set(ctx: commands.Context):
     """Ignore this"""
     user_id = ctx.author.id
-    description_sp = [f'{pronoun_pair}, ' for pronoun_pair in list(pronouns.SUPPORTED_PRONOUNS)]
 
 
     set_pronouns_embed = Embed(
         title="Set your pronouns!",
-        description=f"Choose your pronouns here. Currently supported pronouns: {description_sp}"
+        # Manual description
+        description="Choose your pronouns here. Currently supported pronouns: he/him, she/her, they/them, and any."
     )
     view = View(timeout=500)
     pronouns_option = [
