@@ -311,7 +311,7 @@ async def help(ctx: commands.Context, category: str = None):
 async def pronouns_set(ctx: commands.Context):
     """Ignore this"""
     user_id = ctx.author.id
-    description_sp = [f'{pronoun_pair}, ' for pronoun_pair in pronouns.SUPPORTED_PRONOUNS]
+    description_sp = [f'{pronoun_pair}, ' for pronoun_pair in list(pronouns.SUPPORTED_PRONOUNS)]
 
 
     set_pronouns_embed = Embed(
@@ -360,7 +360,7 @@ async def pronouns_set(ctx: commands.Context):
 @bot.command()
 async def phrase_pronouns(ctx: commands.Context):
     user_id = ctx.author.id
-    all_pronouns = pronouns.get_pronoun(user_id, pronouns.ALL)
+    all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
     # Sentences (thanks pronouns.page)
     subject = f'I think {all_pronouns[0]} is very nice. '
