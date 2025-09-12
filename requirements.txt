@@ -6,3 +6,6 @@ psycopg2-binary
 groq
 requests
 wikipedia-api
+
+# In case you want to self-host it, uncomment the line below
+# dotenv

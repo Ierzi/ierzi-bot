@@ -3,8 +3,12 @@
 -- Users table
 -- now directly contains the economy table
 CREATE TABLE users (
+    -- important things
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
+    -- pronouns
+    pronouns TEXT, 
+    -- economy related
     balance INT DEFAULT 0,
     last_daily TIMESTAMP,
     last_worked TIMESTAMP,
