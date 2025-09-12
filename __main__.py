@@ -336,20 +336,20 @@ async def pronouns_set(ctx: commands.Context):
         selected = pronouns_select.values[0]
         match selected:
             case 'he/him':
-                pronouns.set_pronouns(user_id, 'he/him')
+                await pronouns.set_pronouns(user_id, 'he/him')
                 await ctx.send("Set your pronouns to he/him.", ephemeral=True)
                 return
             case 'she/her':
-                pronouns.set_pronouns(user_id, 'she/her')
+                await pronouns.set_pronouns(user_id, 'she/her')
                 await ctx.send("Set your pronouns to she/her.", ephemeral=True)
                 return
             case 'they/them':
-                pronouns.set_pronouns(user_id, 'they/them')
+                await pronouns.set_pronouns(user_id, 'they/them')
                 await ctx.send("Set your pronouns to they/them.", ephemeral=True)
                 return
             case 'any':
-                pronouns.set_pronouns(user_id, 'any')
-                await ctx.send("Set your pronouns to any", ephemeral=True)
+                await pronouns.set_pronouns(user_id, 'any')
+                await ctx.send("Set your pronouns to any.", ephemeral=True)
                 return
         
 
@@ -360,6 +360,7 @@ async def pronouns_set(ctx: commands.Context):
 
 @bot.command()
 async def phrase_pronouns(ctx: commands.Context):
+    """IGNORE THIS PLEASE ITS INSANELY BUGGY"""
     user_id = ctx.author.id
     all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
