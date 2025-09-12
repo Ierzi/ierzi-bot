@@ -45,14 +45,6 @@ conn = psycopg2.connect(
 )
 cur = conn.cursor()
 
-# Adding the columns
-cur.execute("""
-            ALTER TABLE users
-            ADD COLUMN pronouns TEXT;
-            """)
-
-conn.commit()
-
 async def set_pronouns(
         user_id: int, 
         pronouns: SUPPORTED_PRONOUNS

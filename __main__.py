@@ -351,6 +351,7 @@ async def pronouns_set(ctx: commands.Context):
                 pronouns.set_pronouns(user_id, 'any')
                 await ctx.send("Set your pronouns to any", ephemeral=True)
                 return
+        
 
     pronouns_select.callback = pronouns_select_callback
     view.add_item(pronouns_select)
