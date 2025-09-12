@@ -15,6 +15,9 @@ from cogs.reactions import Reactions
 from cogs.songs import Songs
 from cogs.search import Search
 
+# Utilities
+from cogs.utils import pronouns
+
 # Other
 from rich.console import Console
 # Both of these are useless since im hosting on railway, so I don't need to load the env
@@ -302,6 +305,72 @@ async def help(ctx: commands.Context, category: str = None):
 #     """Ignore this"""
 #     commands = await get_commands()
 #     await ctx.send(commands)
+
+# Pronouns Test
+@bot.command()
+async def pronouns_set(ctx: commands.Context):
+    """Ignore this"""
+    user_id = ctx.author.id
+    description_sp = [f'{pronoun_pair}, ' for pronoun_pair in pronouns.SUPPORTED_PRONOUNS]
+
+
+    set_pronouns_embed = Embed(
+        title="Set your pronouns!",
+        description=f"Choose your pronouns here. Currently supported pronouns: {description_sp}"
+    )
+    view = View(timeout=500)
+    pronouns_option = [
+        SelectOption(label='he/him'),
+        SelectOption(label='she/her'),
+        SelectOption(label='they/them'),
+        SelectOption(label='any')
+    ] # will add more pronouns later
+    # to keep updated
+
+    pronouns_select = Select(
+        placeholder='Select your pronouns...',
+        options=pronouns_option
+    )
+
+    async def pronouns_select_callback(interaction: Interaction):
+        selected = pronouns_select.values[0]
+        match selected:
+            case 'he/him':
+                pronouns.set_pronouns(user_id, 'he/him')
+                await ctx.send("Set your pronouns to he/him.", ephemeral=True)
+                return
+            case 'she/her':
+                pronouns.set_pronouns(user_id, 'she/her')
+                await ctx.send("Set your pronouns to she/her.", ephemeral=True)
+                return
+            case 'they/them':
+                pronouns.set_pronouns(user_id, 'they/them')
+                await ctx.send("Set your pronouns to they/them.", ephemeral=True)
+                return
+            case 'any':
+                pronouns.set_pronouns(user_id, 'any')
+                await ctx.send("Set your pronouns to any", ephemeral=True)
+                return
+
+    pronouns_select.callback = pronouns_select_callback
+    view.add_item(pronouns_select)
+
+    await ctx.send(embed=set_pronouns_embed, view=view)
+
+@bot.command()
+async def phrase_pronouns(ctx: commands.Context):
+    user_id = ctx.author.id
+    all_pronouns = pronouns.get_pronoun(user_id, pronouns.ALL)
+
+    # Sentences (thanks pronouns.page)
+    subject = f'I think {all_pronouns[0]} is very nice. '
+    _object = f'I met {all_pronouns[1]} recently. '
+    possessive = f'Is this {all_pronouns[2]} dog? '
+    possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
+    reflexive = f'{all_pronouns[0]} did it all by {all_pronouns[4]}.'
+
+    full = subject + _object + possessive + possessive_2 + reflexive
+    await ctx.send(full)
 
 async def main():
     await load_cogs()
