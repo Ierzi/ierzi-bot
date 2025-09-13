@@ -26,6 +26,7 @@ import os
 from dotenv import load_dotenv
 import asyncio
 import time
+import random
 # I've heard there's an async version of this but ion wanna remake my whole bot for this :wilted_rose:
 # It's not like a ton of ppl are using my bot anyway
 import psycopg2
@@ -93,8 +94,18 @@ async def on_message(message: Message):
                 return
             
             await message.reply(response)
+    
+    # @Grok is this true
+    if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
+        is_true = random.choice([True, False])
+        if is_true:
+            await message.add_reaction("✅")
+        else:
+            await message.add_reaction("❌")
+
 
     await bot.process_commands(message)
+
 
 # Cog loading
 async def load_cogs():
