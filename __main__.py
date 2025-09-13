@@ -307,6 +307,10 @@ async def pronouns_set(ctx: commands.Context):
     """Set your pronouns."""
     user_id = ctx.author.id
 
+    if user_id == 1206615811792576614:
+        await ctx.message.add_reaction("❌")
+        return
+
     set_pronouns_embed = Embed(
         title="Set your pronouns!",
         # Manual description
