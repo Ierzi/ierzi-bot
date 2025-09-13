@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ui import View, Select
 
 # Cogs
-from cogs.ai import AI
+from cogs.ai import AI, isthistrue
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -69,9 +69,27 @@ async def on_command_error(ctx: commands.Context, error):
 
 @bot.event
 async def on_message(message: Message):
-    if message.poll and message.channel.id == 1411714823405965342: # poll channel
+    # Auto create threads in the poll channel
+    if message.poll and message.channel.id == 1411714823405965342: 
         await message.create_thread(name=message.poll.question)
     
+    # @Ierzi Bot is this true
+    if bot.user in message.mentions:
+        if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
+            ctx = await bot.get_context(message)
+            message = await isthistrue(ctx, message.content)
+            if isinstance(message, list):
+                for m in message:
+                    await message.reply(m)
+                    asyncio.sleep(0.2)
+                
+                return
+            
+            await message.reply(message)
+    
+
+        
+
     await bot.process_commands(message)
 
 # Cog loading
