@@ -74,34 +74,35 @@ async def on_message(message: Message):
     if message.poll and message.channel.id == 1411714823405965342: 
         await message.create_thread(name=message.poll.question)
     
-    # @Ierzi Bot is this true
-    if bot.user in message.mentions:
-        if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
-            ai = AI(bot, console)
-            ctx = await bot.get_context(message)
-            # get reply
-
-            reply_id = message.reference.message_id
-            reply = await ctx.channel.fetch_message(reply_id)
-            reply_content = reply.content
-
-            response = await ai.isthistrue(ctx, reply_content)
-            if isinstance(message, list):
-                for m in response:
-                    await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
-                    await asyncio.sleep(0.2)
-                
-                return
-            
-            await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
+    if not message.author.id == bot.user.id
+        # @Ierzi Bot is this true
+        if bot.user in message.mentions:
+            if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
+                ai = AI(bot, console)
+                ctx = await bot.get_context(message)
+                # get reply
     
-    # @Grok is this true
-    if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
-        is_true = random.choice([True, False])
-        if is_true:
-            await message.add_reaction("✅")
-        else:
-            await message.add_reaction("❌")
+                reply_id = message.reference.message_id
+                reply = await ctx.channel.fetch_message(reply_id)
+                reply_content = reply.content
+    
+                response = await ai.isthistrue(ctx, reply_content)
+                if isinstance(message, list):
+                    for m in response:
+                        await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
+                        await asyncio.sleep(0.2)
+                    
+                    return
+                
+                await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
+        
+        # @Grok is this true
+        if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
+            is_true = random.choice([True, False])
+            if is_true:
+                await message.add_reaction("✅")
+            else:
+                await message.add_reaction("❌")
 
 
     await bot.process_commands(message)
@@ -168,7 +169,7 @@ async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
         "debug thing with spendings ai", "add more reactions", 
-        "fix !listmarrriages",  "custom emojis", 
+        "fix !listmarrrriages",  "custom emojis", 
         "fix the marriage database that is so messy",  
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
         "achievements?", "other ai models", "remake the whole bot to use async for database (aiopg)", "@grok is this true"
