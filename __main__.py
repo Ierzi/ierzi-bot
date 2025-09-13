@@ -404,6 +404,10 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
 
 @bot.command(name='fsp')
 async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, _pronouns: str):
+    if ctx.author.id != 966351518020300841:
+        await ctx.message.add_reaction("❌")
+        return
+    
     user_id = user if isinstance(user, int) else user.id
     
     await pronouns.set_pronouns(user_id, _pronouns)
