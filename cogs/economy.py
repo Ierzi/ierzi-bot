@@ -42,7 +42,7 @@ class Economy(commands.Cog):
         self.conn = conn
         self.cur = cur
         self.console = console
-        self.coin_emoji = bot.get_emoji(1416424412412121089)
+        self.coin_emoji = '<:coins:1416427911552045076>'
 
         # All the jobs and how much they pay
         self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
