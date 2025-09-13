@@ -76,8 +76,9 @@ async def on_message(message: Message):
     # @Ierzi Bot is this true
     if bot.user in message.mentions:
         if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
+            ai = AI(bot, console)
             ctx = await bot.get_context(message)
-            response = await isthistrue(ctx, message.content)
+            response = await ai.isthistrue(ctx, message.content)
             if isinstance(message, list):
                 for m in response:
                     await message.reply(m)

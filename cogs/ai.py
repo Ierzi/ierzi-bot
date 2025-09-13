@@ -113,31 +113,31 @@ class AI(commands.Cog):
         
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
+    async def isthistrue(self, ctx: commands.Context, fact_checked_mess: str):
+        # Using Groq cause it fast
+        client = AsyncGroq(api_key=self.groq_key)
+        self.console.print(fact_checked_mess)
 
-async def isthistrue(ctx: commands.Context, fact_checked_mess: str):
-    # Using Groq cause it fast
-    client = AsyncGroq(api_key=os.getenv("GROQ_KEY"))
+        await ctx.typing()
+        response = await client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
+                {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
+            ],
+        )
 
-    await ctx.typing()
-    response = await client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=[
-            {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
-            {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
-        ],
-    )
-
-    output = response.choices[0].message.content
-    outputs = []
-    if len(output) > 2000:
-        current_split = ""
-        for char in output:
-            current_split += char
-            if len(current_split) > 1850 and char == " ":
-                outputs.append(current_split)
-                current_split = ""
-    
-    if outputs:
-        return outputs
-    
-    return output
+        output = response.choices[0].message.content
+        outputs = []
+        if len(output) > 2000:
+            current_split = ""
+            for char in output:
+                current_split += char
+                if len(current_split) > 1850 and char == " ":
+                    outputs.append(current_split)
+                    current_split = ""
+        
+        if outputs:
+            return outputs
+        
+        return output
