@@ -7,7 +7,7 @@ from discord.ext import commands
 from discord.ui import View, Select
 
 # Cogs
-from cogs.ai import AI, isthistrue
+from cogs.ai import AI
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
