@@ -78,7 +78,11 @@ async def on_message(message: Message):
         if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
             ai = AI(bot, console)
             ctx = await bot.get_context(message)
-            response = await ai.isthistrue(ctx, message.content)
+            # get reply
+
+            reply = message.reference
+
+            response = await ai.isthistrue(ctx, reply)
             if isinstance(message, list):
                 for m in response:
                     await message.reply(m)
