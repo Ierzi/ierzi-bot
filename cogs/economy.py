@@ -45,7 +45,7 @@ class Economy(commands.Cog):
         self.coin_emoji = '<:coins:1416429599084118239>'
 
         # All the jobs and how much they pay
-        self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
+        self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 250), ("Teacher", 500), ("Video Editor", 750), ("Chef", 1000), ("Music Producer", 1500), ("Software Developer", 2000), ("Nanotechnology Engineer", 3000)]
 
         # Shop
         #TODO
@@ -188,7 +188,7 @@ class Economy(commands.Cog):
             await ctx.send(f"You already claimed your daily! \nYou can claim it again in {hours} hours, {minutes} minutes and {seconds} seconds.")
             return
 
-        payment = 1250
+        payment = 12_000
         self.cur.execute("""
             INSERT INTO users (user_id, balance, last_daily)
             VALUES (%s, %s, %s)
@@ -202,7 +202,7 @@ class Economy(commands.Cog):
 
         all_pronouns = await pronouns.get_pronoun(user_id)
 
-        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment} coins {self.coin_emoji}.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment:,} coins {self.coin_emoji}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
@@ -339,7 +339,7 @@ class Economy(commands.Cog):
     @commands.command(name="robbank")
     async def rob_bank(self, ctx: commands.Context):
         """Rob a bank (no way)."""
-        rob_money = random.randint(500, 1000)
+        rob_money = random.randint(1000, 2000)
         success = False
         user_id = ctx.author.id
         cooldown = timedelta(hours=2)
@@ -356,12 +356,12 @@ class Economy(commands.Cog):
 
         # You have a 33% chance of robbing a bank.
         if random.random() < 0.33:
-            await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins!", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, rob_money)
             success = True
         else:
             lose_money = rob_money // 2
-            await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, -lose_money)
         
         self.cur.execute("""
@@ -401,11 +401,11 @@ class Economy(commands.Cog):
         # You have a 25% chance of robbing someone
         # cause its not nice lmao (and you're also stealing a lot of money)
         if random.random() < 0.25:
-            await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}{self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, 1000)
             await self.add_money(user.id, -1000)
         else:
-            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins {self.coin_emoji}:broken_heart:", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins :broken_heart:", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, -500)
         
         # record last_robbed_user timestamp without changing balance further
