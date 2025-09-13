@@ -5,11 +5,21 @@ from dotenv import load_dotenv
 import os
 from enum import Enum
 
+# IF YOU WANNA UPDATE PRONOUNS
+# UPDATE ALL OF THIS
+# - SUPPORTED_PRONOUNS
+# - pronouns_data
+# (__main__.py) (pronouns_set()) set_pronouns_embed.description
+# (__main__.py) (pronouns_set()) pronouns_option
+# (__main__.py) (pronouns_set()) pronouns_select_callback()
+
+# --------------
+
 # -- Types
 
 # only have the most common pronouns yet
 #TODO: add more pronouns
-SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them', 'any'] # any will probably use they/them
+SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'any'] # any will probably use they/them
 pronoun = str #he
 pronouns = str #he/him
 _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
@@ -28,7 +38,8 @@ ALL = PronounEnum.ALL
 pronouns_data: dict[str, _pronouns_data] = {
     'he/him': ('he', 'him', 'his', 'his', 'himself'),
     'she/her': ('she', 'her', 'her', 'hers', 'herself'),
-    'they/them': ('they', 'them', 'their', 'theirs', 'themselves'),
+    'they/them/themselves': ('they', 'them', 'their', 'theirs', 'themselves'),
+    'they/them/themself': ('they', 'them', 'their', 'theirs', 'themself'),
     'any': ('they', 'them', 'their', 'theirs', 'themselves') # Like I said on SUPPORTED_PRONOUNS
 }
 
@@ -71,7 +82,7 @@ async def get_pronouns(
     if row and row[0]:
         return row[0]
     else: 
-        return 'na' if get_na else 'they/them'
+        return 'na' if get_na else 'they/them/themselves'
     
 async def get_pronoun(
         user_id: int,
@@ -98,18 +109,18 @@ async def get_pronoun(
             case PronounEnum.ALL:
                 return pronouns_data[_pronouns]
     else:
-        # they/them
+        # they/them/themselves
         match data_returned:
             case PronounEnum.SUBJECT:
-                return pronouns_data['they/them'][0]
+                return pronouns_data['they/them/themselves'][0]
             case PronounEnum.OBJECT:
-                return pronouns_data['they/them'][1]
+                return pronouns_data['they/them/themselves'][1]
             case PronounEnum.POSSESSIVE:
-                return pronouns_data['they/them'][2]
+                return pronouns_data['they/them/themselves'][2]
             case PronounEnum.POSSESSIVE_2:
-                return pronouns_data['they/them'][3]
+                return pronouns_data['they/them/themselves'][3]
             case PronounEnum.REFLEXIVE:
-                return pronouns_data['they/them'][4]
+                return pronouns_data['they/them/themselves'][4]
             case PronounEnum.ALL:
-                return pronouns_data['they/them']
+                return pronouns_data['they/them/themselves']
         

@@ -314,7 +314,7 @@ async def pronouns_set(ctx: commands.Context):
     set_pronouns_embed = Embed(
         title="Set your pronouns!",
         # Manual description
-        description="Choose your pronouns here. Currently supported pronouns: he/him, she/her, they/them, and any.\n"
+        description="Choose your pronouns here. Currently supported pronouns: he/him, she/her, they/them/themself, they/them/themselves, and any.\n"
     )
 
     current_pronouns = await pronouns.get_pronouns(user_id)
@@ -324,7 +324,8 @@ async def pronouns_set(ctx: commands.Context):
     pronouns_option = [
         SelectOption(label='he/him'),
         SelectOption(label='she/her'),
-        SelectOption(label='they/them'),
+        SelectOption(label='they/them/themself'),
+        SelectOption(label='they/them/themselves'),
         SelectOption(label='any')
     ] # will add more pronouns later
     # to keep updated every time I add new pronouns
@@ -345,9 +346,13 @@ async def pronouns_set(ctx: commands.Context):
                 await pronouns.set_pronouns(user_id, 'she/her')
                 await interaction.message.edit(content="Set your pronouns to she/her.")
                 return
-            case 'they/them':
-                await pronouns.set_pronouns(user_id, 'they/them')
-                await interaction.message.edit(content="Set your pronouns to they/them.")
+            case 'they/them/themselves':
+                await pronouns.set_pronouns(user_id, 'they/them/themselves')
+                await interaction.message.edit(content="Set your pronouns to they/them/themselves.")
+                return
+            case 'they/them/themself':
+                await pronouns.set_pronouns(user_id, 'they/them/themself')
+                await interaction.message.edit(content="Set your pronouns to they/them/themself.")
                 return
             case 'any':
                 await pronouns.set_pronouns(user_id, 'any')
