@@ -84,7 +84,7 @@ async def on_message(message: Message):
             reply = await ctx.channel.fetch_message(reply_id)
             reply_content = reply.content
 
-            response = await ai.isthistrue(ctx, reply)
+            response = await ai.isthistrue(ctx, reply_content)
             if isinstance(message, list):
                 for m in response:
                     await message.reply(m)
