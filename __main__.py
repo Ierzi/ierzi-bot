@@ -390,12 +390,13 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
         user_id = ctx.author.id
     
     _pronouns = await pronouns.get_pronouns(user_id, get_na=True)
+    user_profile = user if isinstance(user, discord.Member) else bot.get_user(user_id) or await bot.fetch_user(user)
 
     if user:
         if _pronouns == 'na':
-            await ctx.send(f"{ctx.author.mention} didn't set their pronouns.")
+            await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
         else:
-            await ctx.send(f"{ctx.author.mention}'s pronouns are {_pronouns}.")
+            await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
     else:
         if _pronouns == 'na':
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")

@@ -8,6 +8,7 @@ import random
 from datetime import datetime, timedelta, timezone
 import asyncio
 from typing import TypedDict, Literal, Optional
+from utils import pronouns
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),
@@ -194,7 +195,12 @@ class Economy(commands.Cog):
         """, (user_id, payment, now)
         )
         conn.commit()
-        await ctx.send(f"{ctx.author.mention} claimed THEIR daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
+
+        # Use pronouns
+
+        all_pronouns = await pronouns.get_pronoun(user_id)
+
+        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
@@ -337,6 +343,9 @@ class Economy(commands.Cog):
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc)
 
+        # Pronouns
+        all_pronouns = await pronouns.get_pronoun(user_id)
+
         output = await self.cooldown(user_id, 'last_robbed_bank', cooldown, now)
         if not output[0]: # Cooldown
             hours, minutes, seconds = output[1:4]
@@ -350,7 +359,7 @@ class Economy(commands.Cog):
             success = True
         else:
             lose_money = rob_money // 2
-            await ctx.send(f"🚨 The police caught {ctx.author.mention} and they lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, -lose_money)
         
         self.cur.execute("""
