@@ -390,7 +390,7 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
         user_id = ctx.author.id
     
     _pronouns = await pronouns.get_pronouns(user_id, get_na=True)
-    user_profile = user if isinstance(user, discord.Member) else bot.get_user(user_id) or await bot.fetch_user(user)
+    user_profile = user if isinstance(user, discord.Member) else bot.get_user(user_id) or await bot.fetch_user(user) if user else ctx.author
 
     if user:
         if _pronouns == 'na':
