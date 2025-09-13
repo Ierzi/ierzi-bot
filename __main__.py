@@ -379,9 +379,13 @@ async def pronouns_set(ctx: commands.Context):
 #     await ctx.send(full)
 
 @bot.command()
-async def get_pronouns(ctx: commands.Context, user: discord.Member = None):
+async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None):
+    # Get user_id
     if user:
-        user_id = user.id
+        if isinstance(user, discord.Member):
+            user_id = user.id
+        else:
+            user_id = user
     else:
         user_id = ctx.author.id
     
@@ -397,6 +401,13 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member = None):
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
         else:
             await ctx.send(f"Your current pronouns are {_pronouns}.")
+
+@bot.command(name='fsp')
+async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, _pronouns: str):
+    user_id = user if isinstance(user, int) else user.id
+    
+    await pronouns.set_pronouns(user_id, _pronouns)
+    await ctx.message.add_reaction("👍")
 
 async def main():
     await load_cogs()
