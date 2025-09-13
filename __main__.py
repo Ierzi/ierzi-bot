@@ -77,18 +77,15 @@ async def on_message(message: Message):
     if bot.user in message.mentions:
         if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
             ctx = await bot.get_context(message)
-            message = await isthistrue(ctx, message.content)
+            response = await isthistrue(ctx, message.content)
             if isinstance(message, list):
-                for m in message:
+                for m in response:
                     await message.reply(m)
-                    asyncio.sleep(0.2)
+                    await asyncio.sleep(0.2)
                 
                 return
             
-            await message.reply(message)
-    
-
-        
+            await message.reply(response)
 
     await bot.process_commands(message)
 
