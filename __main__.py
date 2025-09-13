@@ -88,12 +88,12 @@ async def on_message(message: Message):
             response = await ai.isthistrue(ctx, reply_content)
             if isinstance(message, list):
                 for m in response:
-                    await message.reply(m)
+                    await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
                     await asyncio.sleep(0.2)
                 
                 return
             
-            await message.reply(response)
+            await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
     
     # @Grok is this true
     if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
