@@ -10,16 +10,6 @@ import asyncio
 from typing import TypedDict, Literal, Optional
 from .utils import pronouns
 
-conn = psycopg2.connect(
-    host=os.getenv("PGHOST"),
-    database=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
-    port=os.getenv("PGPORT")
-)
-
-cur = conn.cursor()
-
 # -- Types
 
 # Cooldown function
@@ -29,6 +19,17 @@ _minutes = Optional[int]
 _seconds = Optional[int]
 output_data = tuple[_output, _hours, _minutes, _seconds]
 
+# -- Variables
+
+conn = psycopg2.connect(
+    host=os.getenv("PGHOST"),
+    database=os.getenv("PGDATABASE"),
+    user=os.getenv("PGUSER"),
+    password=os.getenv("PGPASSWORD"),
+    port=os.getenv("PGPORT")
+)
+
+cur = conn.cursor()
 
 class ShopItem(TypedDict):
     name: str
@@ -41,6 +42,7 @@ class Economy(commands.Cog):
         self.conn = conn
         self.cur = cur
         self.console = console
+        self.coin_emoji = bot.get_emoji(1416424412412121089)
 
         # All the jobs and how much they pay
         self.jobs: list[tuple[str, int]] = [("McDonalds Employee", 100), ("Teacher", 300), ("Video Editor", 300), ("Chef", 500), ("Music Producer", 500), ("Software Developer", 750), ("Nanotechnology Engineer", 900)]
@@ -138,7 +140,7 @@ class Economy(commands.Cog):
         """, (user_id, payment, now)
         )
         conn.commit()
-        await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins!", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard")) # since there's no other leaderboards
     @commands.cooldown(1, 5, commands.BucketType.user) # cause its a heavy command that freezes(?) the bot for a few seconds
@@ -168,7 +170,7 @@ class Economy(commands.Cog):
             )
             for i, (user_id, balance) in enumerate(rows):
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-                ecolb_embed.description += f"**{i + 1 + (page * 10) - 10}. {user.mention}** - {balance:,} coins \n" 
+                ecolb_embed.description += f"**{i + 1 + (page * 10) - 10}. {user.mention}** - {self.coin_emoji} {balance:,} coins \n" 
 
         await ctx.send(embed=ecolb_embed, allowed_mentions=discord.AllowedMentions.none()) 
 
@@ -200,7 +202,7 @@ class Economy(commands.Cog):
 
         all_pronouns = await pronouns.get_pronoun(user_id)
 
-        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment} coins.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment} coins {self.coin_emoji}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
@@ -287,7 +289,7 @@ class Economy(commands.Cog):
 
         lottery_embed = Embed(
             title="Lottery",
-            description=f"The prize money is {prize_money:,} coins. \nEach ticket costs {ticket_price} coins. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**",
+            description=f"The prize money is {prize_money:,} coins {self.coin_emoji}. \nEach ticket costs {ticket_price} coins {self.coin_emoji}. \n\nWinning chance: {chance * 100}% \n\n**Reply with the amount of tickets you would like to buy (max 10).**",
             color=Colour.green()
         )
         await ctx.send(embed=lottery_embed)
@@ -354,12 +356,12 @@ class Economy(commands.Cog):
 
         # You have a 33% chance of robbing a bank.
         if random.random() < 0.33:
-            await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins!", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, rob_money)
             success = True
         else:
             lose_money = rob_money // 2
-            await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, -lose_money)
         
         self.cur.execute("""
@@ -376,6 +378,9 @@ class Economy(commands.Cog):
         """Rob someone 1000 coins. If you fail you give them 500 coins."""
         if not user:
             await ctx.send("who?")
+            return
+        if user.bot:
+            await ctx.send('rob a real person vro')
             return
         
         balance = await self.get_balance(user.id)
@@ -396,11 +401,11 @@ class Economy(commands.Cog):
         # You have a 25% chance of robbing someone
         # cause its not nice lmao (and you're also stealing a lot of money)
         if random.random() < 0.25:
-            await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}!", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}{self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, 1000)
             await self.add_money(user.id, -1000)
         else:
-            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins :broken_heart:", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins {self.coin_emoji}:broken_heart:", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, -500)
         
         # record last_robbed_user timestamp without changing balance further
@@ -495,12 +500,12 @@ class Economy(commands.Cog):
         
         if isinstance(user, discord.Member):
             await self.add_money(user.id, amount)
-            await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"Successfully added {amount} coins to {user.mention}'s account. {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
         
         if isinstance(user, int):
             # user id
             await self.add_money(user, amount)
             profile = self.bot.get_user(user) or await self.bot.fetch_user(user)
-            await ctx.send(f"Successfully added {amount} coins to {profile.mention}'s account.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"Successfully added {amount} coins to {profile.mention}'s account. {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
