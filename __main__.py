@@ -388,7 +388,6 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member = None):
         await ctx.send(f"{ctx.author.mention}'s pronouns are {_pronouns}.")
     else:
         await ctx.send(f"Your current pronouns are {_pronouns}")
-    
 
 async def main():
     await load_cogs()
