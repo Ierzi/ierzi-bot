@@ -82,9 +82,6 @@ async def get_pronoun(
     if row and row[0]:
         _pronouns: pronouns = row[0]
         console.print(_pronouns)
-        if _pronouns not in SUPPORTED_PRONOUNS:
-            console.print('invalid pronouns')
-            return 
         
         match data_returned:
             case PronounEnum.SUBJECT:
