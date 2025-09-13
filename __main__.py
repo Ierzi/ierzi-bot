@@ -307,7 +307,7 @@ async def help(ctx: commands.Context, category: str = None):
 #     await ctx.send(commands)
 
 # Pronouns Test
-@bot.command()
+@bot.command(name="pronouns")
 async def pronouns_set(ctx: commands.Context):
     user_id = ctx.author.id
 
@@ -339,19 +339,19 @@ async def pronouns_set(ctx: commands.Context):
         match selected:
             case 'he/him':
                 await pronouns.set_pronouns(user_id, 'he/him')
-                await interaction.message.edit("Set your pronouns to he/him.")
+                await interaction.message.edit(content="Set your pronouns to he/him.")
                 return
             case 'she/her':
                 await pronouns.set_pronouns(user_id, 'she/her')
-                await interaction.message.edit("Set your pronouns to she/her.")
+                await interaction.message.edit(content="Set your pronouns to she/her.")
                 return
             case 'they/them':
                 await pronouns.set_pronouns(user_id, 'they/them')
-                await interaction.message.edit("Set your pronouns to they/them.")
+                await interaction.message.edit(content="Set your pronouns to they/them.")
                 return
             case 'any':
                 await pronouns.set_pronouns(user_id, 'any')
-                await interaction.message.edit("Set your pronouns to any.")
+                await interaction.message.edit(content="Set your pronouns to any.")
                 return
         
 
@@ -360,20 +360,23 @@ async def pronouns_set(ctx: commands.Context):
 
     await ctx.send(embed=set_pronouns_embed, view=view)
 
-@bot.command()
-async def phrase_pronouns(ctx: commands.Context):
-    user_id = ctx.author.id
-    all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
-    # Sentences (thanks pronouns.page)
-    subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
-    _object = f'I met {all_pronouns[1]} recently. '
-    possessive = f'Is this {all_pronouns[2]} dog? '
-    possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
-    reflexive = f'{all_pronouns[0]} did it all by {all_pronouns[4]}.'
+# -- Test command to see if the pronouns work
 
-    full = subject + _object + possessive + possessive_2 + reflexive
-    await ctx.send(full)
+# @bot.command()
+# async def phrase_pronouns(ctx: commands.Context):
+#     user_id = ctx.author.id
+#     all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
+
+#     # Sentences (thanks pronouns.page)
+#     subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
+#     _object = f'I met {all_pronouns[1]} recently. '
+#     possessive = f'Is this {all_pronouns[2]} dog? '
+#     possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
+#     reflexive = f'{all_pronouns[0].capitalize()} did it all by {all_pronouns[4]}.'
+
+#     full = subject + _object + possessive + possessive_2 + reflexive
+#     await ctx.send(full)
 
 @bot.command()
 async def get_pronouns(ctx: commands.Context, user: discord.Member = None):
@@ -382,12 +385,18 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member = None):
     else:
         user_id = ctx.author.id
     
-    _pronouns = await pronouns.get_pronouns(user_id)
+    _pronouns = await pronouns.get_pronouns(user_id, get_na=True)
 
     if user:
-        await ctx.send(f"{ctx.author.mention}'s pronouns are {_pronouns}.")
+        if _pronouns == 'na':
+            await ctx.send(f"{ctx.author.mention} didn't set their pronouns.")
+        else:
+            await ctx.send(f"{ctx.author.mention}'s pronouns are {_pronouns}.")
     else:
-        await ctx.send(f"Your current pronouns are {_pronouns}")
+        if _pronouns == 'na':
+            await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
+        else:
+            await ctx.send(f"Your current pronouns are {_pronouns}.")
 
 async def main():
     await load_cogs()
