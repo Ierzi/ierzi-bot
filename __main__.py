@@ -366,7 +366,7 @@ async def phrase_pronouns(ctx: commands.Context):
     all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
     # Sentences (thanks pronouns.page)
-    subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} is very nice.'
+    subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
     _object = f'I met {all_pronouns[1]} recently. '
     possessive = f'Is this {all_pronouns[2]} dog? '
     possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
