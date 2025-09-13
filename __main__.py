@@ -80,7 +80,9 @@ async def on_message(message: Message):
             ctx = await bot.get_context(message)
             # get reply
 
-            reply = message.reference
+            reply_id = message.reference.message_id
+            reply = await ctx.channel.fetch_message(reply_id)
+            reply_content = reply.content
 
             response = await ai.isthistrue(ctx, reply)
             if isinstance(message, list):
