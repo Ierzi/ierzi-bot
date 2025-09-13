@@ -309,15 +309,17 @@ async def help(ctx: commands.Context, category: str = None):
 # Pronouns Test
 @bot.command()
 async def pronouns_set(ctx: commands.Context):
-    """Ignore this"""
     user_id = ctx.author.id
-
 
     set_pronouns_embed = Embed(
         title="Set your pronouns!",
         # Manual description
-        description="Choose your pronouns here. Currently supported pronouns: he/him, she/her, they/them, and any."
+        description="Choose your pronouns here. Currently supported pronouns: he/him, she/her, they/them, and any.\n"
     )
+
+    current_pronouns = await pronouns.get_pronouns(user_id)
+    set_pronouns_embed.description += f"Current pronouns: {current_pronouns}"
+
     view = View(timeout=500)
     pronouns_option = [
         SelectOption(label='he/him'),
@@ -325,7 +327,7 @@ async def pronouns_set(ctx: commands.Context):
         SelectOption(label='they/them'),
         SelectOption(label='any')
     ] # will add more pronouns later
-    # to keep updated
+    # to keep updated every time I add new pronouns
 
     pronouns_select = Select(
         placeholder='Select your pronouns...',
@@ -337,19 +339,19 @@ async def pronouns_set(ctx: commands.Context):
         match selected:
             case 'he/him':
                 await pronouns.set_pronouns(user_id, 'he/him')
-                await ctx.send("Set your pronouns to he/him.", ephemeral=True)
+                await interaction.message.edit("Set your pronouns to he/him.")
                 return
             case 'she/her':
                 await pronouns.set_pronouns(user_id, 'she/her')
-                await ctx.send("Set your pronouns to she/her.", ephemeral=True)
+                await interaction.message.edit("Set your pronouns to she/her.")
                 return
             case 'they/them':
                 await pronouns.set_pronouns(user_id, 'they/them')
-                await ctx.send("Set your pronouns to they/them.", ephemeral=True)
+                await interaction.message.edit("Set your pronouns to they/them.")
                 return
             case 'any':
                 await pronouns.set_pronouns(user_id, 'any')
-                await ctx.send("Set your pronouns to any.", ephemeral=True)
+                await interaction.message.edit("Set your pronouns to any.")
                 return
         
 
@@ -360,12 +362,11 @@ async def pronouns_set(ctx: commands.Context):
 
 @bot.command()
 async def phrase_pronouns(ctx: commands.Context):
-    """IGNORE THIS PLEASE ITS INSANELY BUGGY"""
     user_id = ctx.author.id
     all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
     # Sentences (thanks pronouns.page)
-    subject = f'I think {all_pronouns[0]} is very nice. '
+    subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} is very nice.'
     _object = f'I met {all_pronouns[1]} recently. '
     possessive = f'Is this {all_pronouns[2]} dog? '
     possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
@@ -373,6 +374,21 @@ async def phrase_pronouns(ctx: commands.Context):
 
     full = subject + _object + possessive + possessive_2 + reflexive
     await ctx.send(full)
+
+@bot.command()
+async def get_pronouns(ctx: commands.Context, user: discord.Member = None):
+    if user:
+        user_id = user.id
+    else:
+        user_id = ctx.author.id
+    
+    _pronouns = await pronouns.get_pronouns(user_id)
+
+    if user:
+        await ctx.send(f"{ctx.author.mention}'s pronouns are {_pronouns}.")
+    else:
+        await ctx.send(f"Your current pronouns are {_pronouns}")
+    
 
 async def main():
     await load_cogs()
