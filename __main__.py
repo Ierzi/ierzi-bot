@@ -74,7 +74,7 @@ async def on_message(message: Message):
     if message.poll and message.channel.id == 1411714823405965342: 
         await message.create_thread(name=message.poll.question)
     
-    if not message.author.id == bot.user.id
+    if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
         if bot.user in message.mentions:
             if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
