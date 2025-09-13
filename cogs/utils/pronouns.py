@@ -59,8 +59,7 @@ async def set_pronouns(
     conn.commit()
 
 async def get_pronouns(
-        user_id: int,
-        get_undefined: bool = False
+        user_id: int
     ) -> pronouns:
     
     cur.execute("SELECT pronouns FROM users WHERE user_id = %s", (user_id,))
@@ -69,7 +68,7 @@ async def get_pronouns(
     if row and row[0]:
         return row[0]
     else: 
-        return 'undefined' if get_undefined else 'they/them'
+        return 'they/them'
     
 async def get_pronoun(
         user_id: int,
