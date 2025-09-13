@@ -8,7 +8,7 @@ import random
 from datetime import datetime, timedelta, timezone
 import asyncio
 from typing import TypedDict, Literal, Optional
-from utils import pronouns
+from .utils import pronouns
 
 conn = psycopg2.connect(
     host=os.getenv("PGHOST"),

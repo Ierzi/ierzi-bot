@@ -4,7 +4,7 @@ from rich.console import Console
 import random
 import asyncio
 from pathlib import Path
-from utils import pronouns
+from .utils import pronouns
 
 class Reactions(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
