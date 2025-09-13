@@ -58,6 +58,8 @@ async def set_pronouns(
                 """, (user_id, pronouns))
     conn.commit()
 
+    console.print(f"Set {user_id}'s pronouns to {pronouns}.")
+
 async def get_pronouns(
         user_id: int,
         get_na: bool = False
@@ -78,11 +80,9 @@ async def get_pronoun(
     
     cur.execute("SELECT pronouns FROM users WHERE user_id = %s", (user_id,))
     row = cur.fetchone()
-    console.print(row)
 
     if row and row[0]:
         _pronouns: pronouns = row[0]
-        console.print(_pronouns)
         
         match data_returned:
             case PronounEnum.SUBJECT:
