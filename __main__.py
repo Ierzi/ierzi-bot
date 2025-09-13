@@ -214,7 +214,7 @@ async def fill_embeds():
     for command_name, cog_name, command_help in all_commands:
         match cog_name:
             case None:
-                if command_name in ["download", "export", "load", 'phrase_pronouns', 'pronouns_set']:
+                if command_name in ["download", "export", "load", 'fsp']:
                     # Testing commands to ignore
                     continue
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
@@ -300,15 +300,11 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=search_embed, view=view)
             case _:
                 await ctx.send("Invalid category.")
-# @bot.command()
-# async def debug(ctx: commands.Context):
-#     """Ignore this"""
-#     commands = await get_commands()
-#     await ctx.send(commands)
 
 # Pronouns Test
 @bot.command(name="pronouns")
 async def pronouns_set(ctx: commands.Context):
+    """Set your pronouns."""
     user_id = ctx.author.id
 
     set_pronouns_embed = Embed(
@@ -378,8 +374,9 @@ async def pronouns_set(ctx: commands.Context):
 #     full = subject + _object + possessive + possessive_2 + reflexive
 #     await ctx.send(full)
 
-@bot.command()
+@bot.command(name="getpronouns")
 async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None):
+    """Get someone's pronouns."""
     # Get user_id
     if user:
         if isinstance(user, discord.Member):
