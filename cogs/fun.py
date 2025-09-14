@@ -172,7 +172,7 @@ class Fun(commands.Cog):
         random_video = random.choice(self.cat_vid_names)
         await ctx.send(file=discord.File(random_video.resolve()))
     
-    @commands.comand()
+    @commands.command()
     async def pi(self, ctx: commands.Context, digits: int):
         """Pi digits."""
         url = f"https://api.math.tools/numbers/pi?to={digits}"
