@@ -18,8 +18,8 @@ from enum import Enum
 # -- Types
 
 # only have the most common pronouns yet
-#TODO: add more pronouns
-SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'any'] # any will probably use they/them
+#TODO: add more pronouns (nameself, it/its, one/one's, neopronouns...) https://en.pronouns.page/pronouns
+SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'it/its', 'any'] # any will probably use they/them
 pronoun = str #he
 pronouns = str #he/him
 _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
@@ -40,6 +40,7 @@ pronouns_data: dict[str, _pronouns_data] = {
     'she/her': ('she', 'her', 'her', 'hers', 'herself'),
     'they/them/themselves': ('they', 'them', 'their', 'theirs', 'themselves'),
     'they/them/themself': ('they', 'them', 'their', 'theirs', 'themself'),
+    'it/its': ('it', 'it', 'its', 'its', 'itself'),
     'any': ('they', 'them', 'their', 'theirs', 'themselves') # Like I said on SUPPORTED_PRONOUNS
 }
 
