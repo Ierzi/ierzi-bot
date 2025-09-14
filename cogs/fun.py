@@ -179,8 +179,10 @@ class Fun(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 json_data = await response.json()
-            
-        pi = json_data[0]['contents']['result']
+        
+        console.log(json_data)
+
+        pi = json_data['contents']['result']
         splits = []
         if digits > 1980:
             current_split = ""
