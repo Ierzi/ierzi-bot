@@ -180,7 +180,7 @@ class Fun(commands.Cog):
             async with session.get(url) as response:
                 json_data = await response.json()
             
-        pi = json_data['contents']['result']
+        pi = json_data[0]['contents']['result']
         splits = []
         if digits > 1980:
             current_split = ""
