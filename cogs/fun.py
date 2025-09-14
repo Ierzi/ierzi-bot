@@ -5,6 +5,7 @@ from rich.console import Console
 import aiohttp
 from datetime import datetime, timezone
 from pathlib import Path
+import asyncio
 
 console = Console()
 
@@ -170,3 +171,30 @@ class Fun(commands.Cog):
         """Shows a cute cat video :3"""
         random_video = random.choice(self.cat_vid_names)
         await ctx.send(file=discord.File(random_video.resolve()))
+    
+    @commands.comand()
+    async def pi(self, ctx: commands.Context, digits: int):
+        """Pi digits."""
+        url = f"https://api.math.tools/numbers/pi?to={digits}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                json_data = response.json()
+            
+        pi = json_data['contents']['result']
+        splits = []
+        if digits > 1980:
+            current_split = ""
+            for char in pi:
+                current_split += char
+                if len(current_split) == 1980:
+                    splits.append(current_split)
+                    current_split = ""
+            
+        if splits:
+            for split in splits:
+                await ctx.send(split)
+                await asyncio.sleep(0.2)
+            return
+        
+        await ctx.send(pi)
+                
