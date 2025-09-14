@@ -182,7 +182,7 @@ class Fun(commands.Cog):
         
         console.print(json_data)
 
-        pi = json_data['contents']['result']
+        pi = json_data['cotents']['result'] # Cotents???
         splits = []
         if digits > 1980:
             current_split = ""
