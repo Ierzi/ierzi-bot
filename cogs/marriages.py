@@ -193,6 +193,7 @@ class Marriages(commands.Cog):
     # TODO
     @commands.command()
     async def aremarried(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
+        """Says if two people are married to each other."""
         marriages = await self.get_marriages()
         if (user1, user2) in marriages:
             await ctx.message.reply("Yes, they are married.")
