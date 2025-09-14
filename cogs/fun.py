@@ -178,7 +178,7 @@ class Fun(commands.Cog):
         url = f"https://api.math.tools/numbers/pi?to={digits}"
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
-                json_data = response.json()
+                json_data = await response.json()
             
         pi = json_data['contents']['result']
         splits = []
