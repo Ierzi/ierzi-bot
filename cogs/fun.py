@@ -180,7 +180,7 @@ class Fun(commands.Cog):
             async with session.get(url) as response:
                 json_data = await response.json()
         
-        console.log(json_data)
+        console.print(json_data)
 
         pi = json_data['contents']['result']
         splits = []
