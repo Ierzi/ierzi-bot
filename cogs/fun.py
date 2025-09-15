@@ -182,6 +182,10 @@ class Fun(commands.Cog):
         
         console.print(json_data)
 
+        if json_data['error']:
+            await ctx.send("error :(")
+            return
+
         pi = json_data['cotents']['result'] # Cotents???
         splits = []
         if digits > 1980:
