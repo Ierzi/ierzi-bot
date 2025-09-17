@@ -134,6 +134,27 @@ async def load_cogs():
     console.print("Search cog loaded.")
     console.print("All cogs loaded.")
 
+
+#AI commands to add to the context menu
+ai = AI(bot, console)
+@bot.tree.context_menu(name="TL;DR")
+async def tldr(interaction: Interaction, message: Message):
+    _tldr = await ai._tldr(message.content)
+    if not _tldr:
+        await interaction.response.send_message("error :(", ephemeral=True)
+        return
+    
+    await interaction.response.send_message(_tldr)
+
+@bot.tree.context_menu(name="TS;MR")
+async def tsmr(interaction: Interaction, message: Message):
+    _tsmr = await ai._tsmr(message.content)
+    if not _tsmr:
+        await interaction.response.send_message("error :(", ephemeral=True)
+        return
+    
+    await interaction.response.send_message(_tsmr)
+
 # Other commands
 @bot.command()
 async def id(ctx: commands.Context, user: discord.Member):
@@ -465,6 +486,9 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
 
 async def main():
     await load_cogs()
+    console.print("Cogs loaded.")
+    synced = await bot.tree.sync()
+    console.print(f"Synced {synced} commands.")
     console.print("Bot is ready.")
     await bot.start(token)
 

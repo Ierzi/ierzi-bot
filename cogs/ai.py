@@ -141,3 +141,46 @@ class AI(commands.Cog):
             return outputs
         
         return output
+
+    async def _tldr(self, message: str):
+        """TLDR but doesnt send the messages"""
+        client = AsyncOpenAI(api_key=self.openai_key)
+        response = await client.chat.completions.create(
+            model="gpt-4.1-mini-2025-04-14",
+            messages=[
+                {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
+                {"role": "user", "content": f"Summarize this: {message}"}
+            ],
+            max_tokens=200
+        )
+
+        summary = response.choices[0].message.content
+        return summary
+    
+    async def _tsmr(self, message: str):
+        """TSMR but doesnt send the messages"""
+        client = AsyncOpenAI(api_key=self.openai_key)
+        response = await client.chat.completions.create(
+            model="gpt-4.1-mini-2025-04-14",
+            messages=[
+                {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
+                {"role": "user", "content": f"Expand this: {message}"}
+            ],
+            max_tokens=3500
+        )
+
+        expanded_text = response.choices[0].message.content
+
+        splits = []
+        if len(expanded_text) > 2000:
+            current_split = ""
+            for character in expanded_text:
+                current_split += character
+                if len(current_split) >= 1975 and character == " ":
+                    splits.append(current_split)
+                    current_split = ""
+
+            if current_split:
+                splits.append(current_split)
+        
+        return splits if splits else expanded_text
