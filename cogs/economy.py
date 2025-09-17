@@ -391,7 +391,7 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc)
-        robbed_pronouns = pronouns.get_pronoun(user.id)
+        robbed_pronouns = await pronouns.get_pronoun(user.id)
         
         output = await self.cooldown(user_id, 'last_robbed_user', cooldown, now)
         if not output[0]: # Cooldown
