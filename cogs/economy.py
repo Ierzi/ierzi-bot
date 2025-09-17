@@ -188,7 +188,7 @@ class Economy(commands.Cog):
             await ctx.send(f"You already claimed your daily! \nYou can claim it again in {hours} hours, {minutes} minutes and {seconds} seconds.")
             return
 
-        payment = 12_000
+        payment = 12_500
         self.cur.execute("""
             INSERT INTO users (user_id, balance, last_daily)
             VALUES (%s, %s, %s)
@@ -354,8 +354,8 @@ class Economy(commands.Cog):
             await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
             return
 
-        # You have a 33% chance of robbing a bank.
-        if random.random() < 0.33:
+        # You have a 50% chance of robbing a bank.
+        if random.random() < 0.5:
             await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins!", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, rob_money)
             success = True
@@ -391,6 +391,7 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc)
+        robbed_pronouns = pronouns.get_pronoun(user.id)
         
         output = await self.cooldown(user_id, 'last_robbed_user', cooldown, now)
         if not output[0]: # Cooldown
@@ -398,15 +399,16 @@ class Economy(commands.Cog):
             await ctx.reply(f"Try again in {hours} hours, {minutes} minutes and {seconds} seconds.")
             return
         
-        # You have a 25% chance of robbing someone
+        # You have a 33% chance of robbing someone
         # cause its not nice lmao (and you're also stealing a lot of money)
-        if random.random() < 0.25:
+        if random.random() < 0.33:
             await ctx.send(f"{ctx.author.mention} robbed 1,000 coins from {user.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, 1000)
             await self.add_money(user.id, -1000)
         else:
-            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and lost 500 coins :broken_heart:", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"{ctx.author.mention} tried to rob {user.mention}, failed, and gave {robbed_pronouns[1]} 500 coins :broken_heart:", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(ctx.author.id, -500)
+            await self.add_money(user.id, 500)
         
         # record last_robbed_user timestamp without changing balance further
         self.cur.execute("""
