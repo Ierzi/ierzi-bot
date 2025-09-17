@@ -61,7 +61,7 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
     await fill_embeds()
     synced = await bot.tree.sync()
-    console.print(f"Synced {synced} commands.")
+    console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
 
 # Error handling
@@ -141,21 +141,30 @@ async def load_cogs():
 ai = AI(bot, console)
 @bot.tree.context_menu(name="TL;DR")
 async def tldr(interaction: Interaction, message: Message):
+    await interaction.response.defer()
     _tldr = await ai._tldr(message.content)
     if not _tldr:
-        await interaction.response.send_message("error :(", ephemeral=True)
+        await interaction.followup.send("error :(", ephemeral=True)
         return
     
-    await interaction.response.send_message(_tldr)
+    await interaction.followup.send(_tldr)
 
 @bot.tree.context_menu(name="TS;MR")
 async def tsmr(interaction: Interaction, message: Message):
+    await interaction.response.defer()
     _tsmr = await ai._tsmr(message.content)
     if not _tsmr:
-        await interaction.response.send_message("error :(", ephemeral=True)
+        await interaction.followup.send("error :(", ephemeral=True)
         return
     
-    await interaction.response.send_message(_tsmr)
+    if isinstance(_tsmr, str):
+        await interaction.followup.send(_tsmr)
+        return
+    
+    for mess in _tsmr:
+        await interaction.followup.send(mess)
+        await asyncio.sleep(0.2)
+    
 
 # Other commands
 @bot.command()
