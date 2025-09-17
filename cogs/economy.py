@@ -107,7 +107,7 @@ class Economy(commands.Cog):
         self.console.print(f"Successfully added {amount} coins to {user_id}")
 
 
-    @commands.command()
+    @commands.command(aliases=("bal",))
     async def balance(self, ctx: commands.Context, user: discord.Member = None):
         """Check your balance."""
         if not user:
