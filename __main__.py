@@ -60,6 +60,8 @@ bot = commands.Bot(
 async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
     await fill_embeds()
+    synced = await bot.tree.sync()
+    console.print(f"Synced {synced} commands.")
     console.print(f"Logged in as {bot.user}")
 
 # Error handling
@@ -487,8 +489,6 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
 async def main():
     await load_cogs()
     console.print("Cogs loaded.")
-    synced = await bot.tree.sync()
-    console.print(f"Synced {synced} commands.")
     console.print("Bot is ready.")
     await bot.start(token)
 
