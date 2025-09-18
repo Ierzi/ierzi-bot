@@ -121,7 +121,6 @@ class AI(commands.Cog):
     async def isthistrue(self, ctx: commands.Context, fact_checked_mess: str):
         # Using Groq cause it fast
         client = AsyncGroq(api_key=self.groq_key)
-        self.console.print(fact_checked_mess)
 
         await ctx.typing()
         response = await client.chat.completions.create(
@@ -246,3 +245,30 @@ class AI(commands.Cog):
         
         return splits if splits else expanded_text
     
+    async def _isthistrue(self, fact_checked_mess: str):
+        """@IerziBot is this true but it doesnt type, send messsages or require context"""
+        # Using Groq cause it fast
+        client = AsyncGroq(api_key=self.groq_key)
+
+        response = await client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
+                {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
+            ],
+        )
+
+        output = response.choices[0].message.content
+        outputs = []
+        if len(output) > 2000:
+            current_split = ""
+            for char in output:
+                current_split += char
+                if len(current_split) > 1850 and char == " ":
+                    outputs.append(current_split)
+                    current_split = ""
+        
+        if outputs:
+            return outputs
+        
+        return output

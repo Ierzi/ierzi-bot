@@ -164,7 +164,22 @@ async def tsmr(interaction: Interaction, message: Message):
     for mess in _tsmr:
         await interaction.followup.send(mess)
         await asyncio.sleep(0.2)
+
+@bot.tree.context_menu(name="Is this true?")
+async def isthistrue(interaction: Interaction, message: Message):
+    await interaction.response.defer()
+    _isthistrue = await ai._isthistrue(message.content)
+    if not _isthistrue:
+        await interaction.followup.send("error :(", ephemeral=True)
+        return
     
+    if isinstance(_isthistrue, str):
+        await interaction.followup.send(_isthistrue)
+        return
+    
+    for mess in _isthistrue:
+        await interaction.followup.send(mess)
+        await asyncio.sleep(0.2)
 
 # Other commands
 @bot.command()
