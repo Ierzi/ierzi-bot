@@ -37,6 +37,9 @@ class AI(commands.Cog):
                 if len(current_split) > 1850 and char == " ":
                     outputs.append(current_split)
                     current_split = ""
+            
+            if current_split:
+                outputs.append(current_split)
 
         if outputs:
             for mess in outputs:
