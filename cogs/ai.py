@@ -159,27 +159,28 @@ class AI(commands.Cog):
 
         keywords = await self._keywords(message)
 
-        search_embed = Embed(
-            title="Search results",
-            description=None
-        )
+        async with ctx.typing():
+            search_embed = Embed(
+                title="Search results",
+                description=None
+            )
 
-        # Search using SERPAPI
-        params = {
-            "engine": "google",
-            "q": keywords,
-            "api_key": self.serp_key,
-            "num": 3
-        }
-        async with aiohttp.ClientSession() as client:
-            async with client.get("https://serpapi.com/search", params=params) as r:
-                response_json: dict = await r.json()
-        
-        result: dict
-        for result in response_json.get('organic_results', []):
-            title = result.get('title')
-            link = result.get('link')
-            search_embed.description += f"**{title}** - {link}\n"
+            # Search using SERPAPI
+            params = {
+                "engine": "google",
+                "q": keywords,
+                "api_key": self.serp_key,
+                "num": 3
+            }
+            async with aiohttp.ClientSession() as client:
+                async with client.get("https://serpapi.com/search", params=params) as r:
+                    response_json: dict = await r.json()
+            
+            result: dict
+            for result in response_json.get('organic_results', []):
+                title = result.get('title')
+                link = result.get('link')
+                search_embed.description += f"**{title}** - {link}\n"
         
         if search_embed.description is None:
             await ctx.send("No results found :(")
@@ -189,7 +190,7 @@ class AI(commands.Cog):
 
     # Helper commands
     async def _keywords(self, message: str):
-        client = AsyncGroq(api=self.groq_key)
+        client = AsyncGroq(api_key=self.groq_key)
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
