@@ -173,17 +173,27 @@ class AI(commands.Cog):
 
         keywords = await self._keywords(message)
         self.console.print(keywords)
+        
+        # Convert keywords list to string for search query
+        if isinstance(keywords, list):
+            keywords_str = " ".join(keywords)
+        else:
+            keywords_str = str(keywords) if keywords else ""
+            
+        if not keywords_str.strip():
+            await ctx.send("error :(")
+            return
 
         async with ctx.typing():
             search_embed = Embed(
                 title="Search results",
-                description=None
+                description=""
             )
 
             # Search using SERPAPI
             params = {
                 "engine": "google",
-                "q": keywords,
+                "q": keywords_str,
                 "api_key": self.serp_key,
                 "num": 3
             }
@@ -198,7 +208,7 @@ class AI(commands.Cog):
                 link = result.get('link', 'No link')
                 search_embed.description += f"**{title}** - {link}\n"
         
-        if search_embed.description is None:
+        if not search_embed.description:
             await ctx.send("No results found :(")
             return
         
