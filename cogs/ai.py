@@ -1,16 +1,18 @@
-import os
-from rich.console import Console
 from discord.ext import commands
 import discord
+from discord import Embed
 from openai import AsyncOpenAI
-import asyncio
 from groq import AsyncGroq
-
+import os
+from rich.console import Console
+import asyncio
+import aiohttp
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.openai_key = os.getenv("OPENAI_KEY")
         self.groq_key = os.getenv("GROQ_KEY")
+        self.serp_key = os.getenv("SERP_KEY")
         self.console = console
     
     @commands.command()
@@ -142,6 +144,62 @@ class AI(commands.Cog):
         
         return output
 
+    @commands.command()
+    async def proof(self, ctx: commands.Context):
+        """Looks online for proof (this is in the AI category cause it uses AI to find keywords)"""
+        reply = ctx.message.reference
+        if reply is None:
+            await ctx.send("You didn't reply to a message.")
+            return
+        
+        _reply = await ctx.channel.fetch_message(reply.message_id)
+        message = _reply.content
+
+        keywords = await self._keywords(message)
+
+        search_embed = Embed(
+            title="Search results",
+            description=None
+        )
+
+        # Search using SERPAPI
+        params = {
+            "engine": "google",
+            "q": keywords,
+            "api_key": self.serp_key,
+            "num": 3
+        }
+        async with aiohttp.ClientSession() as client:
+            async with client.get("https://serpapi.com/search", params=params) as r:
+                response_json: dict = await r.json()
+        
+        result: dict
+        for result in response_json.get('organic_results', []):
+            title = result.get('title')
+            link = result.get('link')
+            search_embed.description += f"**{title}** - {link}\n"
+        
+        if search_embed.description is None:
+            await ctx.send("No results found :(")
+            return
+        
+        await ctx.send(embed=search_embed)
+
+    # Helper commands
+    async def _keywords(self, message: str):
+        client = AsyncGroq(api=self.groq_key)
+        response = await client.chat.completions.create(
+            model="openai/gpt-oss-20b",
+            messages=[
+                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to extract keywords from a message."},
+                {"role": "user", "content": f'Find the keywords here: {message}'}
+            ],
+        )
+
+        output = response.choices[0].message.content
+        return output
+
+    # External commands
     async def _tldr(self, message: str):
         """TLDR but doesnt send the messages"""
         client = AsyncOpenAI(api_key=self.openai_key)
@@ -184,3 +242,4 @@ class AI(commands.Cog):
                 splits.append(current_split)
         
         return splits if splits else expanded_text
+    

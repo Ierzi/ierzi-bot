@@ -139,7 +139,7 @@ async def load_cogs():
 
 #AI commands to add to the context menu
 ai = AI(bot, console)
-@bot.tree.context_menu(name="TL;DR")
+@bot.tree.context_menu(name="TLDR")
 async def tldr(interaction: Interaction, message: Message):
     await interaction.response.defer()
     _tldr = await ai._tldr(message.content)
@@ -149,7 +149,7 @@ async def tldr(interaction: Interaction, message: Message):
     
     await interaction.followup.send(_tldr)
 
-@bot.tree.context_menu(name="TS;MR")
+@bot.tree.context_menu(name="TSMR")
 async def tsmr(interaction: Interaction, message: Message):
     await interaction.response.defer()
     _tsmr = await ai._tsmr(message.content)
