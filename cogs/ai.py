@@ -7,6 +7,30 @@ import os
 from rich.console import Console
 import asyncio
 import aiohttp
+import nltk
+from nltk.corpus import stopwords, wordnet
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+
+nltk.download("punkt")
+nltk.download("stopwords")
+nltk.download("punkt_tab")
+nltk.download("wordnet")
+nltk.download('averaged_perceptron_tagger_eng')
+
+def get_wordnet_pos(tag: str):
+    if tag.startswith('J'):
+        return wordnet.ADJ
+    elif tag.startswith('V'):
+        return wordnet.VERB
+    elif tag.startswith('N'):
+        return wordnet.NOUN
+    elif tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN
+
+
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
@@ -192,18 +216,31 @@ class AI(commands.Cog):
         await ctx.send(embed=search_embed)
 
     # Helper commands
-    async def _keywords(self, message: str):
-        client = AsyncGroq(api_key=self.groq_key)
-        response = await client.chat.completions.create(
-            model="openai/gpt-oss-20b",
-            messages=[
-                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to extract keywords from a message. Only say the keywords, not separated by commas, and nothing else."},
-                {"role": "user", "content": f'Find the keywords here: {message}'}
-            ],
-        )
+    def _keywords(sentence: str):
+        # 1. Tokenize
+        words = word_tokenize(sentence.lower())
 
-        output = response.choices[0].message.content
-        return output
+        # 2. Remove stopwords & non-alphabetic tokens
+        stop_words = set(stopwords.words("english"))
+        words = [w for w in words if w.isalpha() and w not in stop_words]
+
+        # 3. Tag words
+        tagged = nltk.pos_tag(words)
+
+        # 4. Remove adjectives
+        filtered = [(word, tag) for word, tag in tagged if not tag.startswith("JJ")]
+
+        # 5. Lemmatize or whatever
+        lemmatizer = WordNetLemmatizer()
+        lemmatized = [lemmatizer.lemmatize(word, get_wordnet_pos(tag)) for word, tag in filtered]
+
+        # 6. Remove duplicates
+        uniqued = list(dict.fromkeys(lemmatized))
+
+        # 7. Manually filter
+        m_filter = [word for word in uniqued if word not in MANUAL_FILTER]
+
+        return m_filter
 
     # External commands
     async def _tldr(self, message: str):
