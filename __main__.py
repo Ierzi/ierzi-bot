@@ -342,23 +342,23 @@ async def help(ctx: commands.Context, category: str = None):
         selected = help_select.values[0].lower()
         match selected:
             case "home":
-                await interaction.response.edit_message(embed=home_embed)
+                await interaction.message.edit(embed=home_embed)
             case "ai":
-                await interaction.response.edit_message(embed=ai_embed)
+                await interaction.message.edit(embed=ai_embed)
             case "economy":
-                await interaction.response.edit_message(embed=economy_embed)
+                await interaction.message.edit(embed=economy_embed)
             case "fun":
-                await interaction.response.edit_message(embed=fun_embed)
+                await interaction.message.edit(embed=fun_embed)
             case "marriages":
-                await interaction.response.edit_message(embed=marriages_embed)
+                await interaction.message.edit(embed=marriages_embed)
             case "reactions":
-                await interaction.response.edit_message(embed=reactions_embed)
+                await interaction.message.edit(embed=reactions_embed)
             case "songs":
-                await interaction.response.edit_message(embed=songs_embed)
+                await interaction.message.edit(embed=songs_embed)
             case "search":
-                await interaction.response.edit_message(embed=search_embed)
+                await interaction.message.edit(embed=search_embed)
             case _:
-                await interaction.response.send_message("Invalid category.", ephemeral=True)
+                await interaction.message.edit("Invalid category.", ephemeral=True)
 
     help_select.callback = help_select_callback
     view.add_item(help_select)
