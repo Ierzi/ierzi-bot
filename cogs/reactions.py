@@ -1,4 +1,5 @@
 import discord
+from discord import File
 from discord.ext import commands
 from rich.console import Console
 import random
@@ -89,7 +90,9 @@ class Reactions(commands.Cog):
         """Kill someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send(f"aaaaaaaaaaaaaaaaaaaaaaaa no")
+                pan_image_path = self.assets_folder / "pansexual.jpg"
+                pansexual_image = File(pan_image_path.resolve())
+                await ctx.send(f"no but is Madeline pansexual??", file=pansexual_image)
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
