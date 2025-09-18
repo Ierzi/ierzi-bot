@@ -156,8 +156,10 @@ class AI(commands.Cog):
         
         _reply = await ctx.channel.fetch_message(reply.message_id)
         message = _reply.content
+        self.console.print(message)
 
         keywords = await self._keywords(message)
+        self.console.print(keywords)
 
         async with ctx.typing():
             search_embed = Embed(
@@ -176,10 +178,11 @@ class AI(commands.Cog):
                 async with client.get("https://serpapi.com/search", params=params) as r:
                     response_json: dict = await r.json()
             
+            self.console.print(response_json)
             result: dict
             for result in response_json.get('organic_results', []):
-                title = result.get('title')
-                link = result.get('link')
+                title = result.get('title', 'No title')
+                link = result.get('link', 'No link')
                 search_embed.description += f"**{title}** - {link}\n"
         
         if not search_embed.description:
