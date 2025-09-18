@@ -162,7 +162,7 @@ class AI(commands.Cog):
         async with ctx.typing():
             search_embed = Embed(
                 title="Search results",
-                description=None
+                description=""
             )
 
             # Search using SERPAPI
@@ -182,7 +182,7 @@ class AI(commands.Cog):
                 link = result.get('link')
                 search_embed.description += f"**{title}** - {link}\n"
         
-        if search_embed.description is None:
+        if not search_embed.description:
             await ctx.send("No results found :(")
             return
         
