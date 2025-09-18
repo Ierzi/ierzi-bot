@@ -60,6 +60,7 @@ bot = commands.Bot(
 async def on_ready():
     await bot.change_presence(status=discord.Status.idle)
     await fill_embeds()
+    await bot.tree.clear_commands()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
