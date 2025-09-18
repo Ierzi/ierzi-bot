@@ -164,7 +164,7 @@ class AI(commands.Cog):
         async with ctx.typing():
             search_embed = Embed(
                 title="Search results",
-                description=""
+                description=None
             )
 
             # Search using SERPAPI
@@ -185,7 +185,7 @@ class AI(commands.Cog):
                 link = result.get('link', 'No link')
                 search_embed.description += f"**{title}** - {link}\n"
         
-        if not search_embed.description:
+        if search_embed.description is None:
             await ctx.send("No results found :(")
             return
         
@@ -197,7 +197,7 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to extract keywords from a message."},
+                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to extract keywords from a message. Only say the keywords, not separated by commas, and nothing else."},
                 {"role": "user", "content": f'Find the keywords here: {message}'}
             ],
         )
