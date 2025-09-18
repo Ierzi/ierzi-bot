@@ -222,10 +222,9 @@ async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
         "debug thing with spendings ai", "add more reactions", 
-        "fix !listmarrrriages",  "custom emojis", 
-        "fix the marriage database that is so messy",  
+        "fix !listmarrrriages", "fix the marriage database that is so messy",  
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
-        "achievements?", "other ai models", "remake the whole bot to use async for database (aiopg)", "@grok is this true"
+        "achievements?", "other ai models", "remake the whole bot to use async for database (aiopg)"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
