@@ -219,6 +219,7 @@ class Economy(commands.Cog):
             return
         if balance < amount:
             await ctx.send("pug is fixed")
+            return
         
         author = ctx.author
         await self.add_money(user.id, amount)
