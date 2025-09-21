@@ -9,9 +9,10 @@ from enum import Enum
 # UPDATE ALL OF THIS
 # - SUPPORTED_PRONOUNS
 # - pronouns_data
-# (__main__.py) (pronouns_set()) set_pronouns_embed.description
-# (__main__.py) (pronouns_set()) pronouns_option
-# (__main__.py) (pronouns_set()) pronouns_select_callback()
+# If pronouns is not hidden
+# - (__main__.py) (pronouns_set()) set_pronouns_embed.description
+# - (__main__.py) (pronouns_set()) pronouns_option
+# - (__main__.py) (pronouns_set()) pronouns_select_callback()
 
 # --------------
 
@@ -19,7 +20,7 @@ from enum import Enum
 
 # only have the most common pronouns yet
 #TODO: add more pronouns (nameself, it/its, one/one's, neopronouns...) https://en.pronouns.page/pronouns
-SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'it/its', 'any'] # any will probably use they/them
+SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'it/its', 'any', 'fag/got'] # any will probably use they/them
 pronoun = str #he
 pronouns = str #he/him
 _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
@@ -41,7 +42,9 @@ pronouns_data: dict[str, _pronouns_data] = {
     'they/them/themselves': ('they', 'them', 'their', 'theirs', 'themselves'),
     'they/them/themself': ('they', 'them', 'their', 'theirs', 'themself'),
     'it/its': ('it', 'it', 'its', 'its', 'itself'),
-    'any': ('they', 'them', 'their', 'theirs', 'themselves') # Like I said on SUPPORTED_PRONOUNS
+    'any': ('they', 'them', 'their', 'theirs', 'themselves'), # Like I said on SUPPORTED_PRONOUNS
+    # HIDDEN PRONOUNS
+    'fag/got': ('fag', 'got', 'fager', 'fagers', 'fagself')
 }
 
 

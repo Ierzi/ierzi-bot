@@ -55,6 +55,11 @@ bot = commands.Bot(
     case_insensitive=True
 )
 
+async def loop():
+    while True:
+        cur.execute("SELECT 1;")
+        await asyncio.sleep(120) # Every 2 minutes
+
 # Events
 @bot.event
 async def on_ready():
@@ -64,6 +69,7 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
+    bot.loop.create_task(loop())
 
 # Error handling
 @bot.event
