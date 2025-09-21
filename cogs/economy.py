@@ -207,6 +207,7 @@ class Economy(commands.Cog):
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
         """Pay someone."""
+        balance = await self.get_balance(user.id)
         if amount < 0:
             await ctx.send("have you tried using coins that have a positive amount of atoms?")
             return
@@ -216,6 +217,8 @@ class Economy(commands.Cog):
         if user.id == ctx.author.id:
             await ctx.send("cro what")
             return
+        if balance < amount:
+            await ctx.send("pug is fixed")
         
         author = ctx.author
         await self.add_money(user.id, amount)
