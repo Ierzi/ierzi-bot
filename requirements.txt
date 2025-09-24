@@ -2,7 +2,7 @@ discord.py
 rich
 dotenv
 openai
-psycopg2-binary
+asyncpg
 groq
 requests
 wikipedia-api
