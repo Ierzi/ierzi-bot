@@ -87,21 +87,6 @@ class Database:
         finally:
             await pool.release(conn)
 
-    async def ensure_schema(self, schema_path: str | os.PathLike[str] = "schema.sql") -> None:
-        pool = self._require_pool()
-        path = Path(schema_path)
-        if not path.exists():
-            return
-
-        sql_text = path.read_text(encoding="utf-8")
-        statements = [s.strip() for s in sql_text.split(";")]
-
-        async with pool.acquire() as conn:
-            for stmt in statements:
-                if not stmt:
-                    continue
-                await conn.execute(stmt + ";")
-
 
 db = Database()
 

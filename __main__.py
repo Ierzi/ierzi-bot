@@ -502,7 +502,6 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
 
 async def main():
     await db.init_pool()
-    await db.ensure_schema("schema.sql")
     try:
         await load_cogs()
         console.print("Cogs loaded.")
