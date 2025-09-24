@@ -2,7 +2,7 @@ import discord
 from discord import Embed, Colour
 from discord.ext import commands
 from rich.console import Console
-import psycopg2
+from cogs.utils.database import db
 import os
 import random
 from datetime import datetime, timedelta, timezone
@@ -21,16 +21,6 @@ output_data = tuple[_output, _hours, _minutes, _seconds]
 
 # -- Variables
 
-conn = psycopg2.connect(
-    host=os.getenv("PGHOST"),
-    database=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
-    port=os.getenv("PGPORT")
-)
-
-cur = conn.cursor()
-
 class ShopItem(TypedDict):
     name: str
     price: int
@@ -39,8 +29,7 @@ class ShopItem(TypedDict):
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
-        self.conn = conn
-        self.cur = cur
+        self.db = db
         self.console = console
         self.coin_emoji = '<:coins:1416429599084118239>'
 
@@ -56,14 +45,11 @@ class Economy(commands.Cog):
 
     # Helper functions
     async def get_balance(self, user_id: int) -> int:
-        self.cur.execute("SELECT balance FROM users WHERE user_id = %s", (user_id,))
-        row = self.cur.fetchone()
-        if row:
-            return row[0]
-        else:
-            self.cur.execute("INSERT INTO users (user_id, balance) VALUES (%s, %s)", (user_id, 0))
-            self.conn.commit()
-            return 0
+        balance = await db.fetchval("SELECT balance FROM users WHERE user_id = $1", user_id)
+        if balance is not None:
+            return int(balance)
+        await db.execute("INSERT INTO users (user_id, balance) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING", user_id, 0)
+        return 0
     
     async def cooldown(self, 
                        user_id: int, 
@@ -72,11 +58,8 @@ class Economy(commands.Cog):
                        now: datetime
                        ) -> output_data:
         # All cooldowns are in the users table
-        self.cur.execute(f"SELECT {cooldown_type} FROM users WHERE user_id = %s", (user_id,))
-        row = self.cur.fetchone()
-
-        if row and row[0] is not None:
-            last_action = row[0]
+        last_action = await db.fetchval(f"SELECT {cooldown_type} FROM users WHERE user_id = $1", user_id)
+        if last_action is not None:
 
             if isinstance(last_action, str):
                 last_action = datetime.fromisoformat(last_action)
@@ -96,14 +79,16 @@ class Economy(commands.Cog):
 
 
     async def add_money(self, user_id: int, amount: int):
-        cur.execute("""
+        await db.execute(
+            """
             INSERT INTO users (user_id, balance)
-            VALUES (%s, %s)
+            VALUES ($1, $2)
             ON CONFLICT (user_id)
             DO UPDATE SET balance = users.balance + EXCLUDED.balance;
-        """, (user_id, amount)
+            """,
+            user_id,
+            amount,
         )
-        conn.commit() #lowk had no idea how to make this so i asked chatgpt
         self.console.print(f"Successfully added {amount} coins to {user_id}")
 
 
@@ -132,14 +117,12 @@ class Economy(commands.Cog):
         # If the user can work, give them a random job and pay them
         job, raw_payment = random.choice(self.jobs)
         payment = random.randint(raw_payment - 50, raw_payment + 50) # randomize the payement
-        self.cur.execute("""
+        await db.execute("""
             INSERT INTO users (user_id, balance, last_worked)
-            VALUES (%s, %s, %s)
+            VALUES ($1, $2, $3)
             ON CONFLICT (user_id)
             DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_worked = EXCLUDED.last_worked;
-        """, (user_id, payment, now)
-        )
-        conn.commit()
+        """, user_id, payment, now)
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard")) # since there's no other leaderboards
@@ -152,14 +135,15 @@ class Economy(commands.Cog):
         
         async with ctx.typing():
             offset = (page - 1) * 10
-            self.cur.execute("""
+            rows = await db.fetch(
+                """
                 SELECT user_id, balance FROM users 
                 ORDER BY balance DESC
-                OFFSET %s
+                OFFSET $1
                 LIMIT 10  
-            """, (offset,)
+                """,
+                offset,
             )
-            rows = self.cur.fetchall()
             if not rows:
                 await ctx.send("No users found on this page.")
                 return
@@ -168,7 +152,9 @@ class Economy(commands.Cog):
                 title=f"**Economy Leaderboard - Page {page:,}**",
                 description=""
             )
-            for i, (user_id, balance) in enumerate(rows):
+            for i, rec in enumerate(rows):
+                user_id = rec["user_id"] if hasattr(rec, "keys") else rec[0]
+                balance = rec["balance"] if hasattr(rec, "keys") else rec[1]
                 user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
                 ecolb_embed.description += f"**{i + 1 + (page * 10) - 10}. {user.mention}** - {self.coin_emoji} {balance:,} coins \n" 
 
@@ -189,14 +175,12 @@ class Economy(commands.Cog):
             return
 
         payment = 12_500
-        self.cur.execute("""
+        await db.execute("""
             INSERT INTO users (user_id, balance, last_daily)
-            VALUES (%s, %s, %s)
+            VALUES ($1, $2, $3)
             ON CONFLICT (user_id)
             DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
-        """, (user_id, payment, now)
-        )
-        conn.commit()
+        """, user_id, payment, now)
 
         # Use pronouns
 
@@ -368,14 +352,12 @@ class Economy(commands.Cog):
             await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, -lose_money)
         
-        self.cur.execute("""
+        await db.execute("""
             INSERT INTO users (user_id, balance, last_robbed_bank)
-            VALUES (%s, %s, %s)
+            VALUES ($1, $2, $3)
             ON CONFLICT (user_id)
             DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_robbed_bank = EXCLUDED.last_robbed_bank;
-        """, (user_id, rob_money if success else 0, now)
-        )
-        conn.commit()
+        """, user_id, rob_money if success else 0, now)
     
     @commands.command(name="robuser")
     async def rob_user(self, ctx: commands.Context, user: discord.Member):
@@ -415,14 +397,12 @@ class Economy(commands.Cog):
             await self.add_money(user.id, 500)
         
         # record last_robbed_user timestamp without changing balance further
-        self.cur.execute("""
+        await db.execute("""
             INSERT INTO users (user_id, last_robbed_user)
-            VALUES (%s, %s)
+            VALUES ($1, $2)
             ON CONFLICT (user_id)
             DO UPDATE SET last_robbed_user = EXCLUDED.last_robbed_user;
-        """, (user_id, now)
-        )
-        conn.commit()
+        """, user_id, now)
 
 
     # @commands.command()

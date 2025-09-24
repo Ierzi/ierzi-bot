@@ -1,60 +1,46 @@
 import discord
 from discord.ext import commands
 import asyncio
-import psycopg2
 from rich.console import Console
 import os
-
-conn = psycopg2.connect(
-    host=os.getenv("PGHOST"),
-    database=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
-    port=os.getenv("PGPORT")
-)
-
-cur = conn.cursor()
+from .utils.database import db
 
 class Marriages(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
-        self.cur = cur
-        self.conn = conn
+        self.db = db
         self.console = console
 
     async def add_marriage_list(self, marriage_pair: tuple[int]):
         # Ensure both users exist in the users table first
         for user_id in marriage_pair:
-            self.cur.execute(
-                "INSERT INTO users (user_id, balance) VALUES (%s, %s) ON CONFLICT (user_id) DO NOTHING",
-                (user_id, 0)
+            await db.execute(
+                "INSERT INTO users (user_id, balance) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING",
+                user_id,
+                0,
             )
-        
-        self.cur.execute(
-            "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
-            (marriage_pair[0], marriage_pair[1])
-            )
-        self.cur.execute(
-            "INSERT INTO marriages (user1_id, user2_id) VALUES (%s, %s)", 
-            (marriage_pair[1], marriage_pair[0])
-            )
-        self.conn.commit()
+        await db.execute(
+            "INSERT INTO marriages (user1_id, user2_id) VALUES ($1, $2)", 
+            marriage_pair[0], marriage_pair[1]
+        )
+        await db.execute(
+            "INSERT INTO marriages (user1_id, user2_id) VALUES ($1, $2)", 
+            marriage_pair[1], marriage_pair[0]
+        )
 
     async def remove_marriage_list(self, marriage_pair: tuple[int]):
-        self.cur.execute(
-            "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
-            (marriage_pair[0], marriage_pair[1])
+        await db.execute(
+            "DELETE FROM marriages WHERE user1_id = $1 AND user2_id = $2",
+            marriage_pair[0], marriage_pair[1]
         )
-        self.cur.execute(
-            "DELETE FROM marriages WHERE user1_id = %s AND user2_id = %s",
-            (marriage_pair[1], marriage_pair[0])
+        await db.execute(
+            "DELETE FROM marriages WHERE user1_id = $1 AND user2_id = $2",
+            marriage_pair[1], marriage_pair[0]
         )
-        self.conn.commit()
 
 
     async def get_marriages(self):
-        self.cur.execute("SELECT * FROM marriages")
-        marriages = self.cur.fetchall()
+        marriages = await db.fetch("SELECT id, user1_id, user2_id FROM marriages")
         ids = []
         for marriage in marriages:
             _, id1, id2 = marriage

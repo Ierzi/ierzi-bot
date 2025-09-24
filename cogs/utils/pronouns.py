@@ -1,9 +1,9 @@
-import psycopg2
 from rich.console import Console
 from typing import Literal
 from dotenv import load_dotenv
 import os
 from enum import Enum
+from .database import db
 
 # IF YOU WANNA UPDATE PRONOUNS
 # UPDATE ALL OF THIS
@@ -51,27 +51,22 @@ pronouns_data: dict[str, _pronouns_data] = {
 console = Console()
 
 load_dotenv()
-conn = psycopg2.connect(
-    host=os.getenv("PGHOST"),
-    database=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
-    port=os.getenv("PGPORT")
-)
-cur = conn.cursor()
 
 async def set_pronouns(
         user_id: int, 
         pronouns: SUPPORTED_PRONOUNS
     ) -> None:
     
-    cur.execute("""
-                INSERT INTO users (user_id, pronouns) 
-                VALUES (%s, %s)
-                ON CONFLICT (user_id)
-                DO UPDATE SET pronouns = EXCLUDED.pronouns;
-                """, (user_id, pronouns))
-    conn.commit()
+    await db.execute(
+        """
+        INSERT INTO users (user_id, pronouns) 
+        VALUES ($1, $2)
+        ON CONFLICT (user_id)
+        DO UPDATE SET pronouns = EXCLUDED.pronouns;
+        """,
+        user_id,
+        pronouns,
+    )
 
     console.print(f"Set {user_id}'s pronouns to {pronouns}.")
 
@@ -80,11 +75,10 @@ async def get_pronouns(
         get_na: bool = False
     ) -> pronouns:
     
-    cur.execute("SELECT pronouns FROM users WHERE user_id = %s", (user_id,))
-    row = cur.fetchone()
+    row = await db.fetchrow("SELECT pronouns FROM users WHERE user_id = $1", user_id)
 
-    if row and row[0]:
-        return row[0]
+    if row and row["pronouns"]:
+        return row["pronouns"]
     else: 
         return 'na' if get_na else 'they/them/themselves'
     
@@ -93,11 +87,10 @@ async def get_pronoun(
         data_returned: PronounEnum = ALL
     ) -> _returned_pronouns_data:
     
-    cur.execute("SELECT pronouns FROM users WHERE user_id = %s", (user_id,))
-    row = cur.fetchone()
+    row = await db.fetchrow("SELECT pronouns FROM users WHERE user_id = $1", user_id)
 
-    if row and row[0]:
-        _pronouns: pronouns = row[0]
+    if row and row["pronouns"]:
+        _pronouns: pronouns = row["pronouns"]
         
         match data_returned:
             case PronounEnum.SUBJECT:

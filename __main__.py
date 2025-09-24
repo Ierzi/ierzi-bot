@@ -17,6 +17,7 @@ from cogs.search import Search
 
 # Utilities
 from cogs.utils import pronouns
+from cogs.utils.database import db
 
 # Other
 from rich.console import Console
@@ -27,22 +28,10 @@ from dotenv import load_dotenv
 import asyncio
 import time
 import random
-# I've heard there's an async version of this but ion wanna remake my whole bot for this :wilted_rose:
-# It's not like a ton of ppl are using my bot anyway
-import psycopg2
 
 console = Console()
 
 load_dotenv()
-conn = psycopg2.connect(
-    host=os.getenv("PGHOST"),
-    database=os.getenv("PGDATABASE"),
-    user=os.getenv("PGUSER"),
-    password=os.getenv("PGPASSWORD"),
-    port=os.getenv("PGPORT")
-)
-
-cur = conn.cursor()
 
 token = os.getenv("TOKEN")
 
@@ -55,11 +44,6 @@ bot = commands.Bot(
     case_insensitive=True
 )
 
-async def loop():
-    while True:
-        cur.execute("SELECT 1;")
-        await asyncio.sleep(120) # Every 2 minutes
-
 # Events
 @bot.event
 async def on_ready():
@@ -69,7 +53,7 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
-    bot.loop.create_task(loop())
+
 
 # Error handling
 @bot.event
@@ -517,9 +501,14 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
     await ctx.message.add_reaction("👍")
 
 async def main():
-    await load_cogs()
-    console.print("Cogs loaded.")
-    console.print("Bot is ready.")
-    await bot.start(token)
+    await db.init_pool()
+    await db.ensure_schema("schema.sql")
+    try:
+        await load_cogs()
+        console.print("Cogs loaded.")
+        console.print("Bot is ready.")
+        await bot.start(token)
+    finally:
+        await db.close_pool()
 
 asyncio.run(main())
