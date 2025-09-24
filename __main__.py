@@ -500,12 +500,24 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
 
+async def _loop_db():
+    while True:
+        try:
+            await db.fetchval("SELECT 1;")
+        except Exception as e:
+            console.print(f"DB loop error: {e}")
+        finally:
+            await asyncio.sleep(60)
+
+
 async def main():
     await db.init_pool()
     try:
         await load_cogs()
         console.print("Cogs loaded.")
         console.print("Bot is ready.")
+        # Start keepalive background task to prevent Railway sleep disconnects
+        bot.loop.create_task(_loop_db())
         await bot.start(token)
     finally:
         await db.close_pool()
