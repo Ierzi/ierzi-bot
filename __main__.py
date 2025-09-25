@@ -382,18 +382,21 @@ async def pronouns_set(ctx: commands.Context):
     """Set your pronouns."""
     user_id = ctx.author.id
 
-    if user_id == 1206615811792576614:
+    if user_id == 1206615811792576614: #fact
         await ctx.message.add_reaction("❌")
         return
 
     set_pronouns_embed = Embed(
         title="Set your pronouns!",
         # Manual description
-        description="Choose your pronouns here. Currently supported pronouns: he/him, she/her, they/them/themself, they/them/themselves, it/its, and any.\n"
+        description="Choose your pronouns here. Currently supported pronouns: "
     )
+    set_pronouns_embed.description += ", ".join(pronouns.all_pronouns)
+    set_pronouns_embed.description = set_pronouns_embed.description[:-2]
+
 
     current_pronouns = await pronouns.get_pronouns(user_id)
-    set_pronouns_embed.description += f"Current pronouns: {current_pronouns}"
+    set_pronouns_embed.add_field(name="current_pronouns", value=f"Current pronouns: {current_pronouns}")
 
     view = View(timeout=500)
     pronouns_option = [
@@ -402,6 +405,7 @@ async def pronouns_set(ctx: commands.Context):
         SelectOption(label='they/them/themself'),
         SelectOption(label='they/them/themselves'),
         SelectOption(label="it/its"),
+        SelectOption(label="one/one's"),
         SelectOption(label='any')
     ] # will add more pronouns later
     # to keep updated every time I add new pronouns
@@ -411,34 +415,44 @@ async def pronouns_set(ctx: commands.Context):
         options=pronouns_option
     )
 
+    # Big callback function
     async def pronouns_select_callback(interaction: Interaction):
         selected = pronouns_select.values[0]
         match selected:
             case 'he/him':
                 await pronouns.set_pronouns(user_id, 'he/him')
-                await interaction.message.edit(content="Set your pronouns to he/him.")
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: he/him")
+                await interaction.message.edit(content="Set your pronouns to he/him.", embed=set_pronouns_embed)
                 return
             case 'she/her':
                 await pronouns.set_pronouns(user_id, 'she/her')
-                await interaction.message.edit(content="Set your pronouns to she/her.")
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: she/her")
+                await interaction.message.edit(content="Set your pronouns to she/her.", embed=set_pronouns_embed)
                 return
             case 'they/them/themselves':
                 await pronouns.set_pronouns(user_id, 'they/them/themselves')
-                await interaction.message.edit(content="Set your pronouns to they/them/themselves.")
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: they/them/themselves")
+                await interaction.message.edit(content="Set your pronouns to they/them/themselves.", embed=set_pronouns_embed)
                 return
             case 'they/them/themself':
                 await pronouns.set_pronouns(user_id, 'they/them/themself')
-                await interaction.message.edit(content="Set your pronouns to they/them/themself.")
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: they/them/themself")
+                await interaction.message.edit(content="Set your pronouns to they/them/themself.", embed=set_pronouns_embed)
                 return
             case 'it/its':
                 await pronouns.set_pronouns(user_id, 'it/its')
-                await interaction.message.edit(content='Set your pronouns to it/its.')
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: it/its")
+                await interaction.message.edit(content='Set your pronouns to it/its.', embed=set_pronouns_embed)
                 return
+            case "one/one's":
+                await pronouns.set_pronouns(user_id, "one/one's")
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: one/one's")
+                await interaction.message.edit(content="Set your pronouns to one/one's.", embed=set_pronouns_embed)
             case 'any':
                 await pronouns.set_pronouns(user_id, 'any')
-                await interaction.message.edit(content="Set your pronouns to any.")
+                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: any")
+                await interaction.message.edit(content="Set your pronouns to any.", embed=set_pronouns_embed)
                 return
-        
 
     pronouns_select.callback = pronouns_select_callback
     view.add_item(pronouns_select)
@@ -497,6 +511,10 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
     
     user_id = user if isinstance(user, int) else user.id
     
+    if _pronouns not in pronouns.all_pronouns:
+        await ctx.send("invalid pronouns")
+        return
+
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
 

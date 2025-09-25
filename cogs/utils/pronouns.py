@@ -9,7 +9,7 @@ from .database import db
 # UPDATE ALL OF THIS
 # - SUPPORTED_PRONOUNS
 # - pronouns_data
-# If pronouns is not hidden
+# [If pronouns are not hidden]
 # - (__main__.py) (pronouns_set()) set_pronouns_embed.description
 # - (__main__.py) (pronouns_set()) pronouns_option
 # - (__main__.py) (pronouns_set()) pronouns_select_callback()
@@ -19,8 +19,24 @@ from .database import db
 # -- Types
 
 # only have the most common pronouns yet
-#TODO: add more pronouns (nameself, it/its, one/one's, neopronouns...) https://en.pronouns.page/pronouns
-SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'it/its', 'any', 'fag/got'] # any will probably use they/them
+#TODO: add more pronouns (nameself, neopronouns...) https://en.pronouns.page/pronouns
+
+all_pronouns = [
+    "he/him", "she/her", "they/them/themselves", "they/them/themself", "it/its", "one/one's", "any"
+] # Not including hidden pronouns
+
+SUPPORTED_PRONOUNS = Literal[
+    'he/him', 
+    'she/her', 
+    'they/them/themselves', 
+    'they/them/themself', 
+    'it/its', 
+    "one/one's",
+    'any', # any will probably use they/them
+
+    # HIDDEN PRONOUNS
+    'fag/got'
+] 
 pronoun = str #e.g. he
 pronouns = str #e.g. he/him
 _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
@@ -42,11 +58,11 @@ pronouns_data: dict[str, _pronouns_data] = {
     'they/them/themselves': ('they', 'them', 'their', 'theirs', 'themselves'),
     'they/them/themself': ('they', 'them', 'their', 'theirs', 'themself'),
     'it/its': ('it', 'it', 'its', 'its', 'itself'),
+    "one/one's": ("one", "one", "one's", "one's", "oneself"),
     'any': ('they', 'them', 'their', 'theirs', 'themselves'), # Like I said on SUPPORTED_PRONOUNS
     # HIDDEN PRONOUNS
     'fag/got': ('fag', 'got', 'fager', 'fagers', 'fagself')
 }
-
 
 console = Console()
 
