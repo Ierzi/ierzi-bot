@@ -33,8 +33,6 @@ class Database:
             min_size=min_size,
             max_size=max_size,
             timeout=timeout,
-            max_inactive_connection_lifetime=60.0,
-            statement_cache_size=0,
         )
 
     async def close_pool(self) -> None:
@@ -47,49 +45,31 @@ class Database:
             raise DatabaseError("Database pool is not initialized. Call db.init_pool() first.")
         return self._pool
 
-    async def _reconnect(self) -> None:
-        await self.close_pool()
-        await self.init_pool()
-
-    async def _run_with_retry(self, method_name: str, query: str, *args: Any, attempts: int = 2):
-        last_exc: Exception | None = None
-        for _ in range(attempts):
-            pool = self._require_pool()
-            try:
-                async with pool.acquire() as conn:
-                    method = getattr(conn, method_name)
-                    return await method(query, *args)
-            except (asyncpg.PostgresConnectionError, asyncpg.CannotConnectNowError, ConnectionError, OSError) as exc:
-                last_exc = exc
-                await self._reconnect()
-                continue
-            
-        assert last_exc is not None
-        raise last_exc
-
     async def execute(self, query: str, *args: Any) -> str:
-        return await self._run_with_retry("execute", query, *args)
+        pool = self._require_pool()
+        async with pool.acquire() as conn:
+            return await conn.execute(query, *args)
 
     async def executemany(self, query: str, args_iter: Iterable[Iterable[Any]]) -> None:
         pool = self._require_pool()
-        try:
-            async with pool.acquire() as conn:
-                await conn.executemany(query, args_iter)
-        except (asyncpg.PostgresConnectionError, asyncpg.CannotConnectNowError, ConnectionError, OSError):
-            await self._reconnect()
-            pool = self._require_pool()
-            async with pool.acquire() as conn:
-                await conn.executemany(query, args_iter)
+        async with pool.acquire() as conn:
+            await conn.executemany(query, args_iter)
 
     async def fetch(self, query: str, *args: Any) -> list[Record]:
-        rows = await self._run_with_retry("fetch", query, *args)
-        return list(rows)
+        pool = self._require_pool()
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(query, *args)
+            return list(rows)
 
     async def fetchrow(self, query: str, *args: Any) -> Optional[Record]:
-        return await self._run_with_retry("fetchrow", query, *args)
+        pool = self._require_pool()
+        async with pool.acquire() as conn:
+            return await conn.fetchrow(query, *args)
 
     async def fetchval(self, query: str, *args: Any) -> Any:
-        return await self._run_with_retry("fetchval", query, *args)
+        pool = self._require_pool()
+        async with pool.acquire() as conn:
+            return await conn.fetchval(query, *args)
 
     async def transaction(self) -> AsyncIterator[Connection]:
         pool = self._require_pool()

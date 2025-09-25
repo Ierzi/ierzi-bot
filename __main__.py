@@ -44,15 +44,6 @@ bot = commands.Bot(
     case_insensitive=True
 )
 
-async def _loop_db():
-    while True:
-        try:
-            await db.fetchval("SELECT 1;")
-        except Exception as e:
-            console.print(f"DB loop error: {e}")
-        finally:
-            await asyncio.sleep(60)
-
 # Events
 @bot.event
 async def on_ready():
@@ -62,7 +53,6 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
-    bot.loop.create_task(_loop_db())
 
 # Error handling
 @bot.event
