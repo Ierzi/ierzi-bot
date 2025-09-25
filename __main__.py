@@ -222,7 +222,7 @@ async def roadmap(ctx: commands.Context):
     await ctx.send(message)
 
 # help command
-def get_commands(bot: commands.Bot):
+def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:
     all_commands: list[tuple[str, str, str]] = [] # Format: Command name, cog name, command help
     for cog_name, cog in bot.cogs.items():
         for command in cog.get_commands():

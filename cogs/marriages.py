@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands
 from discord.ui import Button, View
-import asyncio
 from rich.console import Console
-import os
 from .utils.database import db
+from .utils import pronouns
+from .utils.pronouns import PronounEnum
 
 class Marriages(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -115,7 +115,7 @@ class Marriages(commands.Cog):
             return
         
         # fact cant divorce guest
-        if ctx.author.id == 1206615811792576614 and partner.id == 747918143745294356: 
+        if proposer.id == 1206615811792576614 and partner.id == 747918143745294356: 
             await ctx.send("Not now big guy~")
             return
 
@@ -124,6 +124,8 @@ class Marriages(commands.Cog):
         view = View(timeout=60.0)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
+
+        partner_pronouns_object = pronouns.get_pronoun(partner.id, PronounEnum.OBJECT)
 
         async def yes_button_callback(interaction: discord.Interaction):
             if not interaction.user.id == proposer.id:
@@ -138,7 +140,7 @@ class Marriages(commands.Cog):
                 await interaction.response.send_message("why do you wanna ruin someone's marriage? :sob:", ephemeral=True)
                 return
 
-            await interaction.response.send_message(f"{proposer.mention} has canceled the divorce proposal.")
+            await interaction.response.send_message(f"{proposer.mention} doesnt want to divorce {partner_pronouns_object} :D")
             await interaction.message.edit(view=None)
 
         yes_button.callback = yes_button_callback
