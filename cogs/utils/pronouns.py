@@ -21,8 +21,8 @@ from .database import db
 # only have the most common pronouns yet
 #TODO: add more pronouns (nameself, it/its, one/one's, neopronouns...) https://en.pronouns.page/pronouns
 SUPPORTED_PRONOUNS = Literal['he/him', 'she/her', 'they/them/themselves', 'they/them/themself', 'it/its', 'any', 'fag/got'] # any will probably use they/them
-pronoun = str #he
-pronouns = str #he/him
+pronoun = str #e.g. he
+pronouns = str #e.g. he/him
 _pronouns_data = tuple[pronoun, pronoun, pronoun, pronoun, pronoun]
 _returned_pronouns_data = _pronouns_data | pronoun
 

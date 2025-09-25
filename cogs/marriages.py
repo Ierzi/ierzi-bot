@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord.ui import Button, View
 import asyncio
 from rich.console import Console
 import os
@@ -8,7 +9,6 @@ from .utils.database import db
 class Marriages(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
-        self.db = db
         self.console = console
 
     async def add_marriage_list(self, marriage_pair: tuple[int]):
@@ -61,7 +61,7 @@ class Marriages(commands.Cog):
             await ctx.send("does he know?")
             return
         if partner.id == self.bot.user.id:
-            if proposer.id == 966351518020300841:
+            if proposer.id == 966351518020300841: # me :3
                 await ctx.send("<333")
                 await ctx.send(f"Congratulations {proposer.mention} and {self.bot.user.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none()) 
                 await self.add_marriage_list((proposer.id, self.bot.user.id))
@@ -74,23 +74,33 @@ class Marriages(commands.Cog):
             await ctx.send("dumbass")
             return
         
-        await ctx.send(f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline.", allowed_mentions=discord.AllowedMentions.none())
+        message = f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline. You have 60 seconds to respond."
+        view = View(timeout=60.0)
+        yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
+        no_button = Button(label="No", style=discord.ButtonStyle.red)
 
-        def check(m: discord.Message):
-            return m.author.id == partner.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
-
-        try:
-            msg = await self.bot.wait_for('message', check=check, timeout=30.0)
-        except asyncio.TimeoutError:
-            await ctx.send(f"Marriage proposal for {partner.mention} timed out.", allowed_mentions=discord.AllowedMentions.none())
-            return
-        
-        if msg.content.lower() == "yes":
-            await ctx.send(f"Congratulations {proposer.mention} and {partner.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none())
-            self.console.print(f"Marriage between {proposer.name} and {partner.name} has been recorded.")
+        async def yes_button_callback(interaction: discord.Interaction):
+            if not interaction.user.id == partner.id:
+                await interaction.response.send_message("no.", ephemeral=True)
+                return
+            
+            await interaction.response.send_message(f"Congratulations {proposer.mention} and {partner.mention}, you are now happily married!")
             await self.add_marriage_list((proposer.id, partner.id))
-        else:
-            await ctx.send(f"{partner.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
+            self.console.print(f"Marriage between {proposer.name} and {partner.name} has been recorded.")
+        
+        async def no_button_callback(interaction: discord.Interaction):
+            if not interaction.user.id == partner.id:
+                await interaction.response.send_message("why do you wanna ruin someone's marriage? :sob:", ephemeral=True)
+                return
+
+            await interaction.response.send_message(f"{partner.mention} has declined the marriage proposal.")
+
+        yes_button.callback = yes_button_callback
+        no_button.callback = no_button_callback
+        view.add_item(yes_button)
+        view.add_item(no_button)
+
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none(), view=view)
 
     @commands.command()
     async def divorce(self, ctx: commands.Context, partner: discord.Member):
@@ -107,26 +117,33 @@ class Marriages(commands.Cog):
             await ctx.send("Not now big guy~")
             return
 
-        await ctx.send(f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. ", allowed_mentions=discord.AllowedMentions.none())
+        message = f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. You have 60 seconds to respond."
 
-        def check(m: discord.Message):
-            return m.author.id == proposer.id and m.channel == ctx.channel and m.content.lower() in ["yes", "no"]
+        view = View(timeout=60.0)
+        yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
+        no_button = Button(label="No", style=discord.ButtonStyle.red)
 
-        try:
-            msg = await self.bot.wait_for('message', check=check, timeout=30.0)
-        except asyncio.TimeoutError:
-            await ctx.send(f"Divorce request by {ctx.author.mention} timed out.", allowed_mentions=discord.AllowedMentions.none())
-            return
+        async def yes_button_callback(interaction: discord.Interaction):
+            if not interaction.user.id == proposer.id:
+                await interaction.response.send_message("no.", ephemeral=True)
+                return
+            
+            await interaction.response.send_message(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...")
         
-        if msg.content.lower() == "yes":
-            # Remove the marriage from the list
-            await self.remove_marriage_list((proposer.id, partner.id))
-            await ctx.send(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...", allowed_mentions=discord.AllowedMentions.none())
-            self.console.print(f"Divorce between {proposer.name} and {partner.name} has been recorded.")
-        else:
-            await ctx.send(f"{proposer.mention} has canceled the divorce proposal.", allowed_mentions=discord.AllowedMentions.none())
+        async def no_button_callback(interaction: discord.Interaction):
+            if not interaction.user.id == proposer.id:
+                await interaction.response.send_message("why do you wanna ruin someone's marriage? :sob:", ephemeral=True)
+                return
 
-    
+            await interaction.response.send_message(f"{proposer.mention} has canceled the divorce proposal.")
+
+        yes_button.callback = yes_button_callback
+        no_button.callback = no_button_callback
+        view.add_item(yes_button)
+        view.add_item(no_button)
+
+        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none(), view=view)
+
     # TODO: fix this
     # @commands.command()
     # async def listmarriages(self, ctx: commands.Context, page_number: int = 1):
