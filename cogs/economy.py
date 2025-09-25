@@ -60,13 +60,10 @@ class Economy(commands.Cog):
         # All cooldowns are in the users table
         last_action = await db.fetchval(f"SELECT {cooldown_type} FROM users WHERE user_id = $1", user_id)
         if last_action is not None:
-            # Normalize to aware UTC for subtraction compatibility
             if isinstance(last_action, str):
                 last_action = datetime.fromisoformat(last_action)
-            if getattr(last_action, "tzinfo", None) is None:
-                last_action = last_action.replace(tzinfo=timezone.utc)
-            else:
-                last_action = last_action.astimezone(timezone.utc)
+            if getattr(last_action, "tzinfo", None) is not None:
+                last_action = last_action.astimezone(timezone.utc).replace(tzinfo=None)
             
             if (now - last_action) < cooldown_time:
                 time_remaining = cooldown_time - (now - last_action)
@@ -107,7 +104,7 @@ class Economy(commands.Cog):
         """Work to gain some coins."""
         user_id = ctx.author.id
         cooldown = timedelta(hours=6)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         output = await self.cooldown(ctx.author.id, 'last_worked', cooldown, now)
         if not output[0]: # Cooldown
@@ -167,7 +164,7 @@ class Economy(commands.Cog):
         user_id = ctx.author.id
 
         cooldown = timedelta(hours=24)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         output = await self.cooldown(ctx.author.id, 'last_daily', cooldown, now)
         if not output[0]: # Cooldown
@@ -332,7 +329,7 @@ class Economy(commands.Cog):
         success = False
         user_id = ctx.author.id
         cooldown = timedelta(hours=2)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
 
         # Pronouns
         all_pronouns = await pronouns.get_pronoun(user_id)
