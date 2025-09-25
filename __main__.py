@@ -172,8 +172,8 @@ async def isthistrue(interaction: Interaction, message: Message):
         await asyncio.sleep(0.2)
 
 # Other commands
-@bot.command()
-async def id(ctx: commands.Context, user: discord.Member = None):
+@bot.command(name="id")
+async def id_user(ctx: commands.Context, user: discord.Member = None):
     """Gets the ID of an user."""
     if not user:
         await ctx.send(ctx.author.id)
