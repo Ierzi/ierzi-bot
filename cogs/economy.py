@@ -29,7 +29,6 @@ class ShopItem(TypedDict):
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
-        self.db = db
         self.console = console
         self.coin_emoji = '<:coins:1416429599084118239>'
 
@@ -85,7 +84,7 @@ class Economy(commands.Cog):
             DO UPDATE SET balance = users.balance + EXCLUDED.balance;
             """,
             user_id,
-            amount,
+            amount
         )
         self.console.print(f"Successfully added {amount} coins to {user_id}")
 
@@ -115,16 +114,10 @@ class Economy(commands.Cog):
         # If the user can work, give them a random job and pay them
         job, raw_payment = random.choice(self.jobs)
         payment = random.randint(raw_payment - 50, raw_payment + 50) # randomize the payement
-        await db.execute("""
-            INSERT INTO users (user_id, balance, last_worked)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (user_id)
-            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_worked = EXCLUDED.last_worked;
-        """, user_id, payment, now)
+        await self.add_money(user_id, payment)
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard")) # since there's no other leaderboards
-    @commands.cooldown(1, 5, commands.BucketType.user) # cause its a heavy command that freezes(?) the bot for a few seconds
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
         """View the economy leaderboard."""
         if page < 1:
@@ -173,12 +166,7 @@ class Economy(commands.Cog):
             return
 
         payment = 12_500
-        await db.execute("""
-            INSERT INTO users (user_id, balance, last_daily)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (user_id)
-            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_daily = EXCLUDED.last_daily;
-        """, user_id, payment, now)
+        await self.add_money(user_id, payment)
 
         # Use pronouns
 
@@ -326,7 +314,6 @@ class Economy(commands.Cog):
     async def rob_bank(self, ctx: commands.Context):
         """Rob a bank (no way)."""
         rob_money = random.randint(1000, 2000)
-        success = False
         user_id = ctx.author.id
         cooldown = timedelta(hours=2)
         now = datetime.now(timezone.utc).replace(tzinfo=None)
@@ -344,25 +331,14 @@ class Economy(commands.Cog):
         if random.random() < 0.5:
             await ctx.send(f"{ctx.author.mention} robbed the bank and won {rob_money} coins!", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, rob_money)
-            success = True
         else:
             lose_money = rob_money // 2
             await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, -lose_money)
-        
-        await db.execute("""
-            INSERT INTO users (user_id, balance, last_robbed_bank)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (user_id)
-            DO UPDATE SET balance = users.balance + EXCLUDED.balance, last_robbed_bank = EXCLUDED.last_robbed_bank;
-        """, user_id, rob_money if success else 0, now)
     
     @commands.command(name="robuser")
     async def rob_user(self, ctx: commands.Context, user: discord.Member):
         """Rob someone 1000 coins. If you fail you give them 500 coins."""
-        if not user:
-            await ctx.send("who?")
-            return
         if user.bot:
             await ctx.send('rob a real person vro')
             return
