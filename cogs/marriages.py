@@ -84,7 +84,8 @@ class Marriages(commands.Cog):
                 await interaction.response.send_message("no.", ephemeral=True)
                 return
             
-            await interaction.response.send_message(f"Congratulations {proposer.mention} and {partner.mention}, you are now happily married!")
+            await interaction.response.send_message(f"Congratulations {proposer.mention} and {partner.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none())
+            await interaction.message.edit(view=None)
             await self.add_marriage_list((proposer.id, partner.id))
             self.console.print(f"Marriage between {proposer.name} and {partner.name} has been recorded.")
         
@@ -93,7 +94,8 @@ class Marriages(commands.Cog):
                 await interaction.response.send_message("why do you wanna ruin someone's marriage? :sob:", ephemeral=True)
                 return
 
-            await interaction.response.send_message(f"{partner.mention} has declined the marriage proposal.")
+            await interaction.response.send_message(f"{partner.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
+            await interaction.message.edit(view=None)
 
         yes_button.callback = yes_button_callback
         no_button.callback = no_button_callback
@@ -129,6 +131,7 @@ class Marriages(commands.Cog):
                 return
             
             await interaction.response.send_message(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...")
+            await interaction.message.edit(view=None)
         
         async def no_button_callback(interaction: discord.Interaction):
             if not interaction.user.id == proposer.id:
@@ -136,6 +139,7 @@ class Marriages(commands.Cog):
                 return
 
             await interaction.response.send_message(f"{proposer.mention} has canceled the divorce proposal.")
+            await interaction.message.edit(view=None)
 
         yes_button.callback = yes_button_callback
         no_button.callback = no_button_callback
