@@ -61,7 +61,7 @@ async def on_command_error(ctx: commands.Context, error):
         await ctx.send(f"Try again in {round(error.retry_after, 2)} seconds.")
     if isinstance(error, commands.CommandNotFound):
         # useless error
-        return
+        pass
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
@@ -84,7 +84,7 @@ async def on_message(message: Message):
                 reply_content = reply.content
     
                 response = await ai.isthistrue(ctx, reply_content)
-                if isinstance(message, list):
+                if isinstance(response, list):
                     for m in response:
                         await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
                         await asyncio.sleep(0.2)
@@ -173,7 +173,7 @@ async def isthistrue(interaction: Interaction, message: Message):
 
 # Other commands
 @bot.command()
-async def id(ctx: commands.Context, user: discord.Member):
+async def id(ctx: commands.Context, user: discord.Member = None):
     """Gets the ID of an user."""
     if not user:
         await ctx.send(ctx.author.id)
@@ -182,23 +182,24 @@ async def id(ctx: commands.Context, user: discord.Member):
     await ctx.send(user.id)
 
 @bot.command()
-async def profile(ctx: commands.Context, *user_id: int | tuple):
-    """Gets the profile of an user based on an ID."""
-    if user_id == None or user_id == ():
+async def profile(ctx: commands.Context, *user_ids: int):
+    """Gets the profile of user(s) by ID. Accepts one or more IDs."""
+    if not user_ids:
         await ctx.send("Gimme user ids. \n-# if you dont know what that is, ignore this")
-    
-    if isinstance(user_id, tuple):
-        message = ""
-        for id in user_id:
-            user = bot.get_user(id) or await bot.fetch_user(id)
-            message += f"{user.mention}\n"
-        
-        await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
         return
 
-    user = bot.get_user(user_id) or await bot.fetch_user(user_id)
-    
-    await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
+    if len(user_ids) == 1:
+        uid = user_ids[0]
+        user = bot.get_user(uid) or await bot.fetch_user(uid)
+        await ctx.send(user.mention, allowed_mentions=discord.AllowedMentions.none())
+        return
+
+    message = ""
+    for uid in user_ids:
+        user = bot.get_user(uid) or await bot.fetch_user(uid)
+        message += f"{user.mention}, "
+    message = message[:-2] # remove the last comma
+    await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
 async def github(ctx: commands.Context):
