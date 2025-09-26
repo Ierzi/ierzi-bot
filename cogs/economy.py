@@ -5,7 +5,7 @@ from rich.console import Console
 from cogs.utils.database import db
 import os
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, tzinfo
 import asyncio
 from typing import TypedDict, Literal, Optional
 from .utils import pronouns
@@ -62,6 +62,8 @@ class Economy(commands.Cog):
         if last_action is not None:
             if isinstance(last_action, str):
                 last_action = datetime.fromisoformat(last_action)
+            
+            last_action = last_action.astimezone(timezone.utc)
             
             if (now - last_action) < cooldown_time:
                 time_remaining = cooldown_time - (now - last_action)

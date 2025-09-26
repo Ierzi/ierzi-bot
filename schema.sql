@@ -10,10 +10,10 @@ CREATE TABLE users (
     pronouns TEXT, 
     -- economy related
     balance INT DEFAULT 0,
-    last_daily TIMESTAMP,
-    last_worked TIMESTAMP,
-    last_robbed_bank TIMESTAMP,
-    last_robbed_user TIMESTAMP
+    last_daily TIMESTAMPTZ,
+    last_worked TIMESTAMPTZ,
+    last_robbed_bank TIMESTAMPTZ,
+    last_robbed_user TIMESTAMPTZ
 );
 
 

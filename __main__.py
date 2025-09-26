@@ -528,7 +528,7 @@ async def update_db(ctx: commands.Context):
         )
         console.print(f"updated {row}")
     
-    ctx.message.add_reaction("👍")
+    await ctx.message.add_reaction("👍")
 
 async def main():
     await db.init_pool()
