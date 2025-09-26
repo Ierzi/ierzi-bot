@@ -24,12 +24,10 @@ from .database import db
 all_pronouns = [
     "he/him", "she/her", "they/them/themselves", "they/them/themself", "it/its", "one/one's", "any"
 ] # Not including hidden pronouns
-all_pronouns_hidden = all_pronouns.copy().extend(
-    [
-        "fag/got",
-        "nyeh/heh/heh"
-    ]
-)
+all_pronouns_hidden = all_pronouns.copy() + [
+    "fag/got",
+    "nyeh/heh/heh"
+]
 
 SUPPORTED_PRONOUNS = Literal[
     'he/him', 
@@ -89,7 +87,7 @@ async def set_pronouns(
         DO UPDATE SET pronouns = EXCLUDED.pronouns;
         """,
         user_id,
-        pronouns,
+        pronouns
     )
 
     console.print(f"Set {user_id}'s pronouns to {pronouns}.")
