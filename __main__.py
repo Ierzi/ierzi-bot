@@ -396,7 +396,7 @@ async def pronouns_set(ctx: commands.Context):
 
 
     current_pronouns = await pronouns.get_pronouns(user_id)
-    set_pronouns_embed.add_field(value=f"Current pronouns: {current_pronouns}")
+    set_pronouns_embed.add_field(name="Current pronouns", value=f"Current pronouns: {current_pronouns}")
 
     view = View(timeout=500)
     pronouns_option = [
