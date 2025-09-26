@@ -24,6 +24,7 @@ from .database import db
 all_pronouns = [
     "he/him", "she/her", "they/them/themselves", "they/them/themself", "it/its", "one/one's", "any"
 ] # Not including hidden pronouns
+all_pronouns_hidden = all_pronouns.copy().append("fag/got", "nyeh/heh/heh")
 
 SUPPORTED_PRONOUNS = Literal[
     'he/him', 

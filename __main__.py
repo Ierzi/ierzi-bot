@@ -511,7 +511,7 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
     
     user_id = user if isinstance(user, int) else user.id
     
-    if _pronouns not in pronouns.all_pronouns:
+    if _pronouns not in pronouns.all_pronouns_hidden:
         await ctx.send("invalid pronouns")
         return
 
