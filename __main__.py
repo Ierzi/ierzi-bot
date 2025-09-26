@@ -392,7 +392,6 @@ async def pronouns_set(ctx: commands.Context):
         description="Choose your pronouns here. Currently supported pronouns: "
     )
     set_pronouns_embed.description += ", ".join(pronouns.all_pronouns)
-    set_pronouns_embed.description = set_pronouns_embed.description[:-2]
 
 
     current_pronouns = await pronouns.get_pronouns(user_id)
