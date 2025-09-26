@@ -1,3 +1,4 @@
+from turtle import update
 import discord
 from discord import Embed, Colour
 from discord.ext import commands
@@ -73,6 +74,16 @@ class Economy(commands.Cog):
                 return False, hours, minutes, seconds
         
         return True, None, None, None
+    
+    async def update_cooldown(self, user_id: int, cooldown_type: Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"]) -> None:
+        now = datetime.now(timezone.utc)
+
+        await db.execute(f"""
+                INSERT INTO users (user_id, {cooldown_type})
+                VALUES ($1, $2)
+                ON CONFLICT (user_id)
+                DO UPDATE SET {cooldown_type} = EXCLUDED.{cooldown_type}
+            """, user_id, now)
 
 
     async def add_money(self, user_id: int, amount: int):
@@ -103,7 +114,7 @@ class Economy(commands.Cog):
         """Work to gain some coins."""
         user_id = ctx.author.id
         cooldown = timedelta(hours=6)
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        now = datetime.now(timezone.utc)
 
         output = await self.cooldown(ctx.author.id, 'last_worked', cooldown, now)
         if not output[0]: # Cooldown
@@ -116,6 +127,7 @@ class Economy(commands.Cog):
         payment = random.randint(raw_payment - 50, raw_payment + 50) # randomize the payement
         await self.add_money(user_id, payment)
         await ctx.send(f"{ctx.author.mention} worked as a {job} and gained {payment} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        await self.update_cooldown(user_id, 'last_worked')
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard")) # since there's no other leaderboards
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
@@ -169,10 +181,10 @@ class Economy(commands.Cog):
         await self.add_money(user_id, payment)
 
         # Use pronouns
-
         all_pronouns = await pronouns.get_pronoun(user_id)
 
-        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment:,} coins {self.coin_emoji}.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} claimed {all_pronouns[2]} daily! +{payment:,} coins {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        await self.update_cooldown(user_id, 'last_daily')
 
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
@@ -197,7 +209,7 @@ class Economy(commands.Cog):
         await ctx.send(f"{author.mention} paid {user.mention} {amount} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def double(self, ctx: commands.Context, amount: int):
         """Gamble your coins with a chance to double them."""
         user_id = ctx.author.id
@@ -223,7 +235,7 @@ class Economy(commands.Cog):
             return
     
     @commands.command()
-    @commands.cooldown(1, 2, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def dicebet(self, ctx: commands.Context, amount: int):
         """Roll a 6 sided dice, guess the correct side to win."""
         user_id = ctx.author.id
@@ -309,14 +321,13 @@ class Economy(commands.Cog):
             await ctx.send(f"You bought {cost:,} worth of tickets and didn't win {prize_money:,} coins.")
             return
     
-    # TODO: add cooldown fucntionality (2 hours for both)
     @commands.command(name="robbank")
     async def rob_bank(self, ctx: commands.Context):
         """Rob a bank (no way)."""
         rob_money = random.randint(1000, 2000)
         user_id = ctx.author.id
         cooldown = timedelta(hours=2)
-        now = datetime.now(timezone.utc).replace(tzinfo=None)
+        now = datetime.now(timezone.utc)
 
         # Pronouns
         all_pronouns = await pronouns.get_pronoun(user_id)
@@ -335,6 +346,8 @@ class Economy(commands.Cog):
             lose_money = rob_money // 2
             await ctx.send(f"🚨 The police caught {ctx.author.mention} and {all_pronouns[0]} lost {lose_money} coins...", allowed_mentions=discord.AllowedMentions.none())
             await self.add_money(user_id, -lose_money)
+        
+        await self.update_cooldown(user_id, 'last_robbed_bank')
     
     @commands.command(name="robuser")
     async def rob_user(self, ctx: commands.Context, user: discord.Member):
@@ -370,13 +383,7 @@ class Economy(commands.Cog):
             await self.add_money(ctx.author.id, -500)
             await self.add_money(user.id, 500)
         
-        # record last_robbed_user timestamp without changing balance further
-        await db.execute("""
-            INSERT INTO users (user_id, last_robbed_user)
-            VALUES ($1, $2)
-            ON CONFLICT (user_id)
-            DO UPDATE SET last_robbed_user = EXCLUDED.last_robbed_user;
-        """, user_id, now)
+        await self.update_cooldown(user_id, 'last_robbed_user')
 
 
     # @commands.command()
