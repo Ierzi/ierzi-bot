@@ -35,7 +35,8 @@ SUPPORTED_PRONOUNS = Literal[
     'any', # any will probably use they/them
 
     # HIDDEN PRONOUNS
-    'fag/got'
+    'fag/got',
+    'nyeh/heh/heh'
 ] 
 pronoun = str #e.g. he
 pronouns = str #e.g. he/him
@@ -61,7 +62,8 @@ pronouns_data: dict[str, _pronouns_data] = {
     "one/one's": ("one", "one", "one's", "one's", "oneself"),
     'any': ('they', 'them', 'their', 'theirs', 'themselves'), # Like I said on SUPPORTED_PRONOUNS
     # HIDDEN PRONOUNS
-    'fag/got': ('fag', 'got', 'fager', 'fagers', 'fagself')
+    'fag/got': ('fag', 'got', 'fager', 'fagers', 'fagself'),
+    'nyeh/heh/heh': ('nyeh', 'heh', 'heh', 'heh', 'hehself')
 }
 
 console = Console()
