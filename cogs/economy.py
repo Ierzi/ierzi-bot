@@ -21,6 +21,7 @@ output_data = tuple[_output, _hours, _minutes, _seconds]
 
 # -- Variables
 
+
 class ShopItem(TypedDict):
     name: str
     price: int
@@ -61,8 +62,6 @@ class Economy(commands.Cog):
         if last_action is not None:
             if isinstance(last_action, str):
                 last_action = datetime.fromisoformat(last_action)
-            if getattr(last_action, "tzinfo", None) is not None:
-                last_action = last_action.astimezone(timezone.utc).replace(tzinfo=None)
             
             if (now - last_action) < cooldown_time:
                 time_remaining = cooldown_time - (now - last_action)

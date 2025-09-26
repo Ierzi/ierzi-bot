@@ -396,7 +396,7 @@ async def pronouns_set(ctx: commands.Context):
 
 
     current_pronouns = await pronouns.get_pronouns(user_id)
-    set_pronouns_embed.add_field(name="current_pronouns", value=f"Current pronouns: {current_pronouns}")
+    set_pronouns_embed.add_field(value=f"Current pronouns: {current_pronouns}")
 
     view = View(timeout=500)
     pronouns_option = [
@@ -421,36 +421,36 @@ async def pronouns_set(ctx: commands.Context):
         match selected:
             case 'he/him':
                 await pronouns.set_pronouns(user_id, 'he/him')
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: he/him")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: he/him")
                 await interaction.message.edit(content="Set your pronouns to he/him.", embed=set_pronouns_embed)
                 return
             case 'she/her':
                 await pronouns.set_pronouns(user_id, 'she/her')
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: she/her")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: she/her")
                 await interaction.message.edit(content="Set your pronouns to she/her.", embed=set_pronouns_embed)
                 return
             case 'they/them/themselves':
                 await pronouns.set_pronouns(user_id, 'they/them/themselves')
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: they/them/themselves")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: they/them/themselves")
                 await interaction.message.edit(content="Set your pronouns to they/them/themselves.", embed=set_pronouns_embed)
                 return
             case 'they/them/themself':
                 await pronouns.set_pronouns(user_id, 'they/them/themself')
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: they/them/themself")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: they/them/themself")
                 await interaction.message.edit(content="Set your pronouns to they/them/themself.", embed=set_pronouns_embed)
                 return
             case 'it/its':
                 await pronouns.set_pronouns(user_id, 'it/its')
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: it/its")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: it/its")
                 await interaction.message.edit(content='Set your pronouns to it/its.', embed=set_pronouns_embed)
                 return
             case "one/one's":
                 await pronouns.set_pronouns(user_id, "one/one's")
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: one/one's")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: one/one's")
                 await interaction.message.edit(content="Set your pronouns to one/one's.", embed=set_pronouns_embed)
             case 'any':
                 await pronouns.set_pronouns(user_id, 'any')
-                set_pronouns_embed.set_field_at(0, name="current_pronouns", value="Current pronouns: any")
+                set_pronouns_embed.set_field_at(0, value="Current pronouns: any")
                 await interaction.message.edit(content="Set your pronouns to any.", embed=set_pronouns_embed)
                 return
 
