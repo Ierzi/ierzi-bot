@@ -518,6 +518,16 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
 
+@commands.command()
+async def update_db():
+    for row in ["last_daily", "last_worked", "last_robbed_bank", "last_robbed_user"]:
+        await db.execute("""
+            ALTER TABLE users
+            ALTER COLUMN {row} TYPE timestamptz
+            USING {row} AT TIME ZONE 'UTC';"""
+        )
+        console.print(f"updated {row}")
+
 async def main():
     await db.init_pool()
     try:
