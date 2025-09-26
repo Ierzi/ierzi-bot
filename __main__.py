@@ -519,7 +519,7 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
     await ctx.message.add_reaction("👍")
 
 @bot.command()
-async def update_db():
+async def update_db(ctx: commands.Context):
     for row in ["last_daily", "last_worked", "last_robbed_bank", "last_robbed_user"]:
         await db.execute("""
             ALTER TABLE users
