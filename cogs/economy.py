@@ -59,11 +59,11 @@ class Economy(commands.Cog):
                        ) -> output_data:
         # All cooldowns are in the users table
         last_action = await db.fetchval(f"SELECT {cooldown_type} FROM users WHERE user_id = $1", user_id)
+        self.console.print(last_action)
+        self.console.print(now)
         if last_action is not None:
             if isinstance(last_action, str):
                 last_action = datetime.fromisoformat(last_action)
-            
-            last_action = last_action.astimezone(timezone.utc)
             
             if (now - last_action) < cooldown_time:
                 time_remaining = cooldown_time - (now - last_action)
