@@ -20,9 +20,6 @@ _minutes = Optional[int]
 _seconds = Optional[int]
 output_data = tuple[_output, _hours, _minutes, _seconds]
 
-# -- Variables
-
-
 class ShopItem(TypedDict):
     name: str
     price: int
@@ -189,7 +186,7 @@ class Economy(commands.Cog):
     @commands.command()
     async def pay(self, ctx: commands.Context, user: discord.Member, amount: int):
         """Pay someone."""
-        balance = await self.get_balance(user.id)
+        balance = await self.get_balance(ctx.author.id)
         if amount < 0:
             await ctx.send("have you tried using coins that have a positive amount of atoms?")
             return

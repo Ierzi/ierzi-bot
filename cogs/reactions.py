@@ -154,7 +154,7 @@ class Reactions(commands.Cog):
 
         if user.id == self.bot.user.id:
             what_file = self.assets_folder / "what.jpg"
-            await ctx.send(file=discord.File(what_file.resolve()))
+            await ctx.send(file=File(what_file.resolve()))
             return
         if user.bot:
             await ctx.send(f"{ctx.author.mention} PUNCHES {user.mention}! \n-# deserved icl cause im the best bot here")

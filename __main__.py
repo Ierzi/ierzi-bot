@@ -212,9 +212,9 @@ async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
         "debug thing with spendings ai", "add more reactions", 
-        "fix !listmarrrriages", "fix the marriage database that is so messy",  
+        "fix !listmarriages", "fix the marriage database that is so messy",  
         "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
-        "achievements?", "other ai models", "remake the whole bot to use async for database (aiopg)"
+        "achievements?", "other ai models"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
@@ -347,8 +347,6 @@ async def help(ctx: commands.Context, category: str = None):
                 await interaction.message.edit(embed=songs_embed)
             case "search":
                 await interaction.message.edit(embed=search_embed)
-            case _:
-                await interaction.message.edit("Invalid category.", ephemeral=True)
 
     help_select.callback = help_select_callback
     view.add_item(help_select)
@@ -515,18 +513,6 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, 
         return
 
     await pronouns.set_pronouns(user_id, _pronouns)
-    await ctx.message.add_reaction("👍")
-
-@bot.command()
-async def update_db(ctx: commands.Context):
-    for row in ["last_daily", "last_worked", "last_robbed_bank", "last_robbed_user"]:
-        await db.execute(f"""
-            ALTER TABLE users
-            ALTER COLUMN {row} TYPE timestamptz
-            USING {row} AT TIME ZONE 'UTC';"""
-        )
-        console.print(f"updated {row}")
-    
     await ctx.message.add_reaction("👍")
 
 async def main():
