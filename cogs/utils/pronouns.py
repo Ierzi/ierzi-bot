@@ -13,6 +13,8 @@ from .database import db
 # - (__main__.py) (pronouns_set()) set_pronouns_embed.description
 # - (__main__.py) (pronouns_set()) pronouns_option
 # - (__main__.py) (pronouns_set()) pronouns_select_callback()
+# [If pronouns are hidden]
+# - all_pronouns_hidden
 
 # --------------
 
@@ -23,10 +25,11 @@ from .database import db
 
 all_pronouns = [
     "he/him", "she/her", "they/them/themselves", "they/them/themself", "it/its", "one/one's", "any"
-] # Not including hidden pronouns
+]
 all_pronouns_hidden = all_pronouns.copy() + [
     "fag/got",
-    "nyeh/heh/heh"
+    "nyeh/heh/heh",
+    "ier/zi"
 ]
 
 SUPPORTED_PRONOUNS = Literal[
@@ -40,7 +43,8 @@ SUPPORTED_PRONOUNS = Literal[
 
     # HIDDEN PRONOUNS
     'fag/got',
-    'nyeh/heh/heh'
+    'nyeh/heh/heh',
+    'ier/zi'
 ] 
 pronoun = str #e.g. he
 pronouns = str #e.g. he/him
@@ -67,7 +71,8 @@ pronouns_data: dict[str, _pronouns_data] = {
     'any': ('they', 'them', 'their', 'theirs', 'themselves'), # Like I said on SUPPORTED_PRONOUNS
     # HIDDEN PRONOUNS
     'fag/got': ('fag', 'got', 'fager', 'fagers', 'fagself'),
-    'nyeh/heh/heh': ('nyeh', 'heh', 'heh', 'heh', 'hehself')
+    'nyeh/heh/heh': ('nyeh', 'heh', 'heh', 'heh', 'hehself'),
+    'ier/zi': ('ier', 'zi', 'ien', 'erzi', 'ierziself')
 }
 
 console = Console()

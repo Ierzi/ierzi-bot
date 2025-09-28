@@ -519,7 +519,6 @@ async def main():
     await db.init_pool()
     try:
         await load_cogs()
-        console.print("Cogs loaded.")
         console.print("Bot is ready.")
         await bot.start(token)
     finally:
