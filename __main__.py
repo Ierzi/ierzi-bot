@@ -457,22 +457,18 @@ async def pronouns_set(ctx: commands.Context):
     await ctx.send(embed=set_pronouns_embed, view=view)
 
 
-# -- Test command to see if the pronouns work
+async def try_pronouns(user_id: int):
+    all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
-# @bot.command()
-# async def phrase_pronouns(ctx: commands.Context):
-#     user_id = ctx.author.id
-#     all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
+    # Sentences (thanks pronouns.page)
+    subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
+    _object = f'I met {all_pronouns[1]} recently. '
+    possessive = f'Is this {all_pronouns[2]} dog? '
+    possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
+    reflexive = f'{all_pronouns[0].capitalize()} did it all by {all_pronouns[4]}.'
 
-#     # Sentences (thanks pronouns.page)
-#     subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
-#     _object = f'I met {all_pronouns[1]} recently. '
-#     possessive = f'Is this {all_pronouns[2]} dog? '
-#     possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
-#     reflexive = f'{all_pronouns[0].capitalize()} did it all by {all_pronouns[4]}.'
-
-#     full = subject + _object + possessive + possessive_2 + reflexive
-#     await ctx.send(full)
+    full = subject + _object + possessive + possessive_2 + reflexive
+    return full
 
 @bot.command(name="getpronouns")
 async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None):
@@ -488,17 +484,24 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
     
     _pronouns = await pronouns.get_pronouns(user_id, get_na=True)
     user_profile = user if isinstance(user, discord.Member) else bot.get_user(user_id) or await bot.fetch_user(user) if user else ctx.author
+    user_id = user if isinstance(user, int) else user.id if user is not None else ctx.author.id
 
     if user:
         if _pronouns == 'na':
             await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
+            return
         else:
             await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
     else:
         if _pronouns == 'na':
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
+            return
         else:
             await ctx.send(f"Your current pronouns are {_pronouns}.")
+    
+    # Test sentence with their pronouns
+    test_sentence = try_pronouns(user_id)
+    await ctx.send(test_sentence)
 
 @bot.command(name='fsp')
 async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, _pronouns: str):
