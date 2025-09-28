@@ -1,4 +1,3 @@
-from turtle import update
 import discord
 from discord import Embed, Colour
 from discord.ext import commands
@@ -261,7 +260,7 @@ class Economy(commands.Cog):
             return
 
     @commands.command()
-    @commands.cooldown(1, 30, commands.BucketType.user)
+    @commands.cooldown(1, 15, commands.BucketType.user)
     async def lottery(self, ctx: commands.Context):
         """Participate in the lottery."""
         prize_money = round(random.randint(1000000, 9999999), -3)
@@ -278,7 +277,7 @@ class Economy(commands.Cog):
         await ctx.send(embed=lottery_embed)
 
         def check(m: discord.Message):
-            return m.author.id == user_id and m.channel == ctx.channel and m.content.lower() in [str(i) for i in range(10)]
+            return m.author.id == user_id and m.channel == ctx.channel and m.content.lower() in [str(i) for i in range(11)]
         
         try:
             message = await self.bot.wait_for('message', check=check, timeout=30.0)
@@ -311,7 +310,7 @@ class Economy(commands.Cog):
                 win = True
         
         if win:
-            await ctx.send(f"**You won {prize_money:,} coins!!!**")
+            await ctx.send(f"**You won {prize_money:,} coins!!! {self.coin_emoji}**")
             await self.add_money(user_id, prize_money)
             return
         else:
