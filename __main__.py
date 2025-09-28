@@ -500,7 +500,7 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
             await ctx.send(f"Your current pronouns are {_pronouns}.")
     
     # Test sentence with their pronouns
-    test_sentence = try_pronouns(user_id)
+    test_sentence = await try_pronouns(user_id)
     await ctx.send(test_sentence)
 
 @bot.command(name='fsp')
