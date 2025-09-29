@@ -103,7 +103,7 @@ class Economy(commands.Cog):
             user = ctx.author
 
         balance = await self.get_balance(user.id)
-        await ctx.send(f"{user.mention} has {balance} coins.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{user.mention} has {balance:,} coins.", allowed_mentions=discord.AllowedMentions.none())
     
     @commands.command()
     async def work(self, ctx: commands.Context):
@@ -202,7 +202,7 @@ class Economy(commands.Cog):
         author = ctx.author
         await self.add_money(user.id, amount)
         await self.add_money(author.id, -amount)
-        await ctx.send(f"{author.mention} paid {user.mention} {amount} coins!", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{author.mention} paid {user.mention} {amount:,} coins!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.cooldown(1, 1, commands.BucketType.user)
@@ -223,11 +223,11 @@ class Economy(commands.Cog):
         
         if random.choice([False, True]):
             await self.add_money(user_id, amount)
-            await ctx.send(f"You doubled your money! +{amount} coins.")
+            await ctx.send(f"You doubled your money! +{amount:,} coins.")
             return
         else:
             await self.add_money(user_id, -amount)
-            await ctx.send(f"You lost your money! -{amount} coins. \n-# skill issue icl")
+            await ctx.send(f"You lost your money! -{amount:,} coins. \n-# skill issue icl")
             return
     
     @commands.command()
@@ -251,11 +251,11 @@ class Economy(commands.Cog):
         correct_side = random.randint(1, 6)
         prize = amount * 6
         if correct_side == guess:
-            await ctx.send(f"You guessed the corect side! +{prize} coins.")
+            await ctx.send(f"You guessed the corect side! +{prize:,} coins.")
             await self.add_money(user_id, prize)
             return
         else:
-            await ctx.send(f"You guessed the wrong side. -{amount} coins.")
+            await ctx.send(f"You guessed the wrong side. -{amount:,} coins.")
             await self.add_money(user_id, -amount)
             return
 
