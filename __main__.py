@@ -463,7 +463,7 @@ async def try_pronouns(user_id: int):
     # Sentences (thanks pronouns.page)
     subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
     _object = f'I met {all_pronouns[1]} recently. '
-    possessive = f'Is this {all_pronouns[2]} dog? '
+    possessive = f'Is this {all_pronouns[2]} cat? '
     possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
     reflexive = f'{all_pronouns[0].capitalize()} did it all by {all_pronouns[4]}.'
 
