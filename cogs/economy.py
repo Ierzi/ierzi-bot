@@ -260,7 +260,7 @@ class Economy(commands.Cog):
             return
 
     @commands.command()
-    @commands.cooldown(1, 15, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def lottery(self, ctx: commands.Context):
         """Participate in the lottery."""
         prize_money = round(random.randint(1000000, 9999999), -3)
@@ -280,7 +280,7 @@ class Economy(commands.Cog):
             return m.author.id == user_id and m.channel == ctx.channel and m.content.lower() in [str(i) for i in range(11)]
         
         try:
-            message = await self.bot.wait_for('message', check=check, timeout=30.0)
+            message = await self.bot.wait_for('message', check=check, timeout=15.0)
         except asyncio.TimeoutError:
             await ctx.send("Timed out.")
             return
