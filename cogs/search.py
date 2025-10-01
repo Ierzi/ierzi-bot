@@ -89,6 +89,50 @@ class Search(commands.Cog):
         await ctx.send(f"{ctx.author.mention}: **{article}** \n\n{page.summary}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    async def google(self, ctx: commands.Context, *, query: str):
+        """Search something on Google."""
+        query = query.strip()
+        if not query:
+            await ctx.send("Please provide a search query.")
+            return
+        
+        async with ctx.typing():
+            search_embed = Embed(
+                title="Search results",
+                description=""
+            )
+
+            # Search using SERPAPI
+            params = {
+                "engine": "google",
+                "q": query,
+                "api_key": self.serp_key,
+                "num": 3
+            }
+            async with aiohttp.ClientSession() as client:
+                async with client.get("https://serpapi.com/search", params=params) as r:
+                    response_json: dict = await r.json()
+            
+            self.console.print(response_json)
+            result: dict
+            for result in response_json.get('organic_results', []):
+                title = result.get('title', 'No title')
+                link = result.get('link', 'No link')
+                thumbnail = result.get('thumbnail', None)
+                search_embed.description += f"**{title}** - {link}\n"
+        
+                # Set the thumbnail for the first result that has one
+                if thumbnail and not search_embed.thumbnail:
+                    search_embed.set_thumbnail(url=thumbnail)
+        
+        if not search_embed.description:
+            await ctx.send("No results found :(")
+            return
+        
+        await ctx.send(embed=search_embed)
+
+
+    @commands.command()
     async def links(self, ctx: commands.Context):
         """Looks online for links about the replied message."""
         reply = ctx.message.reference
@@ -103,7 +147,6 @@ class Search(commands.Cog):
         keywords = await self._keywords(message)
         self.console.print(keywords)
         
-        # Convert keywords list to string for search query
         if isinstance(keywords, list):
             keywords_str = " ".join(keywords)
         else:
