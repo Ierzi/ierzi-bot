@@ -113,7 +113,6 @@ class Search(commands.Cog):
                 async with client.get("https://serpapi.com/search", params=params) as r:
                     response_json: dict = await r.json()
             
-            self.console.print(response_json)
             result: dict
             for result in response_json.get('organic_results', []):
                 title = result.get('title', 'No title')
@@ -173,7 +172,6 @@ class Search(commands.Cog):
                 async with client.get("https://serpapi.com/search", params=params) as r:
                     response_json: dict = await r.json()
             
-            self.console.print(response_json)
             result: dict
             for result in response_json.get('organic_results', []):
                 title = result.get('title', 'No title')
