@@ -17,7 +17,7 @@ _minutes = Optional[int]
 _seconds = Optional[int]
 _output_data = tuple[bool, _hours, _minutes, _seconds]
 
-class Economy:
+class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
