@@ -2,15 +2,13 @@
 import discord
 from discord.ext import commands
 from rich.console import Console
-from decimal import Decimal, getcontext
 from typing import Literal, Optional
 from datetime import timedelta, datetime, timezone
 import random
 
 # Utils
 from .utils.database import db
-
-getcontext().prec = 2  # Set decimal precision to 2 for currency
+from .utils.types import Currency
 
 _hours = Optional[int]
 _minutes = Optional[int]
@@ -39,19 +37,19 @@ class Economy(commands.Cog):
         ]
     
     # Helper functions
-    async def _get_balance(self, user_id: int) -> float:
+    async def _get_balance(self, user_id: int) -> Currency:
         """Get the balance of a user."""
         row = await db.fetchrow("SELECT balance FROM economy WHERE user_id = $1", user_id)
         if row:
-            return float(row["balance"])
+            return Currency(row["balance"])
         else:
             return 0.0
     
-    async def _get_money_lost(self, user_id: int) -> float:
+    async def _get_money_lost(self, user_id: int) -> Currency:
         """Get the total money lost by a user."""
         row = await db.fetchrow("SELECT money_lost FROM economy WHERE user_id = $1", user_id)
         if row:
-            return float(row["money_lost"])
+            return Currency(row["money_lost"])
         else:
             return 0.0
 
@@ -66,7 +64,7 @@ class Economy(commands.Cog):
     async def _add_money(self, user_id: int, amount: float):
         """Add money to a user."""
         current_balance = await self._get_balance(user_id)
-        new_balance = Decimal(current_balance) + Decimal(amount)
+        new_balance = Currency(current_balance) + Currency(amount)
         await db.execute("""
             INSERT INTO economy (user_id, balance) 
             VALUES ($1, $2)
@@ -77,7 +75,7 @@ class Economy(commands.Cog):
     async def _remove_money(self, user_id: int, amount: float):
         """Remove money from a user. This also updates the money_lost column."""
         current_balance = await self._get_balance(user_id)
-        new_balance = Decimal(current_balance) - Decimal(amount)
+        new_balance = Currency(current_balance) - Currency(amount)
         await db.execute("""
             INSERT INTO economy (user_id, balance, money_lost) 
             VALUES ($1, $2, $3)
@@ -177,7 +175,7 @@ class Economy(commands.Cog):
 
         await self._add_money(user_id, pay)
         await self._update_cooldown(user_id, "last_worked")
-        await ctx.send(f"You worked as a **{job_name}** and earned {pay:,.2f}! {self.coin_emoji}")
+        await ctx.send(f"You worked as a **{job_name}** and earned {pay:,.2f} coins! {self.coin_emoji}")
 
 
 async def _update_tables():
