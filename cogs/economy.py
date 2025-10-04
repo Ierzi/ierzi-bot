@@ -5,13 +5,13 @@ from rich.console import Console
 from decimal import Decimal, getcontext
 from typing import Literal, Optional
 from datetime import timedelta, datetime, timezone
+import random
 
 # Utils
 from .utils.database import db
 
 getcontext().prec = 2  # Set decimal precision to 2 for currency
 
-COOLDOWN_TYPES = Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"]
 _hours = Optional[int]
 _minutes = Optional[int]
 _seconds = Optional[int]
@@ -22,12 +22,26 @@ class Economy(commands.Cog):
         self.bot = bot
         self.console = console
         self.coin_emoji = '<:coins:1416429599084118239>'
+
+        self.jobs = [
+            ("Retail Worker", 40.00, 100.00),
+            ("Barista", 50.00, 120.00),
+            ("Teacher", 70.00, 180.00),
+            ("Artist", 70.00, 200.00),
+            ("Content Creator", 80.00, 210.00),
+            ("Writer", 80.00, 240.00),
+            ("Musician", 90.00, 270.00),
+            ("Graphic Designer", 100.00, 250.00),
+            ("Doctor", 150.00, 300.00),
+            ("Software Developer", 150.00, 300.00),
+            ("Lawyer", 180.00, 350.00),
+            ("CEO", 250.00, 500.00)
+        ]
     
     # Helper functions
     async def _get_balance(self, user_id: int) -> float:
         """Get the balance of a user."""
         row = await db.fetchrow("SELECT balance FROM economy WHERE user_id = $1", user_id)
-        self.console.print(row)
         if row:
             return float(row["balance"])
         else:
@@ -93,9 +107,10 @@ class Economy(commands.Cog):
 
     async def _cooldown(
             user_id: int, 
-            cooldown_type: COOLDOWN_TYPES,
+            cooldown_type: Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"],
             cooldown: timedelta
-    ) -> _output_data:
+        ) -> _output_data:
+        """Check if a user is on cooldown for a specific action."""
         row = db.fetchrow(f"SELECT {cooldown_type} FROM economy WHERE user_id = $1", user_id)
         if row is None or row[cooldown_type] is None:
             return (True, None, None, None)
@@ -111,7 +126,11 @@ class Economy(commands.Cog):
         minutes, seconds = divmod(remainder, 60)
         return (False, int(hours), int(minutes), int(seconds))
 
-    async def _update_cooldown(user_id: int, cooldown_type: COOLDOWN_TYPES) -> None:
+    async def _update_cooldown(
+            user_id: int, 
+            cooldown_type: Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"]
+        ) -> None:
+        """Update the cooldown for a specific action."""
         now = datetime.now(tz=timezone.utc)
         await db.execute(f"""
             INSERT INTO economy (user_id, {cooldown_type}) 
@@ -130,13 +149,34 @@ class Economy(commands.Cog):
         money_lost = await self._get_money_lost(member.id)
 
         embed = discord.Embed(
-            title=f"{member.mention}'s Economy Profile",
+            title=f"{member.display_name}'s Economy Profile",
             color=discord.Color.gold()
         )
         embed.add_field(name="Balance", value=f"{self.coin_emoji} {balance:,.2f}", inline=False)
         embed.add_field(name="Total Money Lost", value=f"{self.coin_emoji} {money_lost:,.2f}", inline=False)
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.send(embed=embed)
+    
+    @commands.command()
+    async def work(self, ctx: commands.Context):
+        """Work and gain some coins."""
+        user_id = ctx.author.id
+        cooldown = timedelta(hours=6)
+
+        output = await self._cooldown(user_id, "last_worked", cooldown)
+        if not output[0]:
+            hours, minutes, seconds = output[1], output[2], output[3]
+            await ctx.send(f"You already worked! Try again in {hours}h {minutes}m {seconds}s.")
+            return
+
+        job = random.choice(self.jobs)
+        job_name, min_pay, max_pay = job
+        pay = random.uniform(min_pay, max_pay)
+
+        await self._add_money(user_id, pay)
+        await self._update_cooldown(user_id, "last_worked")
+        await ctx.send(f"You worked as a **{job_name}** and earned {pay:,.2f}! {self.coin_emoji}")
+
 
 async def _update_tables():
     # Just remaking the database schema lmao
