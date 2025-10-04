@@ -1,4 +1,4 @@
-from utils.database import db
+from .utils.database import db
 
 # Just remaking the database schema lmao
 # Max balance is 999,999,999,999.99
