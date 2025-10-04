@@ -1,6 +1,8 @@
 # Imports
 import discord
 from discord.ext import commands
+from discord.ui import View, Select
+from discord import SelectOption
 from rich.console import Console
 from typing import Literal, Optional
 from datetime import timedelta, datetime, timezone
@@ -223,6 +225,98 @@ class Economy(commands.Cog):
             fine = random.uniform(100, 1000)
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
+
+    #TODO: Add robuser command
+
+    @commands.command(name="ecolb", aliases=("lb", "leaderboard"))
+    async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
+        """See the economy leaderboard."""
+        if page < 1:
+            await ctx.send("whar?")
+            return
+        
+        per_page = 10
+        offset = (page - 1) * per_page
+
+        async def get_balance_leaderboard():
+            rows = await db.fetch("""
+                SELECT user_id, balance FROM economy 
+                ORDER BY balance DESC 
+                LIMIT $1 OFFSET $2
+            """, per_page, offset)
+
+            if not rows:
+                await ctx.send("There's a whopping 0 users on this page.")
+                return
+            
+            embed = discord.Embed(
+                title=f"Economy Balance Leaderboard - Page {page}",
+                color=discord.Colour.gold()
+            )
+            description = ""
+            rank = offset + 1
+            for row in rows:
+                user = self.bot.get_user(row["user_id"]) or await self.bot.fetch_user(row["user_id"])
+                user_name = user.mention
+                balance = Currency(row["balance"])
+                description += f"**{rank}. {user_name}** - {self.coin_emoji} {balance:,.2f}\n"
+                rank += 1
+            
+            embed.description = description
+
+            return embed
+
+        async def get_money_lost_leaderboard():
+            rows = await db.fetch("""
+                SELECT user_id, money_lost FROM economy 
+                ORDER BY money_lost DESC 
+                LIMIT $1 OFFSET $2
+            """, per_page, offset)
+
+            if not rows:
+                await ctx.send("There's a whopping 0 users on this page.")
+                return
+            
+            embed = discord.Embed(
+                title=f"Economy Money Lost Leaderboard - Page {page}",
+                color=discord.Colour.gold()
+            )
+            description = ""
+            rank = offset + 1
+            for row in rows:
+                user = self.bot.get_user(row["user_id"]) or await self.bot.fetch_user(row["user_id"])
+                user_name = user.mention
+                money_lost = Currency(row["money_lost"])
+                description += f"**{rank}. {user_name}** - {self.coin_emoji} -{money_lost:,.2f}\n"
+                rank += 1
+            
+            embed.description = description
+
+            return embed
+
+        # View to change categories (balance and money lost)
+        view = View()
+        select_item = Select(
+            placeholder="Select Category",
+            options=[
+                SelectOption(label="Balance", value="balance", description="See the balance leadeerboard", default=True),
+                SelectOption(label="Money Lost", value="money_lost", description="See the money lost leaderboard")
+            ]
+        )
+        async def select_callback(interaction: discord.Interaction):
+            select_category = select_item.values[0]
+            if select_category == "balance":
+                embed = await get_balance_leaderboard()
+            else:
+                embed = await get_money_lost_leaderboard()
+            
+            if not embed:
+                return
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        embed = await get_balance_leaderboard()
+
+        await ctx.send(embed=embed)
 
 async def _update_tables():
     # Just remaking the database schema lmao
