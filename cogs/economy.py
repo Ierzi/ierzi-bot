@@ -320,6 +320,76 @@ class Economy(commands.Cog):
 
         await ctx.send(embed=embed, view=view)
 
+    @commands.command()
+    async def pay(self, ctx: commands.Context, member: discord.Member, amount: float):
+        """Send money to someone else."""
+        
+        if amount <= 0:
+            await ctx.send("have you tried using coins that have a positive amount of atoms?")
+            return
+
+        user_id = ctx.author.id
+        if user_id == member.id:
+            await ctx.send("cro what")
+            return
+
+        balance = await self._get_balance(user_id)
+        # pug fix
+        if Currency(amount) > balance:
+            await ctx.send("pug is still fixed")
+            return
+        
+        await self._add_money(user_id, -amount) # doesnt really count as losing money
+        await self._add_money(member.id, amount)
+        await ctx.send(f"{ctx.author.mention} sent {amount:,.2f} coins to {member.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+    # GAMBLING COMMANDS!!!
+    @commands.command()
+    async def double(self, ctx: commands.Context, amount: float):
+        """Gamble your coins with a chance to double them."""
+        user_id = ctx.author.id
+        if amount <= 0:
+            await ctx.send("gambling your debt?")
+            return
+        
+        bet = Currency(amount)
+        balance = await self._get_balance(user_id)
+        possessive_pronoun = await get_pronoun(ctx.author.id, data_returned=PronounEnum.POSSESSIVE)
+        if bet > balance:
+            await ctx.send("check your balance cro :broken_heart:")
+            return
+
+        if random.random() < 0.5:
+            double_amount = float(bet * 2)
+            await self._add_money(user_id, bet)
+            await ctx.send(f"{ctx.author.mention} doubled {possessive_pronoun} money and won {double_amount:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await self._remove_money(user_id, float(bet)) # I didnt remove the money above cause it would append to money_lost too if they won
+    
+    @commands.command(name="doubleall")
+    async def double_all(self, ctx: commands.Context):
+        """Gamble all your coins!!!"""
+        user_id = ctx.author.id
+        balance = await self._get_balance(user_id)
+        possessive_pronoun = await get_pronoun(ctx.author.id, data_returned=PronounEnum.POSSESSIVE)
+        if balance <= Currency.none():
+            await ctx.send("check your balance cro :broken_heart:")
+            return
+
+        bet = balance
+
+        if random.random() < 0.5:
+            double_amount = float(bet * 2)
+            await self._add_money(user_id, bet)
+            await ctx.send(f"{ctx.author.mention} doubled {possessive_pronoun} money and won {double_amount:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await self._remove_money(user_id, float(bet)) 
+
+
+
+
 async def _update_tables():
     # Just remaking the database schema lmao
     # Max balance is 999,999,999,999.99

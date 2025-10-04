@@ -16,6 +16,9 @@ class Currency:
     def none(cls) -> 'Currency':
         return cls(0)
 
+    def to_float(self) -> float:
+        return float(self.value)
+
     def __str__(self) -> str:
         return f"{self.value:,.2f}"
 
