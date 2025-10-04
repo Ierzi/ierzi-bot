@@ -523,8 +523,6 @@ async def main():
     try:
         await load_cogs()
         console.print("Bot is ready.")
-        await economy.update_tables()
-        console.print("Updated economy tables.")
         await bot.start(token)
     finally:
         await db.close_pool()
