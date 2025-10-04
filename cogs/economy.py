@@ -9,6 +9,7 @@ import random
 # Utils
 from .utils.database import db
 from .utils.types import Currency
+from .utils.pronouns import get_pronoun, PronounEnum
 
 _hours = Optional[int]
 _minutes = Optional[int]
@@ -152,7 +153,7 @@ class Economy(commands.Cog):
 
         embed = discord.Embed(
             title=f"{member.display_name}'s Economy Profile",
-            color=discord.Color.gold()
+            color=discord.Colour.gold()
         )
         embed.add_field(name="Balance", value=f"{self.coin_emoji} {balance:,.2f}", inline=False)
         embed.add_field(name="Total Money Lost", value=f"{self.coin_emoji} {money_lost:,.2f}", inline=False)
@@ -177,8 +178,49 @@ class Economy(commands.Cog):
 
         await self._add_money(user_id, pay)
         await self._update_cooldown(user_id, "last_worked")
-        await ctx.send(f"You worked as a **{job_name}** and earned {pay:,.2f} coins! {self.coin_emoji}")
+        await ctx.send(f"{ctx.author.mention} worked as a **{job_name}** and earned {pay:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def daily(self, ctx: commands.Context):
+        """Claim your daily coins."""
+        user_id = ctx.author.id
+        cooldown = timedelta(hours=24)
+        p_pronoun = await get_pronoun(ctx.author.id, data_returned=PronounEnum.POSSESSIVE)
+
+        output = await self._cooldown(user_id, "last_daily", cooldown)
+        if not output[0]:
+            hours, minutes, seconds = output[1], output[2], output[3]
+            await ctx.send(f"You already claimed your daily! Try again in {hours}h {minutes}m {seconds}s.")
+            return
+
+        daily_amount = 2500
+        await self._add_money(user_id, daily_amount)
+        await self._update_cooldown(user_id, "last_daily")
+        await ctx.send(f"{ctx.author.mention} claimed {p_pronoun} daily! {daily_amount:,} coins {self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    async def robbank(self, ctx: commands.Context):
+        """Attempt to rob a bank."""
+        user_id = ctx.author.id
+
+        cooldown = timedelta(hours=2)
+
+        output = await self._cooldown(user_id, "last_robbed_bank", cooldown)
+        if not output[0]:
+            hours, minutes, seconds = output[1], output[2], output[3]
+            await ctx.send(f"You already tried to rob a bank! Try again in {hours}h {minutes}m {seconds}s.")
+            return
+        
+        success_chance = 0.3  # 30% chance of success
+        await self._update_cooldown(user_id, "last_robbed_bank")
+        if random.random() < success_chance:
+            amount_stolen = random.uniform(500, 1500)
+            await self._add_money(user_id, amount_stolen)
+            await ctx.send(f"{ctx.author.mention} robbed a bank and got away with {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            fine = random.uniform(100, 1000)
+            await self._remove_money(user_id, fine)
+            await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
 async def _update_tables():
     # Just remaking the database schema lmao
