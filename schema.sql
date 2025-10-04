@@ -8,14 +8,18 @@ CREATE TABLE users (
     user_id BIGINT NOT NULL UNIQUE,
     -- pronouns
     pronouns TEXT, 
-    -- economy related
-    balance INT DEFAULT 0,
+);
+
+CREATE TABLE economy (
+    id SERIAL PRIMARY KEY,
+    user_id BIGINT REFERENCES users(user_id),
+    balance NUMERIC(5, 12) DEFAULT 0.00,
     last_daily TIMESTAMPTZ,
     last_worked TIMESTAMPTZ,
     last_robbed_bank TIMESTAMPTZ,
-    last_robbed_user TIMESTAMPTZ
+    last_robbed_user TIMESTAMPTZ,
+    items JSONB NOT NULL DEFAULT '[]'::JSONB
 );
-
 
 -- Marriages Table
 CREATE TABLE marriages (

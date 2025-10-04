@@ -3,9 +3,13 @@ from .utils.database import db
 async def update_tables():
     # Just remaking the database schema lmao
     # Max balance is 999,999,999,999.99
+
+    # jst delete the table and remake it
+    await db.execute("DROP TABLE IF EXISTS economy")
+
     await db.execute("""
                 CREATE TABLE IF NOT EXISTS economy (
-                user_id BIGINT PRIMARY KEY,
+                user_id BIGINT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
                 balance numeric(15, 2) NOT NULL DEFAULT 0.00,
                 money_lost numeric(15, 2) NOT NULL DEFAULT 0.00,
 
@@ -17,10 +21,13 @@ async def update_tables():
                 items JSONB NOT NULL DEFAULT '[]'::JSONB
                 );
     """)
-    # Remove old columns (see schemaa.sql)
+    # Remove old columns (see schema.sql)
     await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS balance""")
     await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_daily""")
     await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_worked""")
+    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_robbed_bank""")
+    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_robbed_user""")
 
     # Also since this is an old bot, add the new collumns
     await db.execute("""ALTER TABLE users ADD COLUMN IF NOT EXISTS pronouns TEXT""")
+    
