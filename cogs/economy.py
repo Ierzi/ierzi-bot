@@ -112,7 +112,7 @@ class Economy(commands.Cog):
             cooldown: timedelta
         ) -> _output_data:
         """Check if a user is on cooldown for a specific action."""
-        row = db.fetchrow(f"SELECT {cooldown_type} FROM economy WHERE user_id = $1", user_id)
+        row = await db.fetchrow(f"SELECT {cooldown_type} FROM economy WHERE user_id = $1", user_id)
         if row is None or row[cooldown_type] is None:
             return (True, None, None, None)
 
