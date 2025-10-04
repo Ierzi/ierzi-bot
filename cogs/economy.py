@@ -315,8 +315,10 @@ class Economy(commands.Cog):
             await interaction.response.edit_message(embed=embed, view=view)
         
         embed = await get_balance_leaderboard()
+        select_item.callback = select_callback
+        view.add_item(select_item)
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, view=view)
 
 async def _update_tables():
     # Just remaking the database schema lmao
