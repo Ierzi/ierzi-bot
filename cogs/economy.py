@@ -106,6 +106,7 @@ class Economy(commands.Cog):
         self.console.print(f"Set money_lost of user {user_id} to {amount}.")
 
     async def _cooldown(
+            self,
             user_id: int, 
             cooldown_type: Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"],
             cooldown: timedelta
@@ -127,6 +128,7 @@ class Economy(commands.Cog):
         return (False, int(hours), int(minutes), int(seconds))
 
     async def _update_cooldown(
+            self,
             user_id: int, 
             cooldown_type: Literal["last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"]
         ) -> None:
