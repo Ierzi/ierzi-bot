@@ -8,7 +8,7 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs import economy
+from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -110,8 +110,8 @@ async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
-    # await bot.add_cog(Economy(bot, console))
-    # console.print("Economy cog loaded.")
+    await bot.add_cog(Economy(bot, console))
+    console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
     console.print("Fun cog loaded.")
     await bot.add_cog(Marriages(bot, console))

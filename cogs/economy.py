@@ -41,6 +41,14 @@ class Economy:
         else:
             return 0.0
 
+    async def _get_items(self, user_id: int) -> list:
+        """Get the items of a user."""
+        row = await db.fetchrow("SELECT items FROM economy WHERE user_id = $1", user_id)
+        if row:
+            return row["items"]
+        else:
+            return []
+
     async def _add_money(self, user_id: int, amount: float):
         """Add money to a user."""
         current_balance = await self._get_balance(user_id)
@@ -62,7 +70,27 @@ class Economy:
             ON CONFLICT (user_id) DO UPDATE SET balance = $2, money_lost = money_lost + $3
         """, user_id, new_balance, amount)
         self.console.print(f"Removed {amount} to user {user_id}. New balance: {new_balance}")
-    
+
+    async def _set_balance(self, user_id: int, amount: float):
+        """Set the balance of a user."""
+        float_amount = float(f"{amount:.2f}")
+        await db.execute("""
+            INSERT INTO economy (user_id, balance) 
+            VALUES ($1, $2)
+            ON CONFLICT (user_id) DO UPDATE SET balance = $2
+        """, user_id, float_amount)
+        self.console.print(f"Set balance of user {user_id} to {amount}.")
+
+    async def _set_money_lost(self, user_id: int, amount: float):
+        """Set the money_lost of a user."""
+        float_amount = float(f"{amount:.2f}")
+        await db.execute("""
+            INSERT INTO economy (user_id, money_lost) 
+            VALUES ($1, $2)
+            ON CONFLICT (user_id) DO UPDATE SET money_lost = $2
+        """, user_id, float_amount)
+        self.console.print(f"Set money_lost of user {user_id} to {amount}.")
+
     async def _cooldown(
             user_id: int, 
             cooldown_type: COOLDOWN_TYPES,
