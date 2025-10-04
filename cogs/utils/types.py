@@ -12,6 +12,10 @@ class Currency:
     def from_string(cls, value: str) -> 'Currency':
         return cls(Decimal(value.replace(',', '')))
 
+    @classmethod
+    def none(cls) -> 'Currency':
+        return cls(0)
+
     def __str__(self) -> str:
         return f"{self.value:,.2f}"
 
@@ -95,4 +99,4 @@ class Currency:
     
     def __hash__(self):
         return hash(self.value)
-    
+

@@ -43,7 +43,7 @@ class Economy(commands.Cog):
         if row:
             return Currency(row["balance"])
         else:
-            return 0.0
+            return Currency.none()
     
     async def _get_money_lost(self, user_id: int) -> Currency:
         """Get the total money lost by a user."""
@@ -51,7 +51,7 @@ class Economy(commands.Cog):
         if row:
             return Currency(row["money_lost"])
         else:
-            return 0.0
+            return Currency.none()
 
     async def _get_items(self, user_id: int) -> list:
         """Get the items of a user."""
@@ -65,27 +65,29 @@ class Economy(commands.Cog):
         """Add money to a user."""
         current_balance = await self._get_balance(user_id)
         new_balance = Currency(current_balance) + Currency(amount)
+        float_balance = float(new_balance)
         await db.execute("""
             INSERT INTO economy (user_id, balance) 
             VALUES ($1, $2)
             ON CONFLICT (user_id) DO UPDATE SET balance = $2
-        """, user_id, new_balance)
+        """, user_id, float_balance)
         self.console.print(f"Added {amount} to user {user_id}. New balance: {new_balance}")
     
     async def _remove_money(self, user_id: int, amount: float):
         """Remove money from a user. This also updates the money_lost column."""
         current_balance = await self._get_balance(user_id)
         new_balance = Currency(current_balance) - Currency(amount)
+        float_balance = float(new_balance)
         await db.execute("""
             INSERT INTO economy (user_id, balance, money_lost) 
             VALUES ($1, $2, $3)
             ON CONFLICT (user_id) DO UPDATE SET balance = $2, money_lost = money_lost + $3
-        """, user_id, new_balance, amount)
+        """, user_id, float_balance, amount)
         self.console.print(f"Removed {amount} to user {user_id}. New balance: {new_balance}")
 
     async def _set_balance(self, user_id: int, amount: float):
         """Set the balance of a user."""
-        float_amount = float(f"{amount:.2f}")
+        float_amount = float(Currency(amount))
         await db.execute("""
             INSERT INTO economy (user_id, balance) 
             VALUES ($1, $2)
@@ -95,7 +97,7 @@ class Economy(commands.Cog):
 
     async def _set_money_lost(self, user_id: int, amount: float):
         """Set the money_lost of a user."""
-        float_amount = float(f"{amount:.2f}")
+        float_amount = float(Currency(amount))
         await db.execute("""
             INSERT INTO economy (user_id, money_lost) 
             VALUES ($1, $2)
