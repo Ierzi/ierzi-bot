@@ -82,9 +82,11 @@ class Economy(commands.Cog):
         await db.execute("""
             INSERT INTO economy (user_id, balance, money_lost) 
             VALUES ($1, $2, $3)
-            ON CONFLICT (user_id) DO UPDATE SET balance = $2, money_lost = money_lost + $3
+            ON CONFLICT (user_id) DO UPDATE 
+            SET balance = $2, 
+            money_lost = economy.money_lost + $3
         """, user_id, float_balance, amount)
-        self.console.print(f"Removed {amount} to user {user_id}. New balance: {new_balance}")
+        self.console.print(f"Removed {amount} from user {user_id}. New balance: {new_balance}")
 
     async def _set_balance(self, user_id: int, amount: float):
         """Set the balance of a user."""
