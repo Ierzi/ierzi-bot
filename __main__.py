@@ -183,7 +183,7 @@ async def id_user(ctx: commands.Context, user: discord.Member = None):
 
 @bot.command()
 async def profile(ctx: commands.Context, *user_ids: int):
-    """Gets the profile of user(s) by ID. Accepts one or more IDs."""
+    """Gets the profile of user(s) by ID."""
     if not user_ids:
         await ctx.send("Gimme user ids. \n-# if you dont know what that is, ignore this")
         return
@@ -203,7 +203,7 @@ async def profile(ctx: commands.Context, *user_ids: int):
 
 @bot.command()
 async def github(ctx: commands.Context):
-    """cool github repo"""
+    """if you wanna contribute idk"""
     await ctx.send("https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works")
 
 #TODO: all of this
