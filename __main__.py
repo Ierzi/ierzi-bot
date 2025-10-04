@@ -204,7 +204,7 @@ async def profile(ctx: commands.Context, *user_ids: int):
 @bot.command()
 async def github(ctx: commands.Context):
     """cool github repo"""
-    await ctx.send("https://github.com/Ierzi/ierzi-bot \n-# btw i have no fucking clue how contributing on github works \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:)")
+    await ctx.send("https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works")
 
 #TODO: all of this
 @bot.command()
