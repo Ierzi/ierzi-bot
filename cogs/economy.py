@@ -393,6 +393,21 @@ class Economy(commands.Cog):
         await self._add_money(member.id, amount)
         await ctx.send(f"{ctx.author.mention} sent {amount:,.2f} coins to {member.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.comamnd()
+    @commands.cooldown(1, 3, commands.BucketType.user)
+    async def beg(self, ctx: commands.Context):
+        """Beg for a few coins."""
+        user_id = ctx.author.id
+
+        balance = await self._get_balance(user_id)
+        if balance > Currency(5_000): # That's like 2 daily claims
+            await ctx.send("aint you rich enough")
+            return
+
+        amount = random.uniform(5, 20)
+        await self._add_money(user_id, amount)
+        await ctx.send(f"{ctx.author.mention} begged and received {amount:,.2f} coins. {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
     @commands.command()
     async def compare(self, ctx: commands.Context, member1: discord.Member, member2: discord.Member):
         """Compare the balances of two users."""
