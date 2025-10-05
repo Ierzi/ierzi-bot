@@ -568,9 +568,6 @@ class Economy(commands.Cog):
                 super().__init__()
                 self.items = items
                 self.self_outer = self_outer
-                self._get_balance = self_outer._get_balance
-                self._remove_money = self_outer._remove_money
-                self._get_items = self_outer._get_items
 
             async def on_submit(self, interaction: discord.Interaction):
                 await interaction.response.defer(ephemeral=True)
@@ -594,14 +591,14 @@ class Economy(commands.Cog):
                 
                 item_name, price, _ = item
                 total_cost = price * quantity_to_buy
-                balance = await self._get_balance(user_id)
+                balance = await self.self_outer._get_balance(user_id)
                 if Currency(total_cost) > balance:
                     await interaction.followup.send("You don't have enough coins to make this purchase.", ephemeral=True)
                     return
                 
                 # Deduct money and add items
-                await self._remove_money(user_id, total_cost)
-                current_items = await self._get_items(user_id)
+                await self.self_outer._add_money(user_id, -total_cost) #doesnt really count as losing money
+                current_items = await self.self_outer._get_items(user_id)
                 # Ensure current_items is a list of dicts
                 if not isinstance(current_items, list):
                     current_items = []
