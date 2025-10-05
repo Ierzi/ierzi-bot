@@ -240,7 +240,7 @@ class Economy(commands.Cog):
 
     #TODO: Add robuser command
 
-    @commands.command(name="ecolb", aliases=("lb", "leaderboard"))
+    @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
         """See the economy leaderboard."""
         if page < 1:
@@ -250,7 +250,7 @@ class Economy(commands.Cog):
         per_page = 10
         offset = (page - 1) * per_page
 
-        async def get_balance_leaderboard():
+        async def get_balance_leaderboard() -> Optional[discord.Embed]:
             rows = await db.fetch("""
                 SELECT user_id, balance FROM economy 
                 ORDER BY balance DESC 
@@ -399,8 +399,43 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self._remove_money(user_id, float(bet)) 
 
-    # Admin commands
+    @commands.command()
+    async def dicebet(self, ctx: commands.Context, amount: Optional[float] = None):
+        """Roll a 6 sided dice, guess the correct side to win 6x your bet."""
+        if not amount:
+            await ctx.send("If you just wanna roll a dice, use !roll :broken_heart:")
+            return
+        
+        if amount < 0:
+            await ctx.send("what is a negative number")
+            return
+        
+        if amount == 0:
+            await ctx.send("You rolled a 0 and lost 0 coins!")
+            return
+        
+        user_id = ctx.author.id
+        bet = Currency(amount)
+        balance = await self._get_balance(user_id)
+        if bet > balance:
+            await ctx.send("oh btw do !bal")
+            return
+        
+        # Hard-coded guess
+        guess = 2
+        roll = random.randint(1, 6)
+        if roll == guess:
+            winnings = float(bet * 6)
+            await self._add_money(user_id, bet * 5) # add the extra 5x the bet
+            await ctx.send(f"{ctx.author.mention} guessed correctly and won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            await self._remove_money(user_id, bet)
+            await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
+    
+
+
+    # Admin commands
     @commands.command()
     async def give_money(self, ctx: commands.Context, user_id: discord.User, amount: float):
         """Give money to a user. Can only be used by Ierzi."""
