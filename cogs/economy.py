@@ -203,7 +203,7 @@ class Economy(commands.Cog):
             embed.add_field(name="Items", value=items_str, inline=False)
         else:
             embed.add_field(name="Items", value="No items owned.", inline=False)
-            
+
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.send(embed=embed)
     
@@ -416,7 +416,7 @@ class Economy(commands.Cog):
         await self._add_money(member.id, amount)
         await ctx.send(f"{ctx.author.mention} sent {amount:,.2f} coins to {member.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.comamnd()
+    @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.user)
     async def beg(self, ctx: commands.Context):
         """Beg for a few coins."""
