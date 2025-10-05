@@ -22,6 +22,9 @@ class Currency:
     def to_float(self) -> float:
         return float(self.value)
 
+    def to_decimal(self) -> Decimal:
+        return self.value
+
     def __str__(self) -> str:
         return f"{self.value:,.2f}"
 

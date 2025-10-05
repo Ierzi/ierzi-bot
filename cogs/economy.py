@@ -445,10 +445,10 @@ class Economy(commands.Cog):
         roll = random.randint(1, 6)
         if roll == guess:
             winnings = float(bet * 6)
-            await self._add_money(user_id, bet * 5) # add the extra 5x the bet
+            await self._add_money(user_id, float(bet * 5)) # Convert to float before database operation
             await ctx.send(f"{ctx.author.mention} guessed correctly and won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
-            await self._remove_money(user_id, bet)
+            await self._remove_money(user_id, float(bet)) # Convert to float before database operation
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     # Admin commands
