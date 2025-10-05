@@ -197,6 +197,13 @@ class Economy(commands.Cog):
         )
         embed.add_field(name="Balance", value=f"{self.coin_emoji} {balance:,.2f}", inline=False)
         embed.add_field(name="Total Money Lost", value=f"{self.coin_emoji} {money_lost:,.2f}", inline=False)
+        user_items = await self._get_items(member.id)
+        if user_items:
+            items_str = "\n".join([f"- {item}" for item in user_items])
+            embed.add_field(name="Items", value=items_str, inline=False)
+        else:
+            embed.add_field(name="Items", value="No items owned.", inline=False)
+            
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.send(embed=embed)
     
@@ -444,14 +451,14 @@ class Economy(commands.Cog):
             await ctx.send(f"{member1.mention} and {member2.mention} have the same amount of coins!", allowed_mentions=discord.AllowedMentions.none())
 
     # just other commands idk where to put
-    @commands.command()
+    @commands.command(aliases=("totalbal", "totbal", "tbal"))
     async def total_balance(self, ctx: commands.Context):
         """See the total balance of all users."""
         row = await db.fetchrow("SELECT SUM(balance) AS total_balance FROM economy")
         total_balance = Currency(row["total_balance"]) if row and row["total_balance"] is not None else Currency.none()
         await ctx.send(f"The total balance of all users is {total_balance:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command()
+    @commands.command(aliases=("totlost", "tlost"))
     async def total_money_lost(self, ctx: commands.Context):
         """See the total money lost by all users."""
         row = await db.fetchrow("SELECT SUM(money_lost) AS total_money_lost FROM economy")
