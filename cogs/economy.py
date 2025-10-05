@@ -64,49 +64,60 @@ class Economy(commands.Cog):
         else:
             return []
 
+    async def _ensure_user_exists(self, user_id: int) -> None:
+        """Ensure the user exists in the database."""
+        await db.execute("""
+            INSERT INTO economy (user_id)
+            VALUES ($1)
+            ON CONFLICT (user_id) DO NOTHING
+        """, user_id)
+
     async def _add_money(self, user_id: int, amount: float):
         """Add money to a user."""
+        await self._ensure_user_exists(user_id)
         current_balance = await self._get_balance(user_id)
         new_balance = Currency(current_balance) + Currency(amount)
         float_balance = float(new_balance)
         await db.execute("""
-            INSERT INTO economy (user_id, balance) 
-            VALUES ($1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET balance = $2
+            UPDATE economy 
+            SET balance = $2
+            WHERE user_id = $1
         """, user_id, float_balance)
         self.console.print(f"Added {amount} to user {user_id}. New balance: {new_balance}")
     
     async def _remove_money(self, user_id: int, amount: float):
         """Remove money from a user. This also updates the money_lost column."""
+        await self._ensure_user_exists(user_id)
         current_balance = await self._get_balance(user_id)
         new_balance = Currency(current_balance) - Currency(amount)
         float_balance = float(new_balance)
         await db.execute("""
-            INSERT INTO economy (user_id, balance, money_lost) 
-            VALUES ($1, $2, $3)
-            ON CONFLICT (user_id) DO UPDATE 
-            SET balance = $2, 
-            money_lost = economy.money_lost + $3
+            UPDATE economy 
+            SET balance = $2,
+                money_lost = money_lost + $3
+            WHERE user_id = $1
         """, user_id, float_balance, amount)
         self.console.print(f"Removed {amount} from user {user_id}. New balance: {new_balance}")
 
     async def _set_balance(self, user_id: int, amount: float):
         """Set the balance of a user."""
+        await self._ensure_user_exists(user_id)
         float_amount = float(Currency(amount))
         await db.execute("""
-            INSERT INTO economy (user_id, balance) 
-            VALUES ($1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET balance = $2
+            UPDATE economy 
+            SET balance = $2
+            WHERE user_id = $1
         """, user_id, float_amount)
         self.console.print(f"Set balance of user {user_id} to {amount}.")
 
     async def _set_money_lost(self, user_id: int, amount: float):
         """Set the money_lost of a user."""
+        await self._ensure_user_exists(user_id)
         float_amount = float(Currency(amount))
         await db.execute("""
-            INSERT INTO economy (user_id, money_lost) 
-            VALUES ($1, $2)
-            ON CONFLICT (user_id) DO UPDATE SET money_lost = $2
+            UPDATE economy 
+            SET money_lost = $2
+            WHERE user_id = $1
         """, user_id, float_amount)
         self.console.print(f"Set money_lost of user {user_id} to {amount}.")
 
@@ -139,6 +150,7 @@ class Economy(commands.Cog):
         ) -> None:
         """Update the cooldown for a specific action."""
         now = datetime.now(tz=timezone.utc)
+        await self._ensure_user_exists(user_id)
         await db.execute(f"""
             INSERT INTO economy (user_id, {cooldown_type}) 
             VALUES ($1, $2)
@@ -386,9 +398,6 @@ class Economy(commands.Cog):
         else:
             await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self._remove_money(user_id, float(bet)) 
-
-
-
 
 async def _update_tables():
     # Just remaking the database schema lmao
