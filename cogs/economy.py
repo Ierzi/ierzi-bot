@@ -574,7 +574,52 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, float(bet)) 
             await ctx.send(f"{ctx.author.mention} didn't win anything and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def crash(self, ctx: commands.Context, amount: float):
+        """"Gamble your coins in a game of crash."""
+        user_id = ctx.author.id
+        if amount <= 0:
+            await ctx.send("wtf are you trying to do")
+            return
+        
+        bet = Currency(amount)
+        balance = await self._get_balance(user_id)
 
+        if bet > balance:
+            await ctx.send("you're broke :broken_heart:")
+            return
+        
+        crash_point = random.uniform(1.00, 2.50)
+        crash_embed = discord.Embed(
+            title="Crash Game",
+            description="The game is starting! The multiplier is increasing... Type cash to cash out!"
+        )
+        crash_embed.add_field(name="Your Bet", value=f"{bet:,.2f} coins", inline=False)
+        crash_embed.add_field(name="Multiplier", value="1.00x", inline=False)
+
+        message = await ctx.send(embed=crash_embed, allowed_mentions=discord.AllowedMentions.none())
+
+        def check(m: discord.Message):
+            return m.author.id == user_id and m.channel.id == ctx.channel.id and m.content.strip().lower() != "cash"
+
+        multiplier = 1.00
+        try:
+            while multiplier < crash_point:
+                await asyncio.sleep(0.3)
+                multiplier += random.uniform(0.10, 0.50)
+                if multiplier > crash_point:
+                    multiplier = crash_point
+                crash_embed.set_field_at(1, name="Multiplier", value=f"{multiplier:.2f}x", inline=False)
+                await message.edit(embed=crash_embed)
+                msg = await self.bot.wait_for("message", check=check, timeout=0.3)
+                if msg:
+                    winnings = float(bet * multiplier)
+                    await self._add_money(user_id, winnings - float(bet)) # Add profit only
+                    crash_embed.description = f"You cashed out at {multiplier:.2f}x and won {winnings:,.2f} coins! {self.coin_emoji}"
+                    await message.edit(embed=crash_embed)
+                    return
+        except asyncio.TimeoutError:
+            pass
 
     # Admin commands
     @commands.command()
