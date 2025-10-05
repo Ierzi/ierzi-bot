@@ -5,6 +5,7 @@ import discord
 from discord import Interaction, Embed, Message, SelectOption, Poll
 from discord.ext import commands
 from discord.ui import View, Select
+from discord.activity import Activity, ActivityType
 
 # Cogs
 from cogs.ai import AI
@@ -48,7 +49,9 @@ bot = commands.Bot(
 # Events
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.idle)
+    # Change the presence based on the bot's number of servers
+    guild_count = len(bot.guilds)
+    await bot.change_presence(status=discord.Status.idle, activity=Activity(type=ActivityType.watching, name=f"over {guild_count} servers | !help")) # Discord bot starter pack
     await fill_embeds()
     await bot.tree.clear_commands()
     synced = await bot.tree.sync()
