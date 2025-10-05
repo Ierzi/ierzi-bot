@@ -263,6 +263,10 @@ class Economy(commands.Cog):
         if user_id == member.id:
             await ctx.send("cro what")
             return
+        
+        if member.bot:
+            await ctx.send("imagine being that desperate for money")
+            return
 
         cooldown = timedelta(hours=2)
 
@@ -274,7 +278,7 @@ class Economy(commands.Cog):
         
         target_balance = await self._get_balance(member.id)
         if target_balance.to_float() < 100:
-            await ctx.send(f"{member.display_name} doesn't have enough money to be robbed.")
+            await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
         success_chance = 0.3  # 30% chance of success
