@@ -588,14 +588,14 @@ class Economy(commands.Cog):
                 if not item:
                     await interaction.followup.send("Item not found in the shop.", ephemeral=True)
                     return
-                
+
                 item_name, price, _ = item
                 total_cost = price * quantity_to_buy
                 balance = await self.self_outer._get_balance(user_id)
                 if Currency(total_cost) > balance:
                     await interaction.followup.send("You don't have enough coins to make this purchase.", ephemeral=True)
                     return
-                
+
                 # Deduct money and add items
                 await self.self_outer._add_money(user_id, -total_cost) #doesnt really count as losing money
                 current_items = await self.self_outer._get_items(user_id)
@@ -611,7 +611,7 @@ class Economy(commands.Cog):
                         break
                 if not found:
                     current_items.append({"name": item_name, "quantity": quantity_to_buy})
-                
+
                 # Update the database
                 await self.self_outer._set_items(user_id, current_items)
 
