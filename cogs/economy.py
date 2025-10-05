@@ -453,14 +453,14 @@ class Economy(commands.Cog):
 
     # Admin commands
     @commands.command()
-    async def give_money(self, ctx: commands.Context, user_id: discord.User, amount: float):
+    async def give_money(self, ctx: commands.Context, member: discord.User, amount: float):
         """Give money to a user. Can only be used by Ierzi."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
             return
         
-        await self._add_money(user_id, amount)
-        await ctx.send(f"Successfully gave {amount:,.2f} coins to user ID {user_id}.", allowed_mentions=discord.AllowedMentions.none())
+        await self._add_money(member.id, amount)
+        await ctx.send(f"Successfully gave {amount:,.2f} coins to user ID {member}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def set_balance(self, ctx: commands.Context, member: discord.User, amount: float):
