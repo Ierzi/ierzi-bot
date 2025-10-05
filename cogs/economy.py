@@ -441,6 +441,44 @@ class Economy(commands.Cog):
         await db.execute("DELETE FROM economy WHERE user_id = $1", member.id)
         await ctx.send(f"Reset the economy data of {member.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def ecotransfer(self, ctx: commands.Context, user1: discord.Member | int, user2: discord.Member | int):
+        """Transfer all economy data from one user to another. Can only be used by Ierzi."""
+        if ctx.author.id != 966351518020300841:
+            await ctx.send("no.")
+            return
+        
+        user1_id = user1.id if isinstance(user1, discord.Member) else user1
+        user2_id = user2.id if isinstance(user2, discord.Member) else user2
+
+        if user1_id == user2_id:
+            await ctx.send("smart")
+            return
+
+        row = await db.fetchrow("SELECT * FROM economy WHERE user_id = $1", user1_id)
+        if not row:
+            await ctx.send("the first user has no economy data.")
+            return
+        
+        # Ensure the second user exists
+        await self._ensure_user_exists(user2_id)
+
+        await db.execute("""
+            UPDATE economy 
+            SET balance = $2,
+                money_lost = $3,
+                last_daily = $4,
+                last_worked = $5,
+                last_robbed_bank = $6,
+                last_robbed_user = $7,
+                items = $8
+            WHERE user_id = $1
+        """, user2_id, row["balance"], row["money_lost"], row["last_daily"], row["last_worked"], row["last_robbed_bank"], row["last_robbed_user"], row["items"])
+
+        await db.execute("DELETE FROM economy WHERE user_id = $1", user1_id)
+
+        await ctx.send(f"Transferred all economy data from <@{user1_id}> to <@{user2_id}>.", allowed_mentions=discord.AllowedMentions.none())
+
 async def _update_tables():
     # Just remaking the database schema lmao
     # Max balance is 999,999,999,999.99
