@@ -602,13 +602,17 @@ class Economy(commands.Cog):
                 # Deduct money and add items
                 await self._remove_money(user_id, total_cost)
                 current_items = await self._get_items(user_id)
-                
+                # Ensure current_items is a list of dicts
+                if not isinstance(current_items, list):
+                    current_items = []
                 # Check if user already has the item
+                found = False
                 for owned_item in current_items:
-                    if owned_item["name"].lower() == item_name.lower():
-                        owned_item["quantity"] += quantity_to_buy
+                    if isinstance(owned_item, dict) and owned_item.get("name", "").lower() == item_name.lower():
+                        owned_item["quantity"] = owned_item.get("quantity", 0) + quantity_to_buy
+                        found = True
                         break
-                else:
+                if not found:
                     current_items.append({"name": item_name, "quantity": quantity_to_buy})
                 
                 # Update the database
