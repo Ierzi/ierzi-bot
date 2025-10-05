@@ -38,13 +38,6 @@ class Economy(commands.Cog):
             ("Lawyer", 180.00, 350.00),
             ("CEO", 250.00, 500.00)
         ]
-
-        self.items = [
-            # ("Item Name", price, "description")
-            ("Cookie", 50.00, "Useless but tasty."),
-            ("Lottery Ticket", 150.00, "Buy a ticket to participate in the lottery."),
-            ("Private Jet", 1000.00, "you're just wasting money atp")  
-        ]
     
     # Helper functions
     async def _get_balance(self, user_id: int) -> Currency:
@@ -542,91 +535,7 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, float(bet)) # Convert to float before database operation
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    # Shop commands
-    # and everything item-related
-    # This might take a lot of lines :sob:
-    @commands.command()
-    async def shop(self, ctx: commands.Context):
-        """View the shop and buy items."""
-        embed = discord.Embed(
-            title="Shop",
-            description="Here are the items available for purchase:",
-            color=discord.Colour.blue()
-        )
-        for item_name, price, description in self.items:
-            embed.add_field(name=f"{item_name} - {price:,.2f} coins", value=description, inline=False)
-        
-        # Add a view to buy items
-        # With a form thing like whatever catbot used for idk what function
-        # wow most useful comment oat
-        
-        view = View(timeout=300) # 5 minutes timeout cause its kinda confusing
-        class ShopModal(Modal, title="Buy Item"):
-            item_name = TextInput(label="Item Name", placeholder="Enter the name of the item you want to buy", required=True)
-            quantity = TextInput(label="Quantity", placeholder="Enter the quantity you want to buy", default="1", required=True)
-            def __init__(self, self_outer: 'Economy', items):
-                super().__init__()
-                self.items = items
-                self.self_outer = self_outer
-
-            async def on_submit(self, interaction: discord.Interaction):
-                await interaction.response.defer(ephemeral=True)
-                user_id = interaction.user.id
-                item_to_buy = self.item_name.value.strip().lower()
-                try:
-                    quantity_to_buy = int(self.quantity.value.strip())
-                except ValueError:
-                    await interaction.followup.send("Quantity must be a valid integer.", ephemeral=True)
-                    return
-                
-                if quantity_to_buy <= 0:
-                    await interaction.followup.send("Quantity must be a positive integer.", ephemeral=True)
-                    return
-
-                # Find the item in the shop
-                item = next((item for item in self.items if item[0].lower() == item_to_buy), None)
-                if not item:
-                    await interaction.followup.send("Item not found in the shop.", ephemeral=True)
-                    return
-
-                item_name, price, _ = item
-                total_cost = price * quantity_to_buy
-                balance = await self.self_outer._get_balance(user_id)
-                if Currency(total_cost) > balance:
-                    await interaction.followup.send("You don't have enough coins to make this purchase.", ephemeral=True)
-                    return
-
-                # Deduct money and add items
-                await self.self_outer._add_money(user_id, -total_cost) #doesnt really count as losing money
-                current_items = await self.self_outer._get_items(user_id)
-                # Ensure current_items is a list of dicts
-                if not isinstance(current_items, list):
-                    current_items = []
-                # Check if user already has the item
-                found = False
-                for owned_item in current_items:
-                    if isinstance(owned_item, dict) and owned_item.get("name", "").lower() == item_name.lower():
-                        owned_item["quantity"] = owned_item.get("quantity", 0) + quantity_to_buy
-                        found = True
-                        break
-                if not found:
-                    current_items.append({"name": item_name, "quantity": quantity_to_buy})
-
-                # Update the database
-                await self.self_outer._set_items(user_id, current_items)
-
-                await interaction.followup.send(f"Successfully purchased {quantity_to_buy}x {item_name} for {total_cost:,.2f} coins!", ephemeral=True)
-
-        async def open_shop_modal(interaction: discord.Interaction):
-            await interaction.response.send_modal(ShopModal(self, self.items))
-        
-        buy_button = Button(label="Buy Item", style=discord.ButtonStyle.green)
-        buy_button.callback = open_shop_modal
-        view.add_item(buy_button)
-
-        await ctx.send(embed=embed, view=view)
-
-
+    
 
 
     # Admin commands
