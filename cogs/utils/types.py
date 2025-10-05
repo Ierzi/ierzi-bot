@@ -20,9 +20,11 @@ class Currency:
     zero = none
 
     def to_float(self) -> float:
+        """Returns the currency value as a float."""
         return float(self.value)
 
     def to_decimal(self) -> Decimal:
+        """Returns the currency value as a Decimal."""
         return self.value
 
     def __str__(self) -> str:

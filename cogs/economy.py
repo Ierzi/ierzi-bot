@@ -238,7 +238,37 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
-    #TODO: Add robuser command
+    async def robuser(self, ctx: commands.Context, member: discord.Member):
+        """Rob someone."""
+        user_id = ctx.author.id
+        if user_id == member.id:
+            await ctx.send("cro what")
+            return
+
+        cooldown = timedelta(hours=2)
+
+        output = await self._cooldown(user_id, "last_robbed_user", cooldown)
+        if not output[0]:
+            hours, minutes, seconds = output[1], output[2], output[3]
+            await ctx.send(f"You already tried to rob someone! Try again in {hours}h {minutes}m {seconds}s.")
+            return
+        
+        target_balance = await self._get_balance(member.id)
+        if target_balance.to_float() < 100:
+            await ctx.send(f"{member.display_name} doesn't have enough money to be robbed.")
+            return
+
+        success_chance = 0.3  # 30% chance of success
+        await self._update_cooldown(user_id, "last_robbed_user")
+        if random.random() < success_chance:
+            amount_stolen = random.uniform(0.1 * target_balance.to_float(), 0.3 * target_balance.to_float())
+            await self._remove_money(member.id, amount_stolen)
+            await self._add_money(user_id, amount_stolen)
+            await ctx.send(f"{ctx.author.mention} successfully robbed {member.mention} and stole {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            fine = random.uniform(100, 500)
+            await self._remove_money(user_id, fine)
+            await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
@@ -454,7 +484,7 @@ class Economy(commands.Cog):
     # Admin commands
     @commands.command()
     async def give_money(self, ctx: commands.Context, member: discord.User, amount: float):
-        """Give money to a user. Can only be used by Ierzi."""
+        """Spawns money out of thin air and gives it to someone. Can only be used by Ierzi."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
             return
@@ -464,7 +494,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def set_balance(self, ctx: commands.Context, member: discord.User, amount: float):
-        """Spawns money out of thin air and gives it to someone. Can only be used by Ierzi, obviously."""
+        """Set someone's balance. Can only be used by Ierzi, obviously."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("no.")
             return
