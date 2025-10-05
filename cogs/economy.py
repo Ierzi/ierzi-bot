@@ -7,6 +7,7 @@ from rich.console import Console
 from typing import Literal, Optional
 from datetime import timedelta, datetime, timezone
 import random
+import asyncio
 
 # Utils
 from .utils.database import db
@@ -190,12 +191,6 @@ class Economy(commands.Cog):
         )
         embed.add_field(name="Balance", value=f"{self.coin_emoji} {balance:,.2f}", inline=False)
         embed.add_field(name="Total Money Lost", value=f"{self.coin_emoji} {money_lost:,.2f}", inline=False)
-        user_items = await self._get_items(member.id)
-        if user_items:
-            items_str = "\n".join([f"- {item}" for item in user_items])
-            embed.add_field(name="Items", value=items_str, inline=False)
-        else:
-            embed.add_field(name="Items", value="No items owned.", inline=False)
 
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.send(embed=embed)
@@ -535,7 +530,50 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, float(bet)) # Convert to float before database operation
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    
+    @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def slots(self, ctx: commands.Context, amount: float):
+        """slot machine idk"""
+        user_id = ctx.author.id
+        animation_frames_number = random.randint(5, 8)
+        bet = Currency(amount)
+        balance = await self._get_balance(user_id)
+        if bet <= Currency.none():
+            await ctx.send("you tryna gamble negative money?")
+            return
+        
+        if bet > balance:
+            await ctx.send("check your balance cro :broken_heart:")
+            return
+        
+        slot_emojis = ['🍒', '🍋', '🍊', '🍉', '⭐', '🔔', '💎']
+
+        message = await ctx.send("Spinning the slots...", allowed_mentions=discord.AllowedMentions.none())
+        await asyncio.sleep(2)
+
+        for _ in range(animation_frames_number):
+            current_frame = [random.choice(slot_emojis) for _ in range(3)]
+            await message.edit(content="| " + " | ".join(current_frame) + " |")
+            await asyncio.sleep(1)
+
+        final_frame = [random.choice(slot_emojis) for _ in range(3)]
+        await message.edit(content="| " + " | ".join(final_frame) + " |")
+
+        if final_frame[0] == final_frame[1] == final_frame[2]:
+            # Jackpot
+            winnings = float(bet * 10)
+            await self._add_money(user_id, float(bet * 9)) 
+            await ctx.send(f"{ctx.author.mention} hit the jackpot and won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        elif final_frame[0] == final_frame[1] or final_frame[1] == final_frame[2] or final_frame[0] == final_frame[2]:
+            # Two in a row
+            winnings = float(bet * 3)
+            await self._add_money(user_id, float(bet * 2)) 
+            await ctx.send(f"{ctx.author.mention} got two in a row and won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            # No match
+            await self._remove_money(user_id, float(bet)) 
+            await ctx.send(f"{ctx.author.mention} didn't win anything and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
 
 
     # Admin commands
