@@ -66,6 +66,14 @@ class Economy(commands.Cog):
 
     async def _ensure_user_exists(self, user_id: int) -> None:
         """Ensure the user exists in the database."""
+        # First ensure user exists in users table (which economy references)
+        await db.execute("""
+            INSERT INTO users (user_id)
+            VALUES ($1)
+            ON CONFLICT (user_id) DO NOTHING
+        """, user_id)
+        
+        # Then ensure user exists in economy table
         await db.execute("""
             INSERT INTO economy (user_id)
             VALUES ($1)
