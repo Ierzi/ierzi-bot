@@ -412,6 +412,21 @@ class Economy(commands.Cog):
         else:
             await ctx.send(f"{member1.mention} and {member2.mention} have the same amount of coins!", allowed_mentions=discord.AllowedMentions.none())
 
+    # just other commands idk where to put
+    @commands.command()
+    async def total_balance(self, ctx: commands.Context):
+        """See the total balance of all users."""
+        row = await db.fetchrow("SELECT SUM(balance) AS total_balance FROM economy")
+        total_balance = Currency(row["total_balance"]) if row and row["total_balance"] is not None else Currency.none()
+        await ctx.send(f"The total balance of all users is {total_balance:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    async def total_money_lost(self, ctx: commands.Context):
+        """See the total money lost by all users."""
+        row = await db.fetchrow("SELECT SUM(money_lost) AS total_money_lost FROM economy")
+        total_money_lost = Currency(row["total_money_lost"]) if row and row["total_money_lost"] is not None else Currency.none()
+        await ctx.send(f"The total money lost by all users is {total_money_lost:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+
     # GAMBLING COMMANDS!!!
     @commands.command()
     async def double(self, ctx: commands.Context, amount: float):
@@ -521,7 +536,7 @@ class Economy(commands.Cog):
         await ctx.send(f"Set the money_lost of {member.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    async def resetuser(self, ctx: commands.Context, member: discord.User):
+    async def ecoreset(self, ctx: commands.Context, member: discord.User):
         """Reset the economy data of a user. Can only be used by Ierzi."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("no.")
