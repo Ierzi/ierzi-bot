@@ -51,7 +51,7 @@ bot = commands.Bot(
 async def on_ready():
     # Change the presence based on the bot's number of servers
     guild_count = len(bot.guilds)
-    await bot.change_presence(status=discord.Status.idle, activity=Activity(type=ActivityType.watching, name=f"over {guild_count} servers | !help")) # Discord bot starter pack
+    await bot.change_presence(status=discord.Status.idle, activity=Activity(type=ActivityType.playing, name=f"!help | {guild_count} servers.")) # Discord bot starter pack
     await fill_embeds()
     await bot.tree.clear_commands()
     synced = await bot.tree.sync()
