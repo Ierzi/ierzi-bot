@@ -355,6 +355,25 @@ class Economy(commands.Cog):
         await self._add_money(member.id, amount)
         await ctx.send(f"{ctx.author.mention} sent {amount:,.2f} coins to {member.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def compare(self, ctx: commands.Context, member1: discord.Member, member2: discord.Member):
+        """Compare the balances of two users."""
+        if member1.id == member2.id:
+            await ctx.send("im tired ion wanna do this ")
+            return
+        
+        balance1 = await self._get_balance(member1.id)
+        balance2 = await self._get_balance(member2.id)
+
+        if balance1 > balance2:
+            diff = balance1 - balance2
+            await ctx.send(f"{member1.mention} has {diff:,.2f} more coins than {member2.mention}.", allowed_mentions=discord.AllowedMentions.none())
+        elif balance2 > balance1:
+            diff = balance2 - balance1
+            await ctx.send(f"{member2.mention} has {diff:,.2f} more coins than {member1.mention}.", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            await ctx.send(f"{member1.mention} and {member2.mention} have the same amount of coins!", allowed_mentions=discord.AllowedMentions.none())
+
     # GAMBLING COMMANDS!!!
     @commands.command()
     async def double(self, ctx: commands.Context, amount: float):
@@ -407,7 +426,7 @@ class Economy(commands.Cog):
             return
         
         if amount < 0:
-            await ctx.send("what is a negative number")
+            await ctx.send("what is a negative number im stupid")
             return
         
         if amount == 0:
@@ -431,9 +450,6 @@ class Economy(commands.Cog):
         else:
             await self._remove_money(user_id, bet)
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
-
-    
-
 
     # Admin commands
     @commands.command()

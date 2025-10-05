@@ -14,7 +14,10 @@ class Currency:
 
     @classmethod
     def none(cls) -> 'Currency':
+        """Class method to represent zero currency."""
         return cls(0)
+    
+    zero = none
 
     def to_float(self) -> float:
         return float(self.value)
