@@ -573,29 +573,30 @@ class Economy(commands.Cog):
                 self._get_items = self_outer._get_items
 
             async def on_submit(self, interaction: discord.Interaction):
+                await interaction.response.defer(ephemeral=True)
                 user_id = interaction.user.id
                 item_to_buy = self.item_name.value.strip().lower()
                 try:
                     quantity_to_buy = int(self.quantity.value.strip())
                 except ValueError:
-                    await interaction.response.send_message("Quantity must be a valid integer.", ephemeral=True)
+                    await interaction.followup.send("Quantity must be a valid integer.", ephemeral=True)
                     return
                 
                 if quantity_to_buy <= 0:
-                    await interaction.response.send_message("Quantity must be a positive integer.", ephemeral=True)
+                    await interaction.followup.send("Quantity must be a positive integer.", ephemeral=True)
                     return
 
                 # Find the item in the shop
                 item = next((item for item in self.items if item[0].lower() == item_to_buy), None)
                 if not item:
-                    await interaction.response.send_message("Item not found in the shop.", ephemeral=True)
+                    await interaction.followup.send("Item not found in the shop.", ephemeral=True)
                     return
                 
                 item_name, price, _ = item
                 total_cost = price * quantity_to_buy
                 balance = await self._get_balance(user_id)
                 if Currency(total_cost) > balance:
-                    await interaction.response.send_message("You don't have enough coins to make this purchase.", ephemeral=True)
+                    await interaction.followup.send("You don't have enough coins to make this purchase.", ephemeral=True)
                     return
                 
                 # Deduct money and add items
@@ -613,7 +614,7 @@ class Economy(commands.Cog):
                 # Update the database
                 await self.self_outer._set_items(user_id, current_items)
 
-                await interaction.response.send_message(f"Successfully purchased {quantity_to_buy} x {item_name} for {total_cost:,.2f} coins!", ephemeral=True)
+                await interaction.followup.send(f"Successfully purchased {quantity_to_buy}x {item_name} for {total_cost:,.2f} coins!", ephemeral=True)
 
         async def open_shop_modal(interaction: discord.Interaction):
             await interaction.response.send_modal(ShopModal(self, self.items))
