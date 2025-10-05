@@ -21,6 +21,7 @@ from cogs.utils.database import db
 
 # Other
 from rich.console import Console
+from typing import Optional
 # Both of these are useless since im hosting on railway, so I don't need to load the env
 # (if yall wanna selfhost this idk)
 import os
@@ -471,14 +472,11 @@ async def try_pronouns(user_id: int):
     return full
 
 @bot.command(name="getpronouns")
-async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None):
+async def get_pronouns(ctx: commands.Context, user: Optional[discord.Member] = None):
     """Get someone's pronouns."""
     # Get user_id
     if user:
-        if isinstance(user, discord.Member):
-            user_id = user.id
-        else:
-            user_id = user
+        user_id = user.id
     else:
         user_id = ctx.author.id
     
@@ -504,12 +502,12 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
     await ctx.send(test_sentence)
 
 @bot.command(name='fsp')
-async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, _pronouns: str):
+async def force_set_pronouns(ctx: commands.Context, user: discord.Member, _pronouns: str):
     if ctx.author.id != 966351518020300841:
         await ctx.message.add_reaction("❌")
         return
     
-    user_id = user if isinstance(user, int) else user.id
+    user_id = user.id
     
     if _pronouns not in pronouns.all_pronouns_hidden:
         await ctx.send("invalid pronouns")

@@ -402,7 +402,7 @@ class Economy(commands.Cog):
     # Admin commands
 
     @commands.command()
-    async def give_money(self, ctx: commands.Context, user_id: int, amount: float):
+    async def give_money(self, ctx: commands.Context, user_id: discord.Member, amount: float):
         """Give money to a user. Can only be used by Ierzi."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
@@ -442,14 +442,14 @@ class Economy(commands.Cog):
         await ctx.send(f"Reset the economy data of {member.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    async def ecotransfer(self, ctx: commands.Context, user1: discord.Member | int, user2: discord.Member | int):
+    async def ecotransfer(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
         """Transfer all economy data from one user to another. Can only be used by Ierzi."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("no.")
             return
         
-        user1_id = user1.id if isinstance(user1, discord.Member) else user1
-        user2_id = user2.id if isinstance(user2, discord.Member) else user2
+        user1_id = user1.id 
+        user2_id = user2.id 
 
         if user1_id == user2_id:
             await ctx.send("smart")
