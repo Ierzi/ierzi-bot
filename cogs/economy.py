@@ -282,15 +282,15 @@ class Economy(commands.Cog):
             await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        success_chance = 0.3  # 30% chance of success
+        success_chance = 0.2  
         await self._update_cooldown(user_id, "last_robbed_user")
         if random.random() < success_chance:
-            amount_stolen = random.uniform(0.01 * target_balance.to_float(), 0.2 * target_balance.to_float())
+            amount_stolen = random.uniform(0.01 * target_balance.to_float(), 0.1 * target_balance.to_float()) 
             await self._remove_money(member.id, amount_stolen)
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} successfully robbed {member.mention} and stole {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
-            fine = random.uniform(100, 500)
+            fine = random.uniform(200, 600) 
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
@@ -581,7 +581,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def roulette(self, ctx: commands.Context, _type: str, choice: str, amount: float):
-        """"roulette! Example: !roulette number 17 150 or !roulette color black 100"""
+        """roulette! Example: !roulette number 17 150 or !roulette color black 100"""
         # basic checks
         user_id = ctx.author.id
         if amount <= 0:
@@ -607,7 +607,7 @@ class Economy(commands.Cog):
                 await ctx.send("invalid color")
                 return
         
-        # Not including ranges for now
+        # Not including ranges nor odds/evens for now
 
         red_numbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
         
@@ -632,21 +632,25 @@ class Economy(commands.Cog):
                 winnings = float(bet * 2)
                 await self._add_money(user_id, winnings)
                 await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+                return
             elif choice == "black" and winning_number not in red_numbers:
                 winnings = float(bet * 2)
                 await self._add_money(user_id, winnings)
                 await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+                return
             elif choice == "green" and winning_number == 0:
                 winnings = float(bet * 36)
                 await self._add_money(user_id, winnings - bet.to_float())
                 await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+                return
 
         elif _type == "number":
             if choice == str(winning_number):
                 winnings = float(bet * 36)
                 await self._add_money(user_id, winnings - bet.to_float())
                 await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
-        
+                return
+
         await self._remove_money(user_id, bet.to_float())
         await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
@@ -676,26 +680,35 @@ class Economy(commands.Cog):
         message = await ctx.send(embed=crash_embed, allowed_mentions=discord.AllowedMentions.none())
 
         def check(m: discord.Message):
-            return m.author.id == user_id and m.channel.id == ctx.channel.id and m.content.strip().lower() != "cash"
+            return m.author.id == user_id and m.channel.id == ctx.channel.id and m.content.strip().lower() == "cash"
 
         multiplier = 1.00
         try:
             while multiplier < crash_point:
-                await asyncio.sleep(0.5)
-                multiplier += random.uniform(0.10, 0.50)
+                try:
+                    msg = await self.bot.wait_for("message", check=check, timeout=0.3)
+                    if msg:
+                        winnings = float(bet * multiplier)
+                        await self._add_money(user_id, winnings - float(bet))
+                        crash_embed.description = f"You cashed out at {multiplier:.2f}x and won {winnings:,.2f} coins! {self.coin_emoji}"
+                        await message.edit(embed=crash_embed)
+                        return
+                except asyncio.TimeoutError: # No cash out message
+                    pass  
+                
+                await asyncio.sleep(0.3)
+                multiplier += random.uniform(0.10, 0.30)
                 if multiplier > crash_point:
                     multiplier = crash_point
                 crash_embed.set_field_at(1, name="Multiplier", value=f"{multiplier:.2f}x", inline=False)
                 await message.edit(embed=crash_embed)
-                msg = await self.bot.wait_for("message", check=check, timeout=0.5)
-                if msg:
-                    winnings = float(bet * multiplier)
-                    await self._add_money(user_id, winnings - float(bet)) # Add profit only
-                    crash_embed.description = f"You cashed out at {multiplier:.2f}x and won {winnings:,.2f} coins! {self.coin_emoji}"
-                    await message.edit(embed=crash_embed)
-                    return
         except asyncio.TimeoutError:
             pass
+        
+        # Game crashed, player loses their bet
+        await self._remove_money(user_id, float(bet))
+        crash_embed.description = f"The game crashed at {multiplier:.2f}x! You lost {bet:,.2f} coins."
+        await message.edit(embed=crash_embed)
 
     # Admin commands
     @commands.command()
