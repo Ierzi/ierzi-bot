@@ -597,11 +597,12 @@ class Economy(commands.Cog):
             )
 
             async def on_submit(self, interaction: Interaction):
+                await interaction.response.defer()
                 user_id = self.ctx.author.id
                 bet_input = self.bet_type.value.lower()
                 valid_bet_types = [str(i) for i in range(37)] + ["red", "black", "even", "odd"]
                 if bet_input not in valid_bet_types:
-                    await interaction.response.send_message("Invalid bet type.", ephemeral=True)
+                    await interaction.followup.send("Invalid bet type.", ephemeral=True)
                     return
                 
                 spins = random.randint(7, 10)
