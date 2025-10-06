@@ -663,6 +663,11 @@ class Economy(commands.Cog):
         async def spin_callback(interaction: Interaction):
             await interaction.response.send_modal(modal)
 
+        spin_button.callback = spin_callback
+        view.add_item(spin_button)
+
+        await ctx.send("Click on the button below to place your bet type.", view=view)
+
     @commands.command()
     async def crash(self, ctx: commands.Context, amount: float):
         """Gamble your coins in a game of crash."""
