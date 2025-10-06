@@ -46,6 +46,8 @@ bot = commands.Bot(
     case_insensitive=True
 )
 
+experimental_branch = False
+
 # Events
 @bot.event
 async def on_ready():
@@ -53,10 +55,12 @@ async def on_ready():
     guild_count = len(bot.guilds)
     await bot.change_presence(status=discord.Status.idle, activity=Activity(type=ActivityType.playing, name=f"!help | {guild_count} servers.")) # Discord bot starter pack
     await fill_embeds()
-    await bot.tree.clear_commands()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
+    if bot.user.id == 1412488383178998044: #experimental bot id
+        global experimental_branch
+        experimental_branch = True
 
 # Error handling
 @bot.event
@@ -208,6 +212,11 @@ async def profile(ctx: commands.Context, *user_ids: int):
 @bot.command()
 async def github(ctx: commands.Context):
     """if you wanna contribute idk"""
+    global experimental_branch
+    if experimental_branch:
+        await ctx.send("https://git.gay/Ierzi/ierzi-bot/src/branch/experimental \nhttps://github.com/Ierzi/ierzi-bot/tree/experimental")
+        return
+    
     await ctx.send("https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works")
 
 #TODO: all of this
