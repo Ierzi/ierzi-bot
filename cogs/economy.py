@@ -522,6 +522,33 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def wheel(self, ctx: commands.Context, amount: float):
+        """Spin the wheel and win or lose money."""
+        user_id = ctx.author.id
+        if amount <= 0:
+            await ctx.send("im feeling evil today, you just lost 100 coins.")
+            await self._remove_money(user_id, 100)
+            return
+        
+        bet = Currency(amount)
+        balance = await self._get_balance(user_id)
+        if bet > balance:
+            await ctx.send(f"you only have {balance.to_float():,.2f} coins.")
+            return
+        
+        wheel_multipliers = [0, 0.3, 0.5, 1, 2, 2.5]
+        multiplier = random.choice(wheel_multipliers)
+        winnings = float(bet * multiplier)
+        if winnings < bet.to_float():
+            await self._remove_money(user_id, float(bet))
+            await ctx.send(f"**{multiplier}x**: {ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            return
+            
+        await self._add_money(user_id, winnings - bet.to_float())
+        await ctx.send(f"**{multiplier}x**: {ctx.author.mention} won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def slots(self, ctx: commands.Context, amount: float):
         """slot machine idk"""
