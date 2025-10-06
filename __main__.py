@@ -9,7 +9,7 @@ from discord.activity import Activity, ActivityType
 
 # Cogs
 from cogs.ai import AI
-from cogs.economy import Economy
+from cogs.economy import Economy, update_tables
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -532,6 +532,7 @@ async def main():
     await db.init_pool()
     try:
         await load_cogs()
+        await update_tables() 
         console.print("Bot is ready.")
         await bot.start(token)
     finally:

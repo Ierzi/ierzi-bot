@@ -57,23 +57,6 @@ class Economy(commands.Cog):
         else:
             return Currency.none()
 
-    async def _get_items(self, user_id: int) -> list:
-        """Get the items of a user."""
-        row = await db.fetchrow("SELECT items FROM economy WHERE user_id = $1", user_id)
-        if row:
-            return row["items"]
-        else:
-            return []
-
-    async def _set_items(self, user_id: int, items: list) -> None:
-        """Set the items of a user."""
-        await self._ensure_user_exists(user_id)
-        await db.execute("""
-            UPDATE economy 
-            SET items = $2
-            WHERE user_id = $1
-        """, user_id, items)
-
     async def _ensure_user_exists(self, user_id: int) -> None:
         """Ensure the user exists in the database."""
         # First ensure user exists in users table (which economy references)
@@ -246,14 +229,14 @@ class Economy(commands.Cog):
             await ctx.send(f"You already tried to rob a bank! Try again in {hours}h {minutes}m {seconds}s.")
             return
         
-        success_chance = 0.3  # 30% chance of success
+        success_chance = 0.25
         await self._update_cooldown(user_id, "last_robbed_bank")
         if random.random() < success_chance:
-            amount_stolen = random.uniform(500, 1500)
+            amount_stolen = random.uniform(500, 1000)
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} robbed a bank and got away with {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
-            fine = random.uniform(100, 1000)
+            fine = random.uniform(200, 800)
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
@@ -282,7 +265,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        success_chance = 0.2  
+        success_chance = 0.25
         await self._update_cooldown(user_id, "last_robbed_user")
         if random.random() < success_chance:
             amount_stolen = random.uniform(0.01 * target_balance.to_float(), 0.1 * target_balance.to_float()) 
@@ -781,20 +764,16 @@ class Economy(commands.Cog):
                 last_worked = $5,
                 last_robbed_bank = $6,
                 last_robbed_user = $7,
-                items = $8
             WHERE user_id = $1
-        """, user2_id, row["balance"], row["money_lost"], row["last_daily"], row["last_worked"], row["last_robbed_bank"], row["last_robbed_user"], row["items"])
+        """, user2_id, row["balance"], row["money_lost"], row["last_daily"], row["last_worked"], row["last_robbed_bank"], row["last_robbed_user"])
 
         await db.execute("DELETE FROM economy WHERE user_id = $1", user1_id)
 
         await ctx.send(f"Transferred all economy data from <@{user1_id}> to <@{user2_id}>.", allowed_mentions=discord.AllowedMentions.none())
 
-async def _update_tables():
+async def update_tables():
     # Just remaking the database schema lmao
-    # Max balance is 999,999,999,999.99
-
-    # jst delete the table and remake it
-    await db.execute("DROP TABLE IF EXISTS economy")
+    # New max balance is 999,999,999,999.99
 
     await db.execute("""
                 CREATE TABLE IF NOT EXISTS economy (
@@ -806,8 +785,6 @@ async def _update_tables():
                 last_worked TIMESTAMPTZ,
                 last_robbed_bank TIMESTAMPTZ,
                 last_robbed_user TIMESTAMPTZ,
-
-                items JSONB NOT NULL DEFAULT '[]'::JSONB
                 );
     """)
     # Remove old columns (see schema.sql)
@@ -816,6 +793,6 @@ async def _update_tables():
     await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_worked""")
     await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_robbed_bank""")
     await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_robbed_user""")
+    # Remove old items column cause i wont use items
+    await db.execute("""ALTER TABLE economy DROP COLUMN IF EXISTS items""")
 
-    # Also since this is an old bot, add the new collumns
-    await db.execute("""ALTER TABLE users ADD COLUMN IF NOT EXISTS pronouns TEXT""")
