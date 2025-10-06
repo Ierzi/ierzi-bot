@@ -780,11 +780,10 @@ async def update_tables():
                 user_id BIGINT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
                 balance numeric(15, 2) NOT NULL DEFAULT 0.00,
                 money_lost numeric(15, 2) NOT NULL DEFAULT 0.00,
-
                 last_daily TIMESTAMPTZ,
                 last_worked TIMESTAMPTZ,
                 last_robbed_bank TIMESTAMPTZ,
-                last_robbed_user TIMESTAMPTZ,
+                last_robbed_user TIMESTAMPTZ
                 );
     """)
     # Remove old columns (see schema.sql)
