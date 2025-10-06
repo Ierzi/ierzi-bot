@@ -580,94 +580,75 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} didn't win anything and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    async def roulette(self, ctx: commands.Context, amount: float):
-        """"roulette!"""
-        class RouletteBetModal(Modal, title="Place Your Bet"):
-            def __init__(self, *args, **kwargs):
-                self.self_outer: 'Economy' = kwargs.get('self_outer')
-                self.ctx: commands.Context = kwargs.get('ctx')
-                self.amount: float = kwargs.get('amount')
-                super().__init__(*args, **kwargs)
-
-            bet_type = TextInput(
-                label="Bet Type",
-                placeholder='Type a number (0-36), "red", "black", "even", or "odd"',
-                required=True,
-                max_length=5
-            )
-
-            async def on_submit(self, interaction: Interaction):
-                await interaction.response.defer()
-                user_id = self.ctx.author.id
-                bet_input = self.bet_type.value.lower()
-                valid_bet_types = [str(i) for i in range(37)] + ["red", "black", "even", "odd"]
-                if bet_input not in valid_bet_types:
-                    await interaction.followup.send("Invalid bet type.", ephemeral=True)
-                    return
-                
-                spins = random.randint(7, 10)
-                winning_number = random.randint(0, 36)
-                red_numbers = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]
-                spin_message = await self.ctx.send("Spinning the roulette...", allowed_mentions=discord.AllowedMentions.none())
-
-                for _ in range(spins):
-                    current_spin = random.randint(0, 36)
-                    formatted_message = f"Spinning the roulette... | 🟢 {current_spin} |" if current_spin == 0 else f"Spinning the roulette... | 🔴 {current_spin} |" if current_spin in red_numbers else f"Spinning the roulette... | ⚫ {current_spin} |"
-                    await spin_message.edit(content=formatted_message)
-                    await asyncio.sleep(1)
-                
-                final_message = f"The ball landed on 🟢 {winning_number}!" if winning_number == 0 else f"The ball landed on 🔴 {winning_number}!" if winning_number in red_numbers else f"The ball landed on ⚫ {winning_number}!"
-                await spin_message.edit(content=final_message)
-
-                bet = Currency(self.amount)
-                if bet_input == str(winning_number):
-                    winnings = float(bet * 35)
-                    await self.self_outer._add_money(user_id, float(bet * 34)) 
-                    await self.ctx.send(f"{self.ctx.author.mention} guessed the exact number and won {winnings:,.2f} coins!", allowed_mentions=discord.AllowedMentions.none())
-                    return
-
-                if (bet_input == 'red' and winning_number in red_numbers) or (bet_input == 'black' and winning_number not in red_numbers):
-                    winnings = float(bet * 2)
-                    await self.self_outer._add_money(user_id, bet.to_float()) 
-                    await self.ctx.send(f"{self.ctx.author.mention} guessed the correct color and won {winnings:,.2f} coins!", allowed_mentions=discord.AllowedMentions.none())
-                    return
-
-                if bet_input == 'even' and winning_number != 0 and winning_number % 2 == 0:
-                    winnings = float(bet * 2)
-                    await self.self_outer._add_money(user_id, bet.to_float()) 
-                    await self.ctx.send(f"{self.ctx.author.mention} guessd even and won {winnings:,.2f} coins!", allowed_mentions=discord.AllowedMentions.none())
-                    return
-                
-                if bet_input == 'odd' and winning_number != 0 and winning_number % 2 != 0:
-                    winnings = float(bet * 2)
-                    await self.self_outer._add_money(user_id, bet.to_float()) 
-                    await self.ctx.send(f"{self.ctx.author.mention} guessd odd and won {winnings:,.2f} coins!", allowed_mentions=discord.AllowedMentions.none())
-                    return
-                
-                await self.self_outer._remove_money(user_id, bet.to_float())
-                await self.ctx.send(f"{self.ctx.author.mention} guessed incorrectly and lost {bet.to_float():,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
-
+    async def roulette(self, ctx: commands.Context, _type: str, choice: str, amount: float):
+        """"roulette! Example: !roulette number 17 150 or !roulette color black 100"""
+        # basic checks
+        user_id = ctx.author.id
         if amount <= 0:
             await ctx.send("ok vro")
             return
-        
-        user_id = ctx.author.id
+
         bet = Currency(amount)
         balance = await self._get_balance(user_id)
+
         if bet > balance:
-            await ctx.send("you're too poor lmao")
+            await ctx.send("make some money first")
+            return
+        
+        _type = _type.strip().lower()
+        choice = choice.strip().lower()
+
+        if _type not in ["color", "number"]:
+            await ctx.send("invalid type")
             return
 
-        modal = RouletteBetModal(title="Place Your Bet")
-        view = View()
-        spin_button = Button(label="Spin!", style=discord.ButtonStyle.green)
-        async def spin_callback(interaction: Interaction):
-            await interaction.response.send_modal(modal)
+        if _type == "color":
+            if choice not in ["red", "black", "green"]:
+                await ctx.send("invalid color")
+                return
+        
+        # Not including ranges for now
 
-        spin_button.callback = spin_callback
-        view.add_item(spin_button)
+        red_numbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+        
+        # Funny animation
+        winning_number = random.randint(0, 36)
+        animation_frames = random.randint(6, 9) # nice
 
-        await ctx.send("Click on the button below to place your bet type.", view=view)
+        message = await ctx.send("Spinning the roulette...", allowed_mentions=discord.AllowedMentions.none())
+        await asyncio.sleep(2)
+
+        for _ in range(animation_frames):
+            number = random.randint(0, 36)
+            formatted_message = f"Spinning the roulette... 🟢 {number}" if number == 0 else f"Spinning the roulette... 🔴 {number}" if number in red_numbers else f"Spinning the roulette... ⚫ {number}"
+            await message.edit(content=formatted_message)
+            await asyncio.sleep(1)
+        
+        winning_message = f"Spinning the roulette... 🟢 {winning_number}" if winning_number == 0 else f"Spinning the roulette... 🔴 {winning_number}" if winning_number in red_numbers else f"Spinning the roulette... ⚫ {winning_number}"
+        await message.edit(content=winning_message)
+
+        if _type == "color":
+            if choice == "red" and winning_number in red_numbers:
+                winnings = float(bet * 2)
+                await self._add_money(user_id, winnings)
+                await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            elif choice == "black" and winning_number not in red_numbers:
+                winnings = float(bet * 2)
+                await self._add_money(user_id, winnings)
+                await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            elif choice == "green" and winning_number == 0:
+                winnings = float(bet * 36)
+                await self._add_money(user_id, winnings - bet.to_float())
+                await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+        elif _type == "number":
+            if choice == str(winning_number):
+                winnings = float(bet * 36)
+                await self._add_money(user_id, winnings - bet.to_float())
+                await ctx.send(f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        
+        await self._remove_money(user_id, bet.to_float())
+        await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def crash(self, ctx: commands.Context, amount: float):
