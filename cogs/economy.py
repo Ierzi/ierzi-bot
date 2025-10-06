@@ -257,6 +257,7 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
     async def robuser(self, ctx: commands.Context, member: discord.Member):
         """Rob someone."""
         user_id = ctx.author.id
@@ -580,7 +581,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     async def crash(self, ctx: commands.Context, amount: float):
-        """"Gamble your coins in a game of crash."""
+        """Gamble your coins in a game of crash."""
         user_id = ctx.author.id
         if amount <= 0:
             await ctx.send("wtf are you trying to do")
@@ -593,7 +594,7 @@ class Economy(commands.Cog):
             await ctx.send("you're broke :broken_heart:")
             return
         
-        crash_point = random.uniform(1.00, 2.50)
+        crash_point = random.uniform(1.00, 5.00)
         crash_embed = discord.Embed(
             title="Crash Game",
             description="The game is starting! The multiplier is increasing... Type cash to cash out!"
@@ -609,13 +610,13 @@ class Economy(commands.Cog):
         multiplier = 1.00
         try:
             while multiplier < crash_point:
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.5)
                 multiplier += random.uniform(0.10, 0.50)
                 if multiplier > crash_point:
                     multiplier = crash_point
                 crash_embed.set_field_at(1, name="Multiplier", value=f"{multiplier:.2f}x", inline=False)
                 await message.edit(embed=crash_embed)
-                msg = await self.bot.wait_for("message", check=check, timeout=0.3)
+                msg = await self.bot.wait_for("message", check=check, timeout=0.5)
                 if msg:
                     winnings = float(bet * multiplier)
                     await self._add_money(user_id, winnings - float(bet)) # Add profit only
