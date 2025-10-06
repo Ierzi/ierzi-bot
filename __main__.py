@@ -5,10 +5,11 @@ import discord
 from discord import Interaction, Embed, Message, SelectOption, Poll
 from discord.ext import commands
 from discord.ui import View, Select
+from discord.activity import Activity, ActivityType
 
 # Cogs
 from cogs.ai import AI
-from cogs.economy import Economy
+from cogs.economy import Economy, update_tables
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -21,6 +22,7 @@ from cogs.utils.database import db
 
 # Other
 from rich.console import Console
+from typing import Optional
 # Both of these are useless since im hosting on railway, so I don't need to load the env
 # (if yall wanna selfhost this idk)
 import os
@@ -44,15 +46,21 @@ bot = commands.Bot(
     case_insensitive=True
 )
 
+experimental_branch = False
+
 # Events
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.idle)
+    # Change the presence based on the bot's number of servers
+    guild_count = len(bot.guilds)
+    await bot.change_presence(status=discord.Status.idle, activity=Activity(type=ActivityType.playing, name=f"!help | {guild_count} servers.")) # Discord bot starter pack
     await fill_embeds()
-    await bot.tree.clear_commands()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
+    if bot.user.id == 1412488383178998044: #experimental bot id
+        global experimental_branch
+        experimental_branch = True
 
 # Error handling
 @bot.event
@@ -78,7 +86,7 @@ async def on_message(message: Message):
                 ai = AI(bot, console)
                 ctx = await bot.get_context(message)
                 # get reply
-    
+
                 reply_id = message.reference.message_id
                 reply = await ctx.channel.fetch_message(reply_id)
                 reply_content = reply.content
@@ -173,7 +181,7 @@ async def isthistrue(interaction: Interaction, message: Message):
 
 # Other commands
 @bot.command(name="id")
-async def id_user(ctx: commands.Context, user: discord.Member = None):
+async def id_user(ctx: commands.Context, user: discord.User = None):
     """Gets the ID of an user."""
     if not user:
         await ctx.send(ctx.author.id)
@@ -183,7 +191,7 @@ async def id_user(ctx: commands.Context, user: discord.Member = None):
 
 @bot.command()
 async def profile(ctx: commands.Context, *user_ids: int):
-    """Gets the profile of user(s) by ID. Accepts one or more IDs."""
+    """Gets the profile of user(s) by ID."""
     if not user_ids:
         await ctx.send("Gimme user ids. \n-# if you dont know what that is, ignore this")
         return
@@ -203,8 +211,13 @@ async def profile(ctx: commands.Context, *user_ids: int):
 
 @bot.command()
 async def github(ctx: commands.Context):
-    """cool github repo"""
-    await ctx.send("https://github.com/Ierzi/ierzi-bot \n-# btw i have no fucking clue how contributing on github works")
+    """if you wanna contribute idk"""
+    global experimental_branch
+    if experimental_branch:
+        await ctx.send("https://git.gay/Ierzi/ierzi-bot/src/branch/experimental \nhttps://github.com/Ierzi/ierzi-bot/tree/experimental")
+        return
+    
+    await ctx.send("https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works")
 
 #TODO: all of this
 @bot.command()
@@ -471,20 +484,17 @@ async def try_pronouns(user_id: int):
     return full
 
 @bot.command(name="getpronouns")
-async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None):
+async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = None):
     """Get someone's pronouns."""
     # Get user_id
     if user:
-        if isinstance(user, discord.Member):
-            user_id = user.id
-        else:
-            user_id = user
+        user_id = user.id
     else:
         user_id = ctx.author.id
     
     _pronouns = await pronouns.get_pronouns(user_id, get_na=True)
-    user_profile = user if isinstance(user, discord.Member) else bot.get_user(user_id) or await bot.fetch_user(user) if user else ctx.author
-    user_id = user if isinstance(user, int) else user.id if user is not None else ctx.author.id
+    user_profile = user if user is not None else ctx.author
+    user_id = user_profile.id
 
     if user:
         if _pronouns == 'na':
@@ -504,12 +514,12 @@ async def get_pronouns(ctx: commands.Context, user: discord.Member | int = None)
     await ctx.send(test_sentence)
 
 @bot.command(name='fsp')
-async def force_set_pronouns(ctx: commands.Context, user: discord.Member | int, _pronouns: str):
+async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronouns: str):
     if ctx.author.id != 966351518020300841:
         await ctx.message.add_reaction("❌")
         return
     
-    user_id = user if isinstance(user, int) else user.id
+    user_id = user.id
     
     if _pronouns not in pronouns.all_pronouns_hidden:
         await ctx.send("invalid pronouns")
@@ -522,6 +532,7 @@ async def main():
     await db.init_pool()
     try:
         await load_cogs()
+        await update_tables() 
         console.print("Bot is ready.")
         await bot.start(token)
     finally:
