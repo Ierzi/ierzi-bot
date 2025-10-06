@@ -538,15 +538,31 @@ class Economy(commands.Cog):
             return
         
         wheel_multipliers = [0, 0.3, 0.5, 1, 2, 2.5]
-        multiplier = random.choice(wheel_multipliers)
-        winnings = float(bet * multiplier)
+        end_multiplier = random.choice(wheel_multipliers)
+        animation_frames = random.randint(10, 15)
+        
+        message = await ctx.send("Spinning the wheel...", allowed_mentions=discord.AllowedMentions.none())
+        await asyncio.sleep(1.5)
+
+        # Trying something new (making the animation slower and slower)
+        animation_speed = 0.1
+        for _ in range(animation_frames):
+            current_frame = random.choice(wheel_multipliers)
+            await message.edit(content=f"**{current_frame}x**")
+            await asyncio.sleep(animation_speed)
+            animation_speed += 0.1
+
+        await message.edit(content=f"**{end_multiplier}x**")
+        await asyncio.sleep(2)
+
+        winnings = float(bet * end_multiplier)
         if winnings < bet.to_float():
             await self._remove_money(user_id, float(bet))
-            await ctx.send(f"**{multiplier}x**: {ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
-            
+
         await self._add_money(user_id, winnings - bet.to_float())
-        await ctx.send(f"**{multiplier}x**: {ctx.author.mention} won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
