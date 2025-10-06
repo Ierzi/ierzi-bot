@@ -557,12 +557,14 @@ class Economy(commands.Cog):
 
         winnings = float(bet * end_multiplier)
         if winnings < bet.to_float():
-            await self._remove_money(user_id, float(bet))
-            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            result = winnings - bet.to_float()
+            await self._remove_money(user_id, winnings)
+            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {result:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
 
         await self._add_money(user_id, winnings - bet.to_float())
-        await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {winnings:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        result = winnings - bet.to_float()
+        await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {result:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
