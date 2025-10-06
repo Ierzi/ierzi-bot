@@ -443,6 +443,7 @@ class Economy(commands.Cog):
 
     # GAMBLING COMMANDS!!!
     @commands.command()
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def double(self, ctx: commands.Context, amount: float):
         """Gamble your coins with a chance to double them."""
         user_id = ctx.author.id
@@ -466,6 +467,7 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, float(bet)) # I didnt remove the money above cause it would append to money_lost too if they won
     
     @commands.command(name="doubleall")
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def double_all(self, ctx: commands.Context):
         """Gamble all your coins!!!"""
         user_id = ctx.author.id
@@ -486,6 +488,7 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, float(bet)) 
 
     @commands.command()
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def dicebet(self, ctx: commands.Context, amount: Optional[float] = None):
         """Roll a 6 sided dice, guess the correct side to win 6x your bet."""
         if not amount:
@@ -563,6 +566,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} didn't win anything and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def roulette(self, ctx: commands.Context, _type: str, choice: str, amount: float):
         """roulette! Example: !roulette number 17 150 or !roulette color black 100"""
         # basic checks
@@ -638,6 +642,7 @@ class Economy(commands.Cog):
         await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def crash(self, ctx: commands.Context, amount: float):
         """Gamble your coins in a game of crash."""
         user_id = ctx.author.id
