@@ -280,6 +280,7 @@ class Economy(commands.Cog):
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
         """See the economy leaderboard."""
+        await ctx.typing()
         if page < 1:
             await ctx.send("whar?")
             return
@@ -372,7 +373,6 @@ class Economy(commands.Cog):
     @commands.command()
     async def pay(self, ctx: commands.Context, member: discord.Member, amount: float):
         """Send money to someone else."""
-        
         if amount <= 0:
             await ctx.send("have you tried using coins that have a positive amount of atoms?")
             return
@@ -393,7 +393,7 @@ class Economy(commands.Cog):
         await ctx.send(f"{ctx.author.mention} sent {amount:,.2f} coins to {member.mention}! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    @commands.cooldown(1, 3, commands.BucketType.user)
+    @commands.cooldown(1, 2, commands.BucketType.user)
     async def beg(self, ctx: commands.Context):
         """Beg for a few coins."""
         user_id = ctx.author.id
@@ -411,7 +411,7 @@ class Economy(commands.Cog):
     async def compare(self, ctx: commands.Context, member1: discord.Member, member2: discord.Member):
         """Compare the balances of two users."""
         if member1.id == member2.id:
-            await ctx.send("im tired ion wanna do this ")
+            await ctx.send("im tired ion wanna do this")
             return
         
         balance1 = await self._get_balance(member1.id)
@@ -539,7 +539,7 @@ class Economy(commands.Cog):
         
         wheel_multipliers = [0, 0.3, 0.5, 1, 2, 2.5]
         end_multiplier = random.choice(wheel_multipliers)
-        animation_frames = random.randint(10, 15)
+        animation_frames = random.randint(12, 16)
         
         message = await ctx.send("Spinning the wheel...", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(1.5)
@@ -702,7 +702,7 @@ class Economy(commands.Cog):
             await ctx.send("you're broke :broken_heart:")
             return
         
-        crash_point = random.uniform(1.00, 5.00)
+        crash_point = random.uniform(1.00, 2.00)
         crash_embed = discord.Embed(
             title="Crash Game",
             description="The game is starting! The multiplier is increasing... Type cash to cash out!"
@@ -730,7 +730,7 @@ class Economy(commands.Cog):
                     pass  
                 
                 await asyncio.sleep(0.3)
-                multiplier += random.uniform(0.10, 0.30)
+                multiplier += random.uniform(0.02, 0.10)
                 if multiplier > crash_point:
                     multiplier = crash_point
                 crash_embed.set_field_at(1, name="Multiplier", value=f"{multiplier:.2f}x", inline=False)
