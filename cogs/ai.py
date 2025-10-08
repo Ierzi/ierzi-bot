@@ -6,8 +6,6 @@ from groq import AsyncGroq
 import os
 from rich.console import Console
 import asyncio
-from pathlib import Path
-
 
 
 class AI(commands.Cog):
@@ -133,7 +131,7 @@ class AI(commands.Cog):
                 voice="alloy",
                 input=text
                 ) as response:
-                    response.stream_to_file(output_file)
+                    await response.stream_to_file(output_file)
                     self.console.print(f"Generated audio for {message_id} in {output_file}")
 
         await ctx.send(file=File(output_file))
