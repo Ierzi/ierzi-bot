@@ -189,7 +189,7 @@ class Fun(commands.Cog):
             await ctx.send("error :(")
             return
 
-        pi = json_data['cotents']['result'] # Cotents???
+        pi = json_data[0]['cotents']['result'] # Cotents???
         splits = []
         if digits > 1980:
             current_split = ""
