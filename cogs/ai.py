@@ -1,10 +1,14 @@
 from discord.ext import commands
 import discord
+from discord import File
 from openai import AsyncOpenAI
 from groq import AsyncGroq
 import os
 from rich.console import Console
 import asyncio
+from pathlib import Path
+
+
 
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -117,6 +121,23 @@ class AI(commands.Cog):
         
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
+    @commands.command()
+    async def aitts(self, ctx: commands.Context, *, text: str):
+        """Generates audio from the input text."""
+        message_id = ctx.message.id
+        async with ctx.typing():
+            client = AsyncOpenAI(api_key=self.openai_key)
+            output_file = f"audio_{message_id}.mp3"
+            async with client.audio.speech.with_streaming_response.create(
+                model="gpt-4o-mini-tts",
+                voice="alloy",
+                input=text
+                ) as response:
+                    response.stream_to_file(output_file)
+                    self.console.print(f"Generated audio for {message_id} in {output_file}")
+
+        await ctx.send(file=File(output_file))
+        os.remove(output_file)
 
     # TODO: I MIGHT BE ABLE TO GENERATE VIDEOS USING OPENAI'S API
     # @commands.command()
