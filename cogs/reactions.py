@@ -64,6 +64,22 @@ class Reactions(commands.Cog):
         await ctx.send(f"{ctx.author.mention} cuddles {user.mention} 🥰 \n-# so cutesy", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    async def tickle(self, ctx: commands.Context, user: discord.Member):
+        """Tickle someone."""
+        all_pronouns = await pronouns.get_pronoun(ctx.author.id)
+        if user == ctx.author:
+            await ctx.send(f"{ctx.author.mention} is tickling {all_pronouns[4]}... {all_pronouns[0].capitalize()} might be cooked..", allowed_mentions=discord.AllowedMentions.none())
+            return
+        if user.id == self.bot.user.id:
+            await ctx.send("tickle my owner instead")
+            return
+        if user.bot:
+            await ctx.send(f"{ctx.author.mention} tickles {user.mention} and it doesnt react (its a bot wtf did you expect)", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
+        await ctx.send(f"{ctx.author.mention} tickles {user.mention} 👉🤭", allowed_mentions=discord.AllowedMentions.none()) #lowkey cant find a better emoji than this 
+
+    @commands.command()
     async def slap(self, ctx: commands.Context, user: discord.Member):
         """Slap someone."""
         all_pronouns = await pronouns.get_pronoun(ctx.author.id)
