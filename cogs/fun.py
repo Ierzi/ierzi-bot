@@ -191,7 +191,7 @@ class Fun(commands.Cog):
         except KeyError: # no error
             pass
 
-        pi = json_data[0]['cotents']['result'] # Cotents???
+        pi = json_data['cotents']['result'] # Cotents???
         splits = []
         if digits > 1980:
             current_split = ""
