@@ -3,9 +3,9 @@
 # Discord.py Improrts
 import discord
 from discord import Interaction, Embed, Message, SelectOption, Poll
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ui import View, Select
-from discord.activity import Activity, ActivityType
+from discord.activity import CustomActivity
 
 # Cogs
 from cogs.ai import AI
@@ -30,6 +30,7 @@ from dotenv import load_dotenv
 import asyncio
 import time
 import random
+import asyncio
 
 console = Console()
 
@@ -53,14 +54,23 @@ experimental_branch = False
 async def on_ready():
     # Change the presence based on the bot's number of servers
     guild_count = len(bot.guilds)
-    await bot.change_presence(status=discord.Status.idle, activity=Activity(type=ActivityType.playing, name=f"!help | {guild_count} servers.")) # Discord bot starter pack
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers")) # Discord bot starter pack
     await fill_embeds()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
+    asyncio.create_task(bot_loop())
+
     if bot.user.id == 1412488383178998044: #experimental bot id
         global experimental_branch
         experimental_branch = True
+
+async def bot_loop():
+    #  Various tasks the bot runs in the background
+
+    # Update bot presence
+    guild_count = len(bot.guilds)
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
 
 # Error handling
 @bot.event
@@ -103,8 +113,7 @@ async def on_message(message: Message):
         
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
-            is_true = random.choice([True, False])
-            if is_true:
+            if random.choice([True, False]):
                 await message.add_reaction("✅")
             else:
                 await message.add_reaction("❌")

@@ -117,6 +117,27 @@ class AI(commands.Cog):
         
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
+
+    # TODO: I MIGHT BE ABLE TO GENERATE VIDEOS USING OPENAI'S API
+    # @commands.command()
+    # async def video(self, ctx: commands.Context, *, text: str):
+    #     """Generate a video from a text."""
+    #     async with ctx.typing():
+    #         client = AsyncOpenAI(api_key=self.openai_key)
+    #         response = await client.videos.create(
+    #             prompt=text
+    #         )
+    #         video_id = response.id
+    #         self.console.print(video_id)
+
+    #         video_download_response = await client.videos.download_contemt(
+    #             video_id=video_id
+    #         )
+    #         self.console.print(video_download_response)
+    #         content = video_download_response.read()
+
+
+
     async def isthistrue(self, ctx: commands.Context, fact_checked_mess: str):
         # Using Groq cause it fast
         client = AsyncGroq(api_key=self.groq_key)

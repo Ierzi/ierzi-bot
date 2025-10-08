@@ -57,13 +57,13 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [966351518020300841, 1399689963284467723]: #ierzi and the bot
+        if user.id == 1399689963284467723: #the bot
             await ctx.send("no")
             return
         if user.id in [
             1279666598441123840, 1120940924910977064, 955623247725072476, 747918143745294356, 
-            893298676003393536, 980436567531335700, 730885117656039466, 1220973198875693156     
-            ]: # way too many people
+            893298676003393536, 980436567531335700, 730885117656039466, 1220973198875693156, 966351518020300841    
+            ]: # way too many people (including me)
             await ctx.send("yes")
             return
         
@@ -87,7 +87,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id == 1206615811792576614 or user.id == 1344010392506208340: #fa*t
+        if user.id in [1206615811792576614, 1344010392506208340]: #fa*t
             await ctx.send("yes")
             return
         
@@ -175,9 +175,12 @@ class Fun(commands.Cog):
     @commands.command()
     async def pi(self, ctx: commands.Context, digits: int):
         """Pi digits."""
+        headers = {
+            "accept": "application/json"
+        }
         url = f"https://api.math.tools/numbers/pi?to={digits}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
+            async with session.get(url, headers=headers) as response:
                 json_data = await response.json()
         
         console.print(json_data)
