@@ -184,10 +184,12 @@ class Fun(commands.Cog):
                 json_data = await response.json()
         
         console.print(json_data)
-
-        if json_data['error']:
-            await ctx.send("error :(")
-            return
+        try:
+            if json_data['error']:
+                await ctx.send("error :(")
+                return
+        except KeyError: # no error
+            pass
 
         pi = json_data[0]['cotents']['result'] # Cotents???
         splits = []
