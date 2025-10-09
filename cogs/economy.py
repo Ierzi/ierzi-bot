@@ -25,19 +25,19 @@ class Economy(commands.Cog):
         self.console = console
         self.coin_emoji = '<:coins:1416429599084118239>'
 
-        self.jobs = [
-            ("Retail Worker", 40.00, 100.00),
-            ("Barista", 50.00, 120.00),
-            ("Teacher", 70.00, 180.00),
-            ("Artist", 70.00, 200.00),
-            ("Content Creator", 80.00, 210.00),
-            ("Writer", 80.00, 240.00),
-            ("Musician", 90.00, 270.00),
-            ("Graphic Designer", 100.00, 250.00),
-            ("Doctor", 150.00, 300.00),
-            ("Software Developer", 150.00, 300.00),
-            ("Lawyer", 180.00, 350.00),
-            ("CEO", 250.00, 500.00)
+        self.jobs = [ # Job name, min pay, max pay
+            ("Retail Worker", 50.00, 130.00),
+            ("Barista", 65.00, 155.00),
+            ("Teacher", 90.00, 235.00),
+            ("Artist", 90.00, 260.00),
+            ("Content Creator", 105.00, 275.00),
+            ("Writer", 105.00, 315.00),
+            ("Musician", 115.00, 350.00),
+            ("Graphic Designer", 130.00, 325.00),
+            ("Doctor", 195.00, 390.00),
+            ("Software Developer", 195.00, 390.00),
+            ("Lawyer", 235.00, 455.00),
+            ("CEO", 325.00, 650.00)
         ]
     
     # Helper functions
@@ -211,7 +211,7 @@ class Economy(commands.Cog):
             await ctx.send(f"You already claimed your daily! Try again in {hours}h {minutes}m {seconds}s.")
             return
 
-        daily_amount = 2500
+        daily_amount = 3500
         await self._add_money(user_id, daily_amount)
         await self._update_cooldown(user_id, "last_daily")
         await ctx.send(f"{ctx.author.mention} claimed {p_pronoun} daily! {daily_amount:,} coins {self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
