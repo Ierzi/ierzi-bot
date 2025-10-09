@@ -6,7 +6,9 @@ from groq import AsyncGroq
 import os
 from rich.console import Console
 import asyncio
-
+import aiohttp
+import aiofiles
+from discord import Embed
 
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -137,24 +139,94 @@ class AI(commands.Cog):
         await ctx.send(file=File(output_file))
         os.remove(output_file)
 
-    # TODO: I MIGHT BE ABLE TO GENERATE VIDEOS USING OPENAI'S API
-    # @commands.command()
-    # async def video(self, ctx: commands.Context, *, text: str):
-    #     """Generate a video from a text."""
-    #     async with ctx.typing():
-    #         client = AsyncOpenAI(api_key=self.openai_key)
-    #         response = await client.videos.create(
-    #             prompt=text
-    #         )
-    #         video_id = response.id
-    #         self.console.print(video_id)
+    @commands.command()
+    async def aivid(self, ctx: commands.Context, *, text: str):
+        """Generate a video from a text."""
+        # Doing this with aiohttp
+        # cause yeah asyncopenai is weird
+        async with ctx.typing():
+            url = "https://api.openai.com/v1/videos"
+            headers = {
+                "Authorization": f"Bearer {self.openai_key}",
+            }
 
-    #         video_download_response = await client.videos.download_contemt(
-    #             video_id=video_id
-    #         )
-    #         self.console.print(video_download_response)
-    #         content = video_download_response.read()
+            data = {
+                "model": "sora-2",
+                "prompt": text
+            }
 
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, headers=headers, json=data) as r:
+                    self.console.print(r.status)
+                    if r.status != 200:
+                        await ctx.send("Error generating video.")
+                        self.console.print("Error generating video.")
+                        self.console.print(await r.text())
+                        return
+                    
+                    response_json = await r.json()
+                    video_id = response_json["id"]
+                    self.console.print("Got video ID")
+                    self.console.print(f"Video ID: {video_id}")
+                
+                # Create an embed here to stop the bot from typing
+                embed = Embed(
+                    title=f"Video: {text}" if len(text) < 20 else f"Video: {text[:20]}...",
+                    description="Generating video...",
+                    color=discord.Color.red()
+                )
+
+                message = await ctx.send(embed=embed)
+
+                # Poll for status
+                status_url = f"{url}/{video_id}"
+                while True:
+                    await asyncio.sleep(5)
+                    async with session.get(status_url, headers=headers) as s:
+                        self.console.print("pinging...")
+                        if s.status != 200:
+                            embed.description = "Video generation failed :("
+                            await message.edit(embed=embed)
+                            self.console.print("error :(")
+                            self.console.print(await s.text())
+                            return
+
+                        s_json = await s.json()
+                        status = s_json["status"]
+                        self.console.print("Job status:", status)
+                        if status in ("succeeded", "failed", "cancelled"):
+                            self.console.print("Got status")
+                            break
+
+                if status != "succeeded":
+                    self.console.print(f"Video generation didnt succeed: {s_json}")
+                    embed.description = "Video generation failed :("
+                    await message.edit(embed=embed)
+                    return
+                
+                # Get video
+                video_url = f"{status_url}/content"
+                async with session.get(video_url, headers=headers) as v:
+                    if v.status != 200:
+                        embed.description = "Video generation failed :("
+                        await message.edit(embed=embed)
+                        self.console.print("Error getting video.")
+                        self.console.print(v.status)
+                        self.console.print(await v.text())
+                        return
+                    
+                    video = await v.read()
+                    self.console.print("Got video")
+
+                async with aiofiles.open(f"{video_id}.mp4", "wb") as f:
+                    await f.write(video)
+                
+                self.console.print(f"Video saved to {video_id}.mp4")
+
+                embed.description = "Video generated successfully!"
+                await message.edit(embed=embed)
+                await message.reply(file=File(f"{video_id}.mp4"))
+                os.remove(f"{video_id}.mp4")
 
 
     async def isthistrue(self, ctx: commands.Context, fact_checked_mess: str):
