@@ -59,12 +59,13 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
-    asyncio.create_task(bot_loop())
+    await bot_loop.start()
 
     if bot.user.id == 1412488383178998044: #experimental bot id
         global experimental_branch
         experimental_branch = True
 
+@tasks.loop(minutes=10)
 async def bot_loop():
     #  Various tasks the bot runs in the background
 

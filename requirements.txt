@@ -7,3 +7,4 @@ groq
 requests
 wikipedia-api
 nltk
+aiofiles
