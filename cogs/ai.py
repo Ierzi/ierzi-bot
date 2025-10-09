@@ -181,7 +181,7 @@ class AI(commands.Cog):
                 # Poll for status
                 status_url = f"{url}/{video_id}"
                 while True:
-                    await asyncio.sleep(5)
+                    await asyncio.sleep(10)
                     async with session.get(status_url, headers=headers) as s:
                         self.console.print("pinging...")
                         if s.status != 200:
