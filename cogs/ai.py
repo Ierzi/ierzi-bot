@@ -194,7 +194,7 @@ class AI(commands.Cog):
                         s_json = await s.json()
                         status = s_json["status"]
                         self.console.print("Job status:", status)
-                        if status in ("succeeded", "failed", "cancelled"):
+                        if status in ("completed", "failed", "cancelled"):
                             self.console.print("Got status")
                             break
 
