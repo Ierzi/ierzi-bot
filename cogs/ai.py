@@ -198,7 +198,7 @@ class AI(commands.Cog):
                             self.console.print("Got status")
                             break
 
-                if status != "succeeded":
+                if status != "completed":
                     self.console.print(f"Video generation didnt succeed: {s_json}")
                     embed.description = "Video generation failed :("
                     await message.edit(embed=embed)
