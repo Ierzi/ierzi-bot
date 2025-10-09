@@ -171,7 +171,7 @@ class AI(commands.Cog):
                 
                 # Create an embed here to stop the bot from typing
                 embed = Embed(
-                    title=f"Video: {text}" if len(text) < 20 else f"Video: {text[:20]}...",
+                    title=f"Video: {text}" if len(text) < 128 else f"Video: {text[:128]}...",
                     description="Generating video...",
                     color=discord.Color.red()
                 )
