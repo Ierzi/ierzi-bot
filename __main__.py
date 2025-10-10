@@ -9,6 +9,7 @@ from discord.activity import CustomActivity
 
 # Cogs
 from cogs.ai import AI
+from cogs.birthday import Birthday
 from cogs.economy import Economy, update_tables
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -128,6 +129,8 @@ async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
+    await bot.add_cog(Birthday(bot, console))
+    console.print("Birthday cog loaded.")
     await bot.add_cog(Economy(bot, console))
     console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
@@ -268,6 +271,11 @@ ai_embed = Embed(
     description=""
 )
 
+birthday_embed = Embed(
+    title="Birthday Commands",
+    description=""
+)
+
 economy_embed = Embed(
     title="Economy Commands",
     description=""
@@ -301,6 +309,7 @@ search_embed = Embed(
 async def fill_embeds(): 
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
+    birthday_embed.description = ""
     economy_embed.description = ""
     fun_embed.description = ""
     marriages_embed.description = ""
@@ -318,6 +327,8 @@ async def fill_embeds():
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+            case "Birthday":
+                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
@@ -383,6 +394,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=home_embed, view=view)
             case "ai":
                 await ctx.send(embed=ai_embed, view=view)
+            case "birthday":
+                await ctx.send(embed=birthday_embed, view=view)
             case "economy":
                 await ctx.send(embed=economy_embed, view=view)
             case "fun":
