@@ -9,7 +9,7 @@ from discord.activity import CustomActivity
 
 # Cogs
 from cogs.ai import AI
-from cogs.birthday import Birthday, update_tables
+from cogs.birthday import BirthdayCog as Birthday
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -577,8 +577,7 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
 async def main():
     await db.init_pool()
     try:
-        await load_cogs()
-        await update_tables() 
+        await load_cogs() 
         console.print("Bot is ready.")
         await bot.start(token)
     finally:

@@ -5,21 +5,10 @@ from typing import Optional
 from datetime import datetime
 from .utils.database import db
 from .utils.functions import to_timestamp
+from .utils.pronouns import get_pronoun, PronounEnum
+from .utils.types import Birthday 
 
-# Updating the database
-async def update_tables():
-    await db.execute(
-        """CREATE TABLE IF NOT EXISTS birthdays (
-            user_id BIGINT PRIMARY KEY,
-            day INT NOT NULL,
-            month INT NOT NULL,
-            year INT DEFAULT NULL
-        )"""
-    )
-
-BirthdayData = tuple[int, int, Optional[int]] # day, month, year 
-
-class Birthday(commands.Cog):
+class BirthdayCog(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
@@ -28,7 +17,8 @@ class Birthday(commands.Cog):
             "set_dm",
             "set_md",
             "get",
-            "time_until"
+            "time_until",
+            "compare"
         ]
     
     # groups!!!
@@ -39,48 +29,57 @@ class Birthday(commands.Cog):
             return
     
     # Helper functions
-    async def _set_birthday(self, user_id: int, day: int, month: int, year: Optional[int] = None):
+    async def _set_birthday(self, user_id: int, birthday: Birthday):
         """Set the birthday of a user."""
         await db.execute(
             "INSERT INTO birthdays (user_id, day, month, year) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO UPDATE SET day = $2, month = $3, year = $4",
-            user_id, day, month, year
+            user_id, birthday.day, birthday.month, birthday.year
         )
     
-    async def _get_birthday(self, user_id: int) -> BirthdayData:
+    async def _get_birthday(self, user_id: int) -> Optional[Birthday]:
         """Get the birthday of a user."""
         row = await db.fetchrow("SELECT day, month, year FROM birthdays WHERE user_id = $1", user_id)
         if row is None:
             return None
         
-        if row["year"] is None:
-            return row["day"], row["month"], None
-        
-        return row["day"], row["month"], row["year"]
+        return Birthday(row["day"], row["month"], row["year"])
 
     # Commands
     @birthday.command(aliases=("set_dm", "dm"))
     async def set_day_month(self, ctx: commands.Context, day: int, month: int):
         """Set your birthday (Day Month)."""
         user_id = ctx.author.id
-        await self._set_birthday(user_id, day, month)
+        birthday = Birthday(day, month)
+        await self._set_birthday(user_id, birthday)
+
+        await ctx.send(f"Your birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
     @birthday.command(aliases=("set_md", "md"))
     async def set_month_day(self, ctx: commands.Context, month: int, day: int):
         """Set your birthday (Month Day)."""
         user_id = ctx.author.id
-        await self._set_birthday(user_id, day, month)
+        birthday = Birthday(day, month)
+        await self._set_birthday(user_id, birthday)
+
+        await ctx.send(f"Your birthday has been set to {month}/{day}. (why are you using this format vro)", allowed_mentions=discord.AllowedMentions.none())
 
     @birthday.command()
     async def get(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get someone's birthday."""
         user_id = user.id if user else ctx.author.id
+        p1 = await get_pronoun(user_id, PronounEnum.SUBJECT)
 
         birthday = await self._get_birthday(user_id)
         if birthday is None:
             await ctx.send(f"{user.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        await ctx.send(f"{user.mention}'s birthday is {birthday[0]}/{birthday[1]}.", allowed_mentions=discord.AllowedMentions.none())
+        user = user if user else ctx.author
+
+        await ctx.send(f"{user.mention}'s birthday is {birthday.day}/{birthday.month}.", allowed_mentions=discord.AllowedMentions.none())
+
+        if birthday.year is not None:
+            await ctx.send(f"{p1.capitalize()} was born in {birthday.year}.", allowed_mentions=discord.AllowedMentions.none())
     
     @birthday.command(aliases=("tu", "until"))
     async def time_until(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -93,9 +92,31 @@ class Birthday(commands.Cog):
             return
 
         today = datetime.now()
-        birthday_date = datetime(today.year, int(birthday[1]), int(birthday[0]))
+        birthday_date = datetime(today.year, birthday.month, birthday.day)
         
         timestamp = to_timestamp(birthday_date, "D")
         await ctx.send(f"{user.mention}'s birthday is {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
 
 
+    @birthday.command()
+    async def compare(self, ctx: commands.Context, user1: discord.User, user2: discord.User):
+        """Compare two users' birthdays."""
+        birthday1 = await self._get_birthday(user1.id)
+        birthday2 = await self._get_birthday(user2.id)
+
+        if birthday1 is None:
+            await ctx.send(f"{user1.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            return
+
+        if birthday2 is None:
+            await ctx.send(f"{user2.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
+        if birthday1.day == birthday2.day and birthday1.month == birthday2.month:
+            await ctx.send(f"{user1.mention} and {user2.mention} have the same birthday!", allowed_mentions=discord.AllowedMentions.none())
+            return
+
+        if birthday1.day < birthday2.day:
+            await ctx.send(f"{user1.mention}'s birthday is {birthday2.total_days() - birthday1.total_days()} days before {user2.mention}'s birthday.")
+        else:
+            await ctx.send(f"{user2.mention}'s birthday is {birthday1.total_days() - birthday2.total_days()} days before {user1.mention}'s birthday.")

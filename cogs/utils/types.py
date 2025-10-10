@@ -1,5 +1,6 @@
 from decimal import Decimal, ROUND_HALF_UP
-from typing import Any
+from typing import Any, Optional
+from datetime import datetime
 
 class Currency:
     def __init__(self, value: Any) -> None:
@@ -114,3 +115,37 @@ class Currency:
     def __hash__(self):
         return hash(self.value)
 
+class Birthday:
+    # I think its easier to just use a class for this
+    def __init__(self, day: int, month: int, year: Optional[int] = None):
+        self.day = day
+        self.month = month
+        self.year = year
+    
+    @classmethod
+    def from_datetime(cls, datetime: datetime) -> 'Birthday':
+        return cls(datetime.day, datetime.month, datetime.year)
+    
+    def to_datetime(self) -> datetime:
+        return datetime(self.year, self.month, self.day)
+    
+    def total_days(self) -> int:
+        return self.to_datetime().total_seconds() / 86400
+
+    def __str__(self) -> str:
+        return f"{self.month}/{self.day}"
+    
+    def __repr__(self) -> str:
+        return f"Birthday({self.month}/{self.day})"
+    
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, Birthday):
+            return self.day == other.day and self.month == other.month and self.year == other.year
+        
+        if isinstance(other, datetime):
+            return self.to_datetime() == other
+
+        return NotImplemented
+    
+    def __ne__(self, other: Any) -> bool:
+        return not self.__eq__(other)
