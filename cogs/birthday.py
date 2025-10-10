@@ -86,7 +86,9 @@ class BirthdayCog(commands.Cog):
         today = datetime.now()
         birthday_date = datetime(today.year, birthday.month, birthday.day)
         
-        timestamp = to_timestamp(birthday_date, "R")
+        user = user if user else ctx.author
+
+        timestamp = to_timestamp(birthday_date, "R", next_year=True)
         await ctx.send(f"{user.mention}'s birthday is {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
 
 
