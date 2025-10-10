@@ -339,12 +339,13 @@ async def help(ctx: commands.Context, category: str = None):
     help_options = [
         SelectOption(label="Home", description="Homepage and uncategorized commands"),
         SelectOption(label="AI", description="AI commands"),
+        SelectOption(label="Birthday", description="Birthday commands"),
         SelectOption(label="Economy", description="Economy commands"),
         SelectOption(label="Fun", description="Fun commands"),
         SelectOption(label="Marriages", description="Marriage commands"),
         SelectOption(label="Reactions", description="Reaction commands"),
-        SelectOption(label="Songs", description="Songs commands"),
         SelectOption(label="Search", description="Search commands"),
+        SelectOption(label="Songs", description="Songs commands"),
     ]
     help_select = Select(
         placeholder="select category",
