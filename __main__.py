@@ -252,12 +252,32 @@ def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:
     all_commands: list[tuple[str, str, str]] = [] # Format: Command name, cog name, command help
     for cog_name, cog in bot.cogs.items():
         for command in cog.get_commands():
-            all_commands.append((command.name, cog_name, command.help))
+            # Check if this is a group command with subcommands
+            if isinstance(command, commands.Group) and command.commands:
+                # Add the group command itself
+                all_commands.append((command.name, cog_name, command.help))
+                # Add all subcommands with their full name (group.subcommand)
+                for subcommand in command.commands:
+                    full_name = f"{command.name} {subcommand.name}"
+                    all_commands.append((full_name, cog_name, subcommand.help))
+            else:
+                # Regular command
+                all_commands.append((command.name, cog_name, command.help))
     
     no_cogs_commands = [cmd for cmd in bot.commands if cmd.cog is None]
     if no_cogs_commands:
         for command in no_cogs_commands:
-            all_commands.append((command.name, None, command.help))
+            # Check if this is a group command with subcommands (for commands not in cogs)
+            if isinstance(command, commands.Group) and command.commands:
+                # Add the group command itself
+                all_commands.append((command.name, None, command.help))
+                # Add all subcommands with their full name (group.subcommand)
+                for subcommand in command.commands:
+                    full_name = f"{command.name} {subcommand.name}"
+                    all_commands.append((full_name, None, subcommand.help))
+            else:
+                # Regular command
+                all_commands.append((command.name, None, command.help))
 
     return all_commands
 
