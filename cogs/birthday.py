@@ -14,11 +14,11 @@ class BirthdayCog(commands.Cog):
         self.console = console
         # Doing this differently 
         self.avaliable_commands = [
-            "set_dm",
-            "set_md",
+            "set",
             "get",
             "time_until",
-            "compare"
+            "compare",
+            "time_since"
         ]
     
     # groups!!!
@@ -48,7 +48,7 @@ class BirthdayCog(commands.Cog):
     # Commands
     @birthday.command()
     async def set(self, ctx: commands.Context, day: int, month: int, year: Optional[int] = None):
-        """Set your birthday. (Day Month Year)"""
+        """Set your birthday. (Day Month and optionally Year)"""
         user_id = ctx.author.id
         birthday = Birthday(day, month, year)
         await self._set_birthday(user_id, birthday)
@@ -73,7 +73,7 @@ class BirthdayCog(commands.Cog):
         if birthday.year is not None:
             await ctx.send(f"{p1.capitalize()} was born in {birthday.year}.", allowed_mentions=discord.AllowedMentions.none())
     
-    @birthday.command(aliases=("tu", "until"))
+    @birthday.command(aliases=("until",))
     async def time_until(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get the time until someone's birthday."""
         user_id = user.id if user else ctx.author.id
@@ -88,8 +88,30 @@ class BirthdayCog(commands.Cog):
         
         user = user if user else ctx.author
 
-        timestamp = to_timestamp(birthday_date, "R", next_year=True)
+        if birthday_date < today:
+            timestamp = to_timestamp(birthday_date, "R", next_year=True)
+        else:
+            timestamp = to_timestamp(birthday_date, "R")
+        
         await ctx.send(f"{user.mention}'s birthday is {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
+
+    @birthday.command(aliases=("since",))
+    async def time_since(self, ctx: commands.Context, user: Optional[discord.User] = None):
+        """Get the time since someone's birthday."""
+        user_id = user.id if user else ctx.author.id
+
+        birthday = await self._get_birthday(user_id)
+        if birthday is None:
+            await ctx.send(f"{user.mention} doesn't have a birthday set." if user else "You don't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
+        user = user if user else ctx.author
+
+        today = datetime.now()
+        birthday_date = datetime(today.year, birthday.month, birthday.day)
+
+        timestamp = to_timestamp(birthday_date, "R")
+        await ctx.send(f"{user.mention}'s birthday was {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
 
 
     @birthday.command()
