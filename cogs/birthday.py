@@ -46,24 +46,15 @@ class BirthdayCog(commands.Cog):
         return Birthday(row["day"], row["month"], row["year"])
 
     # Commands
-    @birthday.command(aliases=("set_dm", "dm"))
-    async def set_day_month(self, ctx: commands.Context, day: int, month: int):
-        """Set your birthday (Day Month)."""
+    @birthday.command()
+    async def set(self, ctx: commands.Context, day: int, month: int, year: Optional[int] = None):
+        """Set your birthday. (Day Month Year)"""
         user_id = ctx.author.id
-        birthday = Birthday(day, month)
+        birthday = Birthday(day, month, year)
         await self._set_birthday(user_id, birthday)
 
         await ctx.send(f"Your birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
-    @birthday.command(aliases=("set_md", "md"))
-    async def set_month_day(self, ctx: commands.Context, month: int, day: int):
-        """Set your birthday (Month Day)."""
-        user_id = ctx.author.id
-        birthday = Birthday(day, month)
-        await self._set_birthday(user_id, birthday)
-
-        await ctx.send(f"Your birthday has been set to {month}/{day}. (why are you using this format vro)", allowed_mentions=discord.AllowedMentions.none())
-
     @birthday.command()
     async def get(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get someone's birthday."""
@@ -77,7 +68,7 @@ class BirthdayCog(commands.Cog):
 
         user = user if user else ctx.author
 
-        await ctx.send(f"{user.mention}'s birthday is {birthday.day}/{birthday.month}.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{user.mention}'s birthday is {birthday}.", allowed_mentions=discord.AllowedMentions.none())
 
         if birthday.year is not None:
             await ctx.send(f"{p1.capitalize()} was born in {birthday.year}.", allowed_mentions=discord.AllowedMentions.none())
@@ -95,7 +86,7 @@ class BirthdayCog(commands.Cog):
         today = datetime.now()
         birthday_date = datetime(today.year, birthday.month, birthday.day)
         
-        timestamp = to_timestamp(birthday_date, "D")
+        timestamp = to_timestamp(birthday_date, "R")
         await ctx.send(f"{user.mention}'s birthday is {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
 
 
