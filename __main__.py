@@ -348,7 +348,7 @@ async def fill_embeds():
             case "AI":
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Birthday":
-                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n" if command_name != "birthday" else ""
+                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":

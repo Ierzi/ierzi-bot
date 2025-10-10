@@ -133,10 +133,10 @@ class Birthday:
         return self.to_datetime().total_seconds() / 86400
 
     def __str__(self) -> str:
-        return f"{self.month}/{self.day}"
+        return f"{self.month}/{self.day}" if self.year is None else f"{self.month}/{self.day}/{self.year}"
     
     def __repr__(self) -> str:
-        return f"Birthday({self.month}/{self.day})"
+        return f"Birthday({self.month}/{self.day})" if self.year is None else f"Birthday({self.month}/{self.day}/{self.year})"
     
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Birthday):
