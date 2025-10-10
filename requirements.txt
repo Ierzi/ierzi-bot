@@ -6,5 +6,5 @@ asyncpg
 groq
 requests
 wikipedia-api
-nltk
+nltk==3.9.1
 aiofiles
