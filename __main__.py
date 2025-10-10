@@ -390,6 +390,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await interaction.message.edit(embed=home_embed)
             case "ai":
                 await interaction.message.edit(embed=ai_embed)
+            case "birthday":
+                await interaction.message.edit(embed=birthday_embed)
             case "economy":
                 await interaction.message.edit(embed=economy_embed)
             case "fun":
