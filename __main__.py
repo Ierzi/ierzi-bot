@@ -9,8 +9,8 @@ from discord.activity import CustomActivity
 
 # Cogs
 from cogs.ai import AI
-from cogs.birthday import Birthday
-from cogs.economy import Economy, update_tables
+from cogs.birthday import Birthday, update_tables
+from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -348,7 +348,7 @@ async def fill_embeds():
             case "AI":
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Birthday":
-                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n" if command_name != "birthday" else ""
             case "Economy":
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
