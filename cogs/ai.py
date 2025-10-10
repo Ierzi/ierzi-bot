@@ -139,96 +139,96 @@ class AI(commands.Cog):
         await ctx.send(file=File(output_file))
         os.remove(output_file)
 
-    @commands.command()
-    async def aivid(self, ctx: commands.Context, *, text: str):
-        """Generate a video from a text."""
-        # Doing this with aiohttp
-        # cause yeah asyncopenai is weird
-        async with ctx.typing():
-            url = "https://api.openai.com/v1/videos"
-            headers = {
-                "Authorization": f"Bearer {self.openai_key}",
-            }
+    # # @commands.command()
+    # # async def aivid(self, ctx: commands.Context, *, text: str):
+    #     """Generate a video from a text."""
+    #     # Doing this with aiohttp
+    #     # cause yeah asyncopenai is weird
+    #     async with ctx.typing():
+    #         url = "https://api.openai.com/v1/videos"
+    #         headers = {
+    #             "Authorization": f"Bearer {self.openai_key}",
+    #         }
 
-            data = {
-                "model": "sora-2",
-                "prompt": text
-            }
+    #         data = {
+    #             "model": "sora-2",
+    #             "prompt": text
+    #         }
 
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, headers=headers, json=data) as r:
-                    self.console.print(r.status)
-                    if r.status != 200:
-                        await ctx.send("Error generating video.")
-                        self.console.print("Error generating video.")
-                        self.console.print(await r.text())
-                        return
+    #         async with aiohttp.ClientSession() as session:
+    #             async with session.post(url, headers=headers, json=data) as r:
+    #                 self.console.print(r.status)
+    #                 if r.status != 200:
+    #                     await ctx.send("Error generating video.")
+    #                     self.console.print("Error generating video.")
+    #                     self.console.print(await r.text())
+    #                     return
                     
-                    response_json = await r.json()
-                    video_id = response_json["id"]
-                    self.console.print("Got video ID")
-                    self.console.print(f"Video ID: {video_id}")
+    #                 response_json = await r.json()
+    #                 video_id = response_json["id"]
+    #                 self.console.print("Got video ID")
+    #                 self.console.print(f"Video ID: {video_id}")
                 
-                # Create an embed here to stop the bot from typing
-                embed = Embed(
-                    title=f"Video: {text}" if len(text) < 128 else f"Video: {text[:128]}...",
-                    description="Generating video...",
-                    color=discord.Color.red()
-                )
+    #             # Create an embed here to stop the bot from typing
+    #             embed = Embed(
+    #                 title=f"Video: {text}" if len(text) < 128 else f"Video: {text[:128]}...",
+    #                 description="Generating video...",
+    #                 color=discord.Color.red()
+    #             )
 
-                message = await ctx.send(embed=embed)
+    #             message = await ctx.send(embed=embed)
 
-                # Poll for status
-                status_url = f"{url}/{video_id}"
-                while True:
-                    await asyncio.sleep(10)
-                    async with session.get(status_url, headers=headers) as s:
-                        self.console.print("pinging...")
-                        if s.status != 200:
-                            embed.description = "Video generation failed :("
-                            await message.edit(embed=embed)
-                            self.console.print("error :(")
-                            self.console.print(await s.text())
-                            return
+    #             # Poll for status
+    #             status_url = f"{url}/{video_id}"
+    #             while True:
+    #                 await asyncio.sleep(10)
+    #                 async with session.get(status_url, headers=headers) as s:
+    #                     self.console.print("pinging...")
+    #                     if s.status != 200:
+    #                         embed.description = "Video generation failed :("
+    #                         await message.edit(embed=embed)
+    #                         self.console.print("error :(")
+    #                         self.console.print(await s.text())
+    #                         return
 
-                        s_json = await s.json()
-                        status = s_json["status"]
-                        self.console.print("Job status:", status)
-                        embed.description = f"Video generation status: {status}"
-                        await message.edit(embed=embed)
-                        if status in ("completed", "failed"):
-                            self.console.print("Got status")
-                            break
+    #                     s_json = await s.json()
+    #                     status = s_json["status"]
+    #                     self.console.print("Job status:", status)
+    #                     embed.description = f"Video generation status: {status}"
+    #                     await message.edit(embed=embed)
+    #                     if status in ("completed", "failed"):
+    #                         self.console.print("Got status")
+    #                         break
 
-                if status != "completed":
-                    self.console.print(f"Video generation didnt succeed: {s_json}")
-                    embed.description = "Video generation failed :("
-                    await message.edit(embed=embed)
-                    return
+    #             if status != "completed":
+    #                 self.console.print(f"Video generation didnt succeed: {s_json}")
+    #                 embed.description = "Video generation failed :("
+    #                 await message.edit(embed=embed)
+    #                 return
                 
-                # Get video
-                video_url = f"{status_url}/content"
-                async with session.get(video_url, headers=headers) as v:
-                    if v.status != 200:
-                        embed.description = "Video generation failed :("
-                        await message.edit(embed=embed)
-                        self.console.print("Error getting video.")
-                        self.console.print(v.status)
-                        self.console.print(await v.text())
-                        return
+    #             # Get video
+    #             video_url = f"{status_url}/content"
+    #             async with session.get(video_url, headers=headers) as v:
+    #                 if v.status != 200:
+    #                     embed.description = "Video generation failed :("
+    #                     await message.edit(embed=embed)
+    #                     self.console.print("Error getting video.")
+    #                     self.console.print(v.status)
+    #                     self.console.print(await v.text())
+    #                     return
                     
-                    video = await v.read()
-                    self.console.print("Got video")
+    #                 video = await v.read()
+    #                 self.console.print("Got video")
 
-                async with aiofiles.open(f"{video_id}.mp4", "wb") as f:
-                    await f.write(video)
+    #             async with aiofiles.open(f"{video_id}.mp4", "wb") as f:
+    #                 await f.write(video)
                 
-                self.console.print(f"Video saved to {video_id}.mp4")
+    #             self.console.print(f"Video saved to {video_id}.mp4")
 
-                embed.description = "Video generated successfully!"
-                await message.edit(embed=embed)
-                await message.reply(file=File(f"{video_id}.mp4"))
-                os.remove(f"{video_id}.mp4")
+    #             embed.description = "Video generated successfully!"
+    #             await message.edit(embed=embed)
+    #             await message.reply(file=File(f"{video_id}.mp4"))
+    #             os.remove(f"{video_id}.mp4")
 
 
     async def isthistrue(self, ctx: commands.Context, fact_checked_mess: str):
