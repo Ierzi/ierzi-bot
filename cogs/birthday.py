@@ -24,6 +24,7 @@ class BirthdayCog(commands.Cog):
     # groups!!!
     @commands.group(name="birthday", aliases=("bday", "bd"))
     async def birthday(self, ctx: commands.Context):
+        """Birthday commands."""
         if ctx.invoked_subcommand is None:
             await ctx.send(f"Valid commands: {', '.join(self.avaliable_commands)}")
             return
@@ -116,7 +117,15 @@ class BirthdayCog(commands.Cog):
             await ctx.send(f"{user1.mention} and {user2.mention} have the same birthday!", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        if birthday1.day < birthday2.day:
-            await ctx.send(f"{user1.mention}'s birthday is {birthday2.total_days() - birthday1.total_days()} days before {user2.mention}'s birthday.")
+        # Create datetime objects for this year to compare
+        today = datetime.now()
+        date1 = datetime(today.year, birthday1.month, birthday1.day)
+        date2 = datetime(today.year, birthday2.month, birthday2.day)
+        
+        # Calculate days between birthdays
+        if date1 < date2:
+            days_diff = (date2 - date1).days
+            await ctx.send(f"{user1.mention}'s birthday is {days_diff} days before {user2.mention}'s birthday.", allowed_mentions=discord.AllowedMentions.none())
         else:
-            await ctx.send(f"{user2.mention}'s birthday is {birthday1.total_days() - birthday2.total_days()} days before {user1.mention}'s birthday.")
+            days_diff = (date1 - date2).days
+            await ctx.send(f"{user2.mention}'s birthday is {days_diff} days before {user1.mention}'s birthday.", allowed_mentions=discord.AllowedMentions.none())
