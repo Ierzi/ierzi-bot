@@ -106,7 +106,8 @@ class Reactions(commands.Cog):
         """Kill someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send(f"beat my time first")
+                await asyncio.sleep(21600) # 6 hours
+                await ctx.message.reply(f"no")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return

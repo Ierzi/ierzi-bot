@@ -260,3 +260,4 @@ class BirthdayCog(commands.Cog):
         await self._set_birthday(user.id, birthday)
         await ctx.send(f"{user.mention}'s birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
+    

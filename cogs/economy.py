@@ -1,8 +1,8 @@
 # Imports
 import discord
 from discord.ext import commands
-from discord.ui import View, Select, Button, Modal, TextInput
-from discord import SelectOption, Interaction
+from discord.ui import View, Select
+from discord import SelectOption
 from rich.console import Console
 from typing import Literal, Optional
 from datetime import timedelta, datetime, timezone
