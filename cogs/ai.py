@@ -82,7 +82,7 @@ class AI(commands.Cog):
         """Reply to a message to expand it. The opposite of tldr lmao"""
         reply = ctx.message.reference
         if reply is None:
-            await ctx.send("You didn't reply to a message.")
+            await ctx.send("I would be more than delighted to assist you in expanding upon any concise or succinct piece of text that you may have. Please feel free to provide the brief phrase, sentence, or passage that you wish to be elaborated into a more comprehensive, detailed, and intricate explanation. Upon receiving the specific text, I shall meticulously analyze its content and context, and then proceed to craft an extended version that incorporates a richer vocabulary, complex sentence structures, and an abundance of relevant details and nuances, thereby transforming the original succinct excerpt into a thoroughly developed and intellectually engaging exposition.")
             return
         
         reply = await ctx.channel.fetch_message(reply.message_id)
