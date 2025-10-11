@@ -39,10 +39,10 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [1153301933231181824, 966351518020300841, 1399689963284467723]: #apex, ierzi and the bot
+        if user.id in [966351518020300841, 1399689963284467723]: #apex, ierzi and the bot
             await ctx.send("no")
             return
-        if user.id == 902148645753856020: #maja
+        if user.id == [902148645753856020, 1153301933231181824]: #maja, apex
             await ctx.send("yes")
             return
         if user.id == 1206615811792576614: #fa*t
