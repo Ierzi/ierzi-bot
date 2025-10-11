@@ -27,3 +27,11 @@ CREATE TABLE marriages (
     user1_id BIGINT REFERENCES users(user_id),
     user2_id BIGINT REFERENCES users(user_id)
 );
+
+-- Birthdays Table
+CREATE TABLE birthdays (
+    user_id BIGINT PRIMARY KEY, -- I kinda fucked up while making this, but it's too late to change it now
+    day INT NOT NULL,
+    month INT NOT NULL,
+    year INT
+);

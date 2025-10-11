@@ -7,6 +7,7 @@ from .utils.database import db
 from .utils.functions import to_timestamp
 from .utils.pronouns import get_pronoun, PronounEnum
 from .utils.types import Birthday 
+from discord import Embed
 
 class BirthdayCog(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -19,7 +20,8 @@ class BirthdayCog(commands.Cog):
             "until",
             "since",
             "compare",
-            "today"
+            "today",
+            "month"
         ]
     
     # groups!!!
@@ -82,9 +84,6 @@ class BirthdayCog(commands.Cog):
         user = user if user else ctx.author
 
         await ctx.send(f"{user.mention}'s birthday is {birthday}.", allowed_mentions=discord.AllowedMentions.none())
-
-        if birthday.year is not None:
-            await ctx.send(f"{p1.capitalize()} was born in {birthday.year}.", allowed_mentions=discord.AllowedMentions.none())
     
     @birthday.command()
     async def until(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -180,6 +179,48 @@ class BirthdayCog(commands.Cog):
 
         await ctx.send(f"{len(birthday_users)} person(s) have a birthday today: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
     
+    @birthday.command()
+    async def month(self, ctx: commands.Context, month: int):
+        """Lists all birthdays in a given month (1-12)."""
+        if month < 1 or month > 12:
+            await ctx.send("Month must be between 1 and 12")
+            return
+        
+        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", month)
+        if not birthdays:
+            await ctx.send("No one's birthday in this month.")
+            return
+        
+        birthday_users = []
+        for birthday in birthdays:
+            birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
+        
+        await ctx.send(f"{len(birthday_users)} person(s) have a birthday in this month: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
+
+    @birthday.command()
+    async def list(self, ctx: commands.Context, page_number: int = 1):
+        """Lists all birthdays."""
+
+        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays ORDER BY month, day ASC LIMIT 10 OFFSET $1", (page_number - 1) * 10)
+        if not birthdays:
+            await ctx.send("No one has a birthday.")
+            return
+        
+        birthday_users = []
+        for birthday in birthdays:
+            user = await self.bot.fetch_user(birthday["user_id"])
+            birthday_users.append((user, birthday["day"], birthday["month"]))
+        
+        bday_embed = Embed(
+            title="Birthdays",
+            description="",
+            color=discord.Colour.gold()
+        )
+        for user, day, month in birthday_users:
+            bday_embed.description += f"{user.mention} - {day}/{month}\n"
+        
+        await ctx.send(embed=bday_embed)
+
     @birthday.command(aliases=("fsb",))
     async def force_set_birthday(self, ctx: commands.Context, user: discord.User, day: int, month: int, year: Optional[int] = None):
         """Force set a user's birthday. Can only be used by Ierzi."""
@@ -187,6 +228,7 @@ class BirthdayCog(commands.Cog):
             await ctx.send("no.")
             return
         
-        await self._set_birthday(user.id, Birthday(day, month, year))
-        await ctx.send(f"{user.mention}'s birthday has been set to {day}/{month}/{year}.", allowed_mentions=discord.AllowedMentions.none())
+        birthday = Birthday(day, month, year)
+        await self._set_birthday(user.id, birthday)
+        await ctx.send(f"{user.mention}'s birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
