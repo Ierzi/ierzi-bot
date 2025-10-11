@@ -1,13 +1,28 @@
 import discord
 from discord.ext import commands
 from rich.console import Console
-from typing import Optional
+from typing import Optional, Union
 from datetime import datetime
 from .utils.database import db
 from .utils.functions import to_timestamp
 from .utils.pronouns import get_pronoun, PronounEnum
 from .utils.types import Birthday 
 from discord import Embed
+
+MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+]
 
 class BirthdayCog(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -50,11 +65,14 @@ class BirthdayCog(commands.Cog):
 
     # Commands
     @birthday.command()
-    async def set(self, ctx: commands.Context, day: int, month: int, year: Optional[int] = None):
+    async def set(self, ctx: commands.Context, day: int, month: Union[int, str], year: Optional[int] = None):
         """Set your birthday. (Day Month and optionally Year)"""
         if year is not None and year < 0:
             await ctx.send("you're so old cro")
             return
+        
+        if isinstance(month, str):
+            month = MONTHS.index(month.capitalize()) + 1
         
         if day < 1 or day > 31:
             await ctx.send("Day must be between 1 and 31")
@@ -86,7 +104,7 @@ class BirthdayCog(commands.Cog):
         await ctx.send(f"{user.mention}'s birthday is {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
     @birthday.command()
-    async def until(self, ctx: commands.Context, user: Optional[discord.User] = None):
+    async def until(self, ctx: commands.Context, user: Optional[discord.User] = None, month: Optional[Union[int, str]] = None):
         """Get the time until someone's birthday."""
         user_id = user.id if user else ctx.author.id
 
@@ -94,6 +112,9 @@ class BirthdayCog(commands.Cog):
         if birthday is None:
             await ctx.send(f"{user.mention} doesn't have a birthday set." if user else "You don't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
             return
+
+        if isinstance(month, str):
+            month = MONTHS.index(month.capitalize()) + 1
 
         today = datetime.now()
         birthday_date = datetime(today.year, birthday.month, birthday.day)
@@ -180,11 +201,14 @@ class BirthdayCog(commands.Cog):
         await ctx.send(f"{len(birthday_users)} person(s) have a birthday today: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
     
     @birthday.command()
-    async def month(self, ctx: commands.Context, month: int):
-        """Lists all birthdays in a given month (1-12)."""
+    async def month(self, ctx: commands.Context, month: Union[int, str]):
+        """Lists all birthdays in a given month."""
         if month < 1 or month > 12:
             await ctx.send("Month must be between 1 and 12")
             return
+        
+        if isinstance(month, str):
+            month = MONTHS.index(month.capitalize()) + 1
         
         birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", month)
         if not birthdays:
@@ -222,11 +246,14 @@ class BirthdayCog(commands.Cog):
         await ctx.send(embed=bday_embed)
 
     @birthday.command(aliases=("fsb",))
-    async def force_set_birthday(self, ctx: commands.Context, user: discord.User, day: int, month: int, year: Optional[int] = None):
+    async def force_set_birthday(self, ctx: commands.Context, user: discord.User, day: int, month: Union[int, str], year: Optional[int] = None):
         """Force set a user's birthday. Can only be used by Ierzi."""
         if ctx.author.id != 966351518020300841:
             await ctx.send("no.")
             return
+        
+        if isinstance(month, str):
+            month = MONTHS.index(month.capitalize()) + 1
         
         birthday = Birthday(day, month, year)
         await self._set_birthday(user.id, birthday)
