@@ -36,7 +36,8 @@ class BirthdayCog(commands.Cog):
             "since",
             "compare",
             "today",
-            "month"
+            "month",
+            "list"
         ]
     
     # groups!!!
@@ -224,24 +225,24 @@ class BirthdayCog(commands.Cog):
     @birthday.command()
     async def list(self, ctx: commands.Context, page_number: int = 1):
         """Lists all birthdays."""
-
-        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays ORDER BY month, day ASC LIMIT 10 OFFSET $1", (page_number - 1) * 10)
-        if not birthdays:
-            await ctx.send("No one has a birthday.")
-            return
-        
-        birthday_users = []
-        for birthday in birthdays:
-            user = await self.bot.fetch_user(birthday["user_id"])
-            birthday_users.append((user, birthday["day"], birthday["month"]))
-        
-        bday_embed = Embed(
-            title="Birthdays",
-            description="",
-            color=discord.Colour.gold()
-        )
-        for user, day, month in birthday_users:
-            bday_embed.description += f"{user.mention} - {day}/{month}\n"
+        async with ctx.typing():
+            birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays ORDER BY month, day ASC LIMIT 10 OFFSET $1", (page_number - 1) * 10)
+            if not birthdays:
+                await ctx.send("There's a whopping 0 users on this page.")
+                return
+            
+            birthday_users = []
+            for birthday in birthdays:
+                user = await self.bot.fetch_user(birthday["user_id"])
+                birthday_users.append((user, birthday["day"], birthday["month"]))
+            
+            bday_embed = Embed(
+                title=f"Birthdays - Page {page_number}",
+                description="",
+                color=discord.Colour.gold()
+            )
+            for user, day, month in birthday_users:
+                bday_embed.description += f"{user.mention} - {day} {MONTHS[month - 1]}\n"
         
         await ctx.send(embed=bday_embed)
 
