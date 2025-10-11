@@ -115,9 +115,23 @@ class Currency:
     def __hash__(self):
         return hash(self.value)
 
+class BirthdayError(Exception):
+    def __init__(self, message: str):
+        self.message = message
+    
+    def __str__(self) -> str:
+        return f"BirthdayError: {self.message}"
+
 class Birthday:
     # I think its easier to just use a class for this
     def __init__(self, day: int, month: int, year: Optional[int] = None):
+        if year is not None and year < 0:
+            raise BirthdayError("Year cannot be negative.")
+        if day < 1 or day > 31:
+            raise BirthdayError("Day must be between 1 and 31.")
+        if month < 1 or month > 12:
+            raise BirthdayError("Month must be between 1 and 12.")
+        
         self.day = day
         self.month = month
         self.year = year
@@ -126,9 +140,17 @@ class Birthday:
     def from_datetime(cls, datetime: datetime) -> 'Birthday':
         return cls(datetime.day, datetime.month, datetime.year)
     
-    def to_datetime(self) -> datetime:
-        return datetime(self.year, self.month, self.day)
-    
+    def to_datetime(self, year: Optional[int] = None) -> datetime:
+        if year is None:
+            year = self.year if self.year is not None else datetime.now().year
+        return datetime(year, self.month, self.day)
+
+    def get_age(self) -> int:
+        if self.year is None:
+            raise BirthdayError("Year is required to get age.")
+        
+        return datetime.now().year - self.year
+
     def total_days(self) -> int:
         return self.to_datetime().total_seconds() / 86400
 
@@ -140,6 +162,9 @@ class Birthday:
     
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Birthday):
+            if self.year is None or other.year is None:
+                return self.day == other.day and self.month == other.month
+            
             return self.day == other.day and self.month == other.month and self.year == other.year
         
         if isinstance(other, datetime):
@@ -149,3 +174,4 @@ class Birthday:
     
     def __ne__(self, other: Any) -> bool:
         return not self.__eq__(other)
+    

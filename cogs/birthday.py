@@ -16,9 +16,10 @@ class BirthdayCog(commands.Cog):
         self.avaliable_commands = [
             "set",
             "get",
-            "time_until",
+            "until",
+            "since",
             "compare",
-            "time_since"
+            "today"
         ]
     
     # groups!!!
@@ -49,6 +50,18 @@ class BirthdayCog(commands.Cog):
     @birthday.command()
     async def set(self, ctx: commands.Context, day: int, month: int, year: Optional[int] = None):
         """Set your birthday. (Day Month and optionally Year)"""
+        if year is not None and year < 0:
+            await ctx.send("you're so old cro")
+            return
+        
+        if day < 1 or day > 31:
+            await ctx.send("Day must be between 1 and 31")
+            return
+        
+        if month < 1 or month > 12:
+            await ctx.send("Month must be between 1 and 12")
+            return
+        
         user_id = ctx.author.id
         birthday = Birthday(day, month, year)
         await self._set_birthday(user_id, birthday)
@@ -73,8 +86,8 @@ class BirthdayCog(commands.Cog):
         if birthday.year is not None:
             await ctx.send(f"{p1.capitalize()} was born in {birthday.year}.", allowed_mentions=discord.AllowedMentions.none())
     
-    @birthday.command(aliases=("until",))
-    async def time_until(self, ctx: commands.Context, user: Optional[discord.User] = None):
+    @birthday.command()
+    async def until(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get the time until someone's birthday."""
         user_id = user.id if user else ctx.author.id
 
@@ -89,14 +102,16 @@ class BirthdayCog(commands.Cog):
         user = user if user else ctx.author
 
         if birthday_date < today:
+            # Birthday already passed this year, show next year's birthday
             timestamp = to_timestamp(birthday_date, "R", next_year=True)
         else:
+            # Birthday hasn't passed this year yet
             timestamp = to_timestamp(birthday_date, "R")
         
         await ctx.send(f"{user.mention}'s birthday is {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
 
-    @birthday.command(aliases=("since",))
-    async def time_since(self, ctx: commands.Context, user: Optional[discord.User] = None):
+    @birthday.command()
+    async def since(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get the time since someone's birthday."""
         user_id = user.id if user else ctx.author.id
 
@@ -110,9 +125,14 @@ class BirthdayCog(commands.Cog):
         today = datetime.now()
         birthday_date = datetime(today.year, birthday.month, birthday.day)
 
-        timestamp = to_timestamp(birthday_date, "R")
-        await ctx.send(f"{user.mention}'s birthday was {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
+        if birthday_date > today:
+            # Birthday hasn't happened this year yet, show last year's birthday
+            timestamp = to_timestamp(birthday_date, "R", previous_year=True)
+        else:
+            # Birthday already happened this year
+            timestamp = to_timestamp(birthday_date, "R")
 
+        await ctx.send(f"{user.mention}'s birthday was {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
 
     @birthday.command()
     async def compare(self, ctx: commands.Context, user1: discord.User, user2: discord.User):
@@ -144,3 +164,29 @@ class BirthdayCog(commands.Cog):
         else:
             days_diff = (date1 - date2).days
             await ctx.send(f"{user2.mention}'s birthday is {days_diff} days before {user1.mention}'s birthday.", allowed_mentions=discord.AllowedMentions.none())
+
+    @birthday.command()
+    async def today(self, ctx: commands.Context):
+        """Anyone's birthday today?"""
+        today = datetime.now()
+        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1 AND day = $2", today.month, today.day)
+        if not birthdays:
+            await ctx.send("No one's birthday today.")
+            return
+        
+        birthday_users = []
+        for birthday in birthdays:
+            birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
+
+        await ctx.send(f"{len(birthday_users)} person(s) have a birthday today: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
+    
+    @birthday.command(aliases=("fsb",))
+    async def force_set_birthday(self, ctx: commands.Context, user: discord.User, day: int, month: int, year: Optional[int] = None):
+        """Force set a user's birthday. Can only be used by Ierzi."""
+        if ctx.author.id != 966351518020300841:
+            await ctx.send("no.")
+            return
+        
+        await self._set_birthday(user.id, Birthday(day, month, year))
+        await ctx.send(f"{user.mention}'s birthday has been set to {day}/{month}/{year}.", allowed_mentions=discord.AllowedMentions.none())
+    
