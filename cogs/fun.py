@@ -212,8 +212,18 @@ class Fun(commands.Cog):
         await ctx.send(pi)
 
     @commands.command(name="tr")
-    async def hypertranslate(self, ctx: commands.Context, *, text: str):
+    async def hypertranslate(self, ctx: commands.Context):
         """Hypertranslate a text."""
+        # Get the reply
+        reply = ctx.message.reference
+        if reply is None:
+            await ctx.send("You didn't reply to a message.")
+            return
+        
+        reply = await ctx.channel.fetch_message(reply.message_id)
+        text = reply.content
+
+        # Hypertranslate
         translator = Translator()
         languages = [
             "ha", "so", "zu", "st", "xh", "mg", "mi", "sm", "haw", "uz", "ku", 
