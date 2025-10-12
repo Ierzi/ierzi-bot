@@ -3,9 +3,9 @@
 # Discord.py Improrts
 import discord
 from discord import Interaction, Embed, Message, SelectOption, Poll
+from discord.activity import CustomActivity
 from discord.ext import commands, tasks
 from discord.ui import View, Select
-from discord.activity import CustomActivity
 
 # Cogs
 from cogs.ai import AI
@@ -14,24 +14,22 @@ from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
-from cogs.songs import Songs
 from cogs.search import Search
+from cogs.songs import Songs
 
 # Utilities
 from cogs.utils import pronouns
 from cogs.utils.database import db
 
 # Other
+import asyncio
+# Dotenv is useless cause im hosting on railway
+from dotenv import load_dotenv
+import os
+import random
 from rich.console import Console
 from typing import Optional
-# Both of these are useless since im hosting on railway, so I don't need to load the env
-# (if yall wanna selfhost this idk)
-import os
-from dotenv import load_dotenv
-import asyncio
 import time
-import random
-import asyncio
 
 console = Console()
 

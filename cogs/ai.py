@@ -1,14 +1,14 @@
-from discord.ext import commands
 import discord
-from discord import File
-from openai import AsyncOpenAI
-from groq import AsyncGroq
-import os
-from rich.console import Console
-import asyncio
-import aiohttp
+from discord import Embed, File
+from discord.ext import commands
+
 import aiofiles
-from discord import Embed
+import aiohttp
+import asyncio
+import os
+from groq import AsyncGroq
+from openai import AsyncOpenAI
+from rich.console import Console
 
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -82,6 +82,7 @@ class AI(commands.Cog):
         """Reply to a message to expand it. The opposite of tldr lmao"""
         reply = ctx.message.reference
         if reply is None:
+            # Thank you winter
             await ctx.send("I would be more than delighted to assist you in expanding upon any concise or succinct piece of text that you may have. Please feel free to provide the brief phrase, sentence, or passage that you wish to be elaborated into a more comprehensive, detailed, and intricate explanation. Upon receiving the specific text, I shall meticulously analyze its content and context, and then proceed to craft an extended version that incorporates a richer vocabulary, complex sentence structures, and an abundance of relevant details and nuances, thereby transforming the original succinct excerpt into a thoroughly developed and intellectually engaging exposition.")
             return
         

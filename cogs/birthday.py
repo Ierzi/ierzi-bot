@@ -1,13 +1,15 @@
 import discord
+from discord import Embed
 from discord.ext import commands
-from rich.console import Console
-from typing import Optional, Union
-from datetime import datetime
+
 from .utils.database import db
 from .utils.functions import to_timestamp
 from .utils.pronouns import get_pronoun, PronounEnum
-from .utils.types import Birthday 
-from discord import Embed
+from .utils.types import Birthday
+
+from datetime import datetime
+from rich.console import Console
+from typing import Optional, Union
 
 MONTHS = [
     "January",

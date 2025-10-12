@@ -1,10 +1,11 @@
 import discord
 from discord import Embed
 from discord.ext import commands
-from rich.console import Console
+
 import aiohttp
-from wikipediaapi import Wikipedia
 import os
+from rich.console import Console
+from wikipediaapi import Wikipedia
 
 # removed allat cause its not used
 

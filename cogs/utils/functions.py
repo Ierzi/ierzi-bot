@@ -1,5 +1,5 @@
-from typing import Optional, Union, Literal
 from datetime import datetime
+from typing import Literal, Union
 
 
 def to_timestamp(

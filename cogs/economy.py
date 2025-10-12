@@ -1,18 +1,18 @@
-# Imports
 import discord
+from discord import SelectOption
 from discord.ext import commands
 from discord.ui import View, Select
-from discord import SelectOption
-from rich.console import Console
-from typing import Literal, Optional
-from datetime import timedelta, datetime, timezone
-import random
-import asyncio
 
-# Utils
 from .utils.database import db
-from .utils.types import Currency
 from .utils.pronouns import get_pronoun, PronounEnum
+from .utils.types import Currency
+
+import asyncio
+from datetime import timedelta, datetime, timezone
+from typing import Literal, Optional
+import random
+from rich.console import Console
+
 
 _hours = Optional[int]
 _minutes = Optional[int]

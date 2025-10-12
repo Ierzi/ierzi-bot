@@ -1,11 +1,14 @@
 import discord
 from discord import File
 from discord.ext import commands
-from rich.console import Console
-import random
+
+from .utils import pronouns
+
 import asyncio
 from pathlib import Path
-from .utils import pronouns
+import random
+from rich.console import Console
+
 
 class Reactions(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):

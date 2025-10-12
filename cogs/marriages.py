@@ -1,10 +1,12 @@
 import discord
 from discord.ext import commands
 from discord.ui import Button, View
-from rich.console import Console
-from .utils.database import db
+
 from .utils import pronouns
+from .utils.database import db
 from .utils.pronouns import PronounEnum
+
+from rich.console import Console
 
 class Marriages(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):

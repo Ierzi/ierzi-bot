@@ -1,6 +1,6 @@
+from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Any, Optional
-from datetime import datetime
 
 class Currency:
     def __init__(self, value: Any) -> None:

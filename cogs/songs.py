@@ -1,8 +1,9 @@
-import aiohttp
 from discord.ext import commands
-from rich.console import Console
+
+import aiohttp
 import random
 import requests
+from rich.console import Console
 
 SongData = tuple[str, str, str] # Song title - Album - Artist
 
