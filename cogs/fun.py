@@ -216,10 +216,8 @@ class Fun(commands.Cog):
         """Hypertranslate a text."""
         translator = Translator()
         languages = [
-            "am", "ha", "so", "yo", "zu", "st", "xh", "mg", "mi", "sm", "haw", "fj",
-            "my", "lo", "km", "si", "mn", "ps", "ne", "uz", "ka", "kk", "ku", "ta",
-            "te", "eu", "mt", "is", "cy", "gl", "be", "et", "lv", "lt", "gn", "ht", 
-            "qu", "su", "jw"
+            "ha", "so", "zu", "st", "xh", "mg", "mi", "sm", "haw", "uz", "ku", 
+            "eu", "mt", "is", "cy", "gl", "et", "lv", "lt", "ht", "su", "jw"
         ]
 
         current_translation = text
