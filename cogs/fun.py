@@ -4,6 +4,7 @@ from discord.ext import commands
 import asyncio
 import aiohttp
 from datetime import datetime, timezone
+from googletrans import Translator
 from pathlib import Path
 import random
 from rich.console import Console
@@ -209,4 +210,28 @@ class Fun(commands.Cog):
             return
         
         await ctx.send(pi)
-                
+
+    @commands.command(name="tr")
+    async def hypertranslate(self, ctx: commands.Context, *, text: str):
+        """Hypertranslate a text."""
+        translator = Translator()
+        languages = [
+            "am", "ha", "so", "yo", "zu", "st", "xh", "mg", "mi", "sm", "haw", "fj",
+            "my", "lo", "km", "si", "mn", "ps", "ne", "uz", "ka", "kk", "ku", "ta",
+            "te", "eu", "mt", "is", "cy", "gl", "be", "et", "lv", "lt", "gn", "ht", 
+            "qu", "su", "jw"
+        ]
+
+        translations = random.randint(15, 25)
+        current_translation = text
+        for _ in range(translations):
+            language = random.choice(languages)
+            # googletrans is not async-friendly, but i found a workaround
+            response = await asyncio.to_thread(translator.translate, current_translation, language)
+            current_translation = response.text
+        
+        # Back to english
+        response = await asyncio.to_thread(translator.translate, current_translation, "en")
+        current_translation = response.text
+
+        await ctx.message.reply(current_translation, allowed_mentions=discord.AllowedMentions.none())

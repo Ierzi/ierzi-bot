@@ -95,7 +95,6 @@ class BirthdayCog(commands.Cog):
     async def get(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get someone's birthday."""
         user_id = user.id if user else ctx.author.id
-        p1 = await get_pronoun(user_id, PronounEnum.SUBJECT)
 
         birthday = await self._get_birthday(user_id)
         if birthday is None:

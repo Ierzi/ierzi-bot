@@ -6,5 +6,7 @@ asyncpg
 groq
 requests
 wikipedia-api
-nltk==3.9.1
 aiofiles
+googletrans #gender
+
+# nltk - not used anymore (why did it ask for sqlite3)

@@ -23,8 +23,7 @@ from cogs.utils.database import db
 
 # Other
 import asyncio
-# Dotenv is useless cause im hosting on railway
-from dotenv import load_dotenv
+from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
 import os
 import random
 from rich.console import Console
