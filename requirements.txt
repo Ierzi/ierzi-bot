@@ -7,6 +7,6 @@ groq
 requests
 wikipedia-api
 aiofiles
-googletrans #gender
+aiogoogletrans #gender
 
 # nltk - not used anymore (why did it ask for sqlite3)
