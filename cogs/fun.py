@@ -224,14 +224,15 @@ class Fun(commands.Cog):
 
         translations = random.randint(15, 25)
         current_translation = text
-        for _ in range(translations):
-            language = random.choice(languages)
-            # googletrans is not async-friendly, but i found a workaround
-            response = await asyncio.to_thread(translator.translate, current_translation, language)
+        async with ctx.typing():
+            for _ in range(translations):
+                language = random.choice(languages)
+                # googletrans is not async-friendly, but i found a workaround
+                response = await asyncio.to_thread(translator.translate, current_translation, language)
+                current_translation = response.text
+            
+            # Back to english
+            response = await asyncio.to_thread(translator.translate, current_translation, "en")
             current_translation = response.text
-        
-        # Back to english
-        response = await asyncio.to_thread(translator.translate, current_translation, "en")
-        current_translation = response.text
 
         await ctx.message.reply(current_translation, allowed_mentions=discord.AllowedMentions.none())
