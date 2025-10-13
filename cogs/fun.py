@@ -234,7 +234,6 @@ class Fun(commands.Cog):
         async with ctx.typing():
             translations = random.sample(languages, 15)
             for language in translations:
-                # googletrans is not async-friendly, but i found a workaround
                 response = await translator.translate(current_translation, language)
                 current_translation = response.text
             
