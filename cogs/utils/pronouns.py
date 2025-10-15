@@ -30,7 +30,9 @@ all_pronouns = [
 all_pronouns_hidden = all_pronouns.copy() + [
     "fag/got",
     "nyeh/heh/heh",
-    "ier/zi"
+    "ier/zi",
+    "ep/ik",
+    "magic/magic"
 ]
 
 SUPPORTED_PRONOUNS = Literal[
@@ -45,7 +47,9 @@ SUPPORTED_PRONOUNS = Literal[
     # HIDDEN PRONOUNS
     'fag/got',
     'nyeh/heh/heh',
-    'ier/zi'
+    'ier/zi',
+    'ep/ik',
+    'magic/magic'
 ] 
 pronoun = str #e.g. he
 pronouns = str #e.g. he/him
@@ -73,7 +77,9 @@ pronouns_data: dict[str, _pronouns_data] = {
     # HIDDEN PRONOUNS
     'fag/got': ('fag', 'got', 'fager', 'fagers', 'fagself'),
     'nyeh/heh/heh': ('nyeh', 'heh', 'heh', 'heh', 'hehself'),
-    'ier/zi': ('ier', 'zi', 'ien', 'erzi', 'ierziself')
+    'ier/zi': ('ier', 'zi', 'ien', 'erzi', 'ierziself'),
+    'ep/ik': ('ep', 'ik', 'epik', 'epiks', 'epikself'),
+    'magic/magic': ('magic', 'magic', 'magic', 'magics', 'magicself')
 }
 
 console = Console()

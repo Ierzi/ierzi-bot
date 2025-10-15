@@ -2,7 +2,7 @@
 
 # Discord.py Improrts
 import discord
-from discord import Interaction, Embed, Message, SelectOption, Poll
+from discord import Interaction, Embed, Message, SelectOption
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
 from discord.ui import View, Select
