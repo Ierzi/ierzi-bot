@@ -29,7 +29,7 @@ from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
 import os
 import random
 from rich.console import Console
-from typing import Optional
+from typing import Optional, Any
 import time
 
 console = Console()
@@ -48,18 +48,6 @@ bot = commands.Bot(
 )
 
 experimental_branch = False
-
-message_delays: OrderedDict[int, datetime] = OrderedDict()
-MAX_MESSAGES = 1000
-
-def add_delays(message: Message, now: datetime):
-    if len(message_delays) > 1000:
-        message_delays.popitem(last=False)
-    
-    message_created_at = message.created_at.replace(tzinfo=timezone.utc)
-    delay = (now - message_created_at).total_seconds()
-
-    message_delays[message.id] = delay
 
 # Events
 @bot.event
@@ -135,9 +123,6 @@ async def on_message(message: Message):
             else:
                 await message.add_reaction("❌")
 
-    # Add message to OrderedDict
-    add_delays(message, now)
-
     # Finally, process commands
     await bot.process_commands(message)
 
@@ -210,17 +195,6 @@ async def isthistrue(interaction: Interaction, message: Message):
         await interaction.followup.send(mess)
         await asyncio.sleep(0.2)
 
-# Other context menu commands
-@bot.tree.context_menu(name="See delay")
-async def delay(interaction: Interaction, message: Message):
-    await interaction.response.defer()
-    if message.id not in message_delays:
-        await interaction.followup.send("Can't see delay :(")
-        return
-
-    delay = message_delays[message.id]
-    
-    await interaction.followup.send(f"{delay:,.2f} seconds delay.")
 
 # App commands
 search = Search(bot, console)

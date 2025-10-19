@@ -144,6 +144,7 @@ class Search(commands.Cog):
 
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
+                r.raise_for_status()
                 r = await r.json()
                 
         # r = requests.get(request_url).json()
