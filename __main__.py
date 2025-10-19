@@ -49,13 +49,17 @@ bot = commands.Bot(
 
 experimental_branch = False
 
-message_created_times: OrderedDict[int, datetime] = OrderedDict()
+message_delays: OrderedDict[int, datetime] = OrderedDict()
 MAX_MESSAGES = 1000
 
-def add_created_time(message: Message):
-    if len(message_created_times) > 1000:
-        message_created_times.popitem(last=False)
-    message_created_times[message.id] = message.created_at.replace(tzinfo=timezone.utc)
+def add_delays(message: Message, now: datetime):
+    if len(message_delays) > 1000:
+        message_delays.popitem(last=False)
+    
+    message_created_at = message.created_at.replace(tzinfo=timezone.utc)
+    delay = (now - message_created_at).total_seconds()
+
+    message_delays[message.id] = delay
 
 # Events
 @bot.event
@@ -96,6 +100,8 @@ async def on_command_error(ctx: commands.Context, error):
 
 @bot.event
 async def on_message(message: Message):
+    now = datetime.now(tz=timezone.utc) # Save it early
+
     # Auto create threads in the poll channel
     if message.poll and message.channel.id == 1411714823405965342: 
         await message.create_thread(name=message.poll.question)
@@ -130,7 +136,7 @@ async def on_message(message: Message):
                 await message.add_reaction("❌")
 
     # Add message to OrderedDict
-    add_created_time(message)
+    add_delays(message, now)
 
     # Finally, process commands
     await bot.process_commands(message)
@@ -208,13 +214,11 @@ async def isthistrue(interaction: Interaction, message: Message):
 @bot.tree.context_menu(name="See delay")
 async def delay(interaction: Interaction, message: Message):
     await interaction.response.defer()
-    if message.id not in message_created_times:
+    if message.id not in message_delays:
         await interaction.followup.send("Can't see delay :(")
         return
-    
-    now = datetime.now(tz=timezone.utc)
-    recieved_time = message_created_times[message.id]
-    delay = (now - recieved_time).total_seconds()
+
+    delay = message_delays[message.id]
     
     await interaction.followup.send(f"{delay:,.2f} seconds delay.")
 
