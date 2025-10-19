@@ -221,7 +221,7 @@ async def define(interaction: Interaction, word: str):
 @app_commands.describe(word="The word to search the meaning on Urban Dictionary.")
 async def urban_dictionary(interaction: Interaction, word: str):
     await interaction.response.defer()
-    _ud = search._urban_dictionary(word)
+    _ud = await search._urban_dictionary(word)
     if _ud is None:
         await interaction.followup.send("Word not found / Error.")
         return
