@@ -293,7 +293,7 @@ class Economy(commands.Cog):
         _case = 0 # Debug variable
 
         # Slice the arguments 
-        arg_a, arg_b = args[0], args[1]
+        arg_a, arg_b = args
 
         # If arg_a can be converted to int, its a page number
         try:
