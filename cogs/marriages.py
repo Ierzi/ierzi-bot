@@ -266,17 +266,15 @@ class Marriages(commands.Cog):
         await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.is_owner()
     async def forcemarry(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
-        """Can only be used by Ierzi. Force marry 2 people."""
+        """Can only be used by bot owners. Force marry 2 people."""
         marriages = await self.get_marriages()
         if (user1.id, user2.id) in marriages or (user2.id, user1.id) in marriages:
             await ctx.send("does he know?")
             return
         if user1.id == user2.id:
             await ctx.send("dumbass")
-            return
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
             return
         if user1.id == self.bot.user.id or user2.id == self.bot.user.id:
             await ctx.send("HELL NO :sob::sob:")
@@ -287,8 +285,9 @@ class Marriages(commands.Cog):
         self.console.print(f"Forced marriage between {user1.name} and {user2.name} has been recorded.")
 
     @commands.command()
+    @commands.is_owner()
     async def forcedivorce(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
-        """Can only be used by Ierzi. Force divorce 2 people."""
+        """Can only be used by bot owners. Force divorce 2 people."""
         marriages = await self.get_marriages()
         if (user1.id, user2.id) not in marriages and (user2.id, user1.id) not in marriages:
             await ctx.send("they are not married lmao")

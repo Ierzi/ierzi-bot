@@ -44,7 +44,12 @@ bot = commands.Bot(
     command_prefix="!", 
     intents=intents, 
     help_command=None, 
-    case_insensitive=True
+    case_insensitive=True,
+    owner_ids=[
+        966351518020300841, # my main account
+        722480600392400976, # my other account
+        747918143745294356 # guest
+    ]
 )
 
 experimental_branch = False
@@ -80,9 +85,11 @@ async def bot_loop():
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, commands.CommandOnCooldown):
         await ctx.send(f"Try again in {round(error.retry_after, 2)} seconds.")
-    if isinstance(error, commands.CommandNotFound):
+    elif isinstance(error, commands.CommandNotFound):
         # useless error
         pass
+    elif isinstance(error, commands.NotOwner):
+        await ctx.send("no.")
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
@@ -589,11 +596,9 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
     await ctx.send(test_sentence)
 
 @bot.command(name='fsp')
+@commands.is_owner()
 async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronouns: str):
-    if ctx.author.id != 966351518020300841:
-        await ctx.message.add_reaction("❌")
-        return
-    
+    """Force set someone's pronouns. Can only be used by bot owners."""
     user_id = user.id
     
     if _pronouns not in pronouns.all_pronouns_hidden:

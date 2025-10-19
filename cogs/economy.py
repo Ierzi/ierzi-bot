@@ -745,51 +745,41 @@ class Economy(commands.Cog):
 
     # Admin commands
     @commands.command()
+    @commands.is_owner()
     async def give_money(self, ctx: commands.Context, member: discord.User, amount: float):
-        """Spawns money out of thin air and gives it to someone. Can only be used by Ierzi."""
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("To use this command you need 1e308 cash. You do not have this much money and so cannot use this command.")
-            return
-        
+        """Spawns money out of thin air and gives it to someone. Can only be used by bot owners."""
+
         await self._add_money(member.id, amount)
         await ctx.send(f"Successfully gave {amount:,.2f} coins to user ID {member}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.is_owner()
     async def set_balance(self, ctx: commands.Context, member: discord.User, amount: float):
-        """Set someone's balance. Can only be used by Ierzi, obviously."""
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
-            return
-        
+        """Set someone's balance. Can only be used by bot owners, obviously."""
+
         await self._set_balance(member.id, amount)
         await ctx.send(f"Set the balance of {member.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(aliases=("sml",))
+    @commands.is_owner()
     async def set_money_lost(self, ctx: commands.Context, member: discord.User, amount: float):
-        """Set the money_lost of a user. Can only be used by Ierzi."""
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
-            return
+        """Set the money_lost of a user. Can only be used by bot owners."""
         
         await self._set_money_lost(member.id, amount)
         await ctx.send(f"Set the money_lost of {member.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.is_owner()
     async def ecoreset(self, ctx: commands.Context, member: discord.User):
-        """Reset the economy data of a user. Can only be used by Ierzi."""
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
-            return
+        """Reset the economy data of a user. Can only be used by bot owners."""
         
         await db.execute("DELETE FROM economy WHERE user_id = $1", member.id)
         await ctx.send(f"Reset the economy data of {member.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
+    @commands.is_owner()
     async def ecotransfer(self, ctx: commands.Context, user1: discord.User, user2: discord.User):
-        """Transfer all economy data from one user to another. Can only be used by Ierzi."""
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
-            return
+        """Transfer all economy data from one user to another. Can only be used by bot owners."""
         
         user1_id = user1.id 
         user2_id = user2.id 
