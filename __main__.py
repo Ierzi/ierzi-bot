@@ -23,6 +23,8 @@ from cogs.utils.database import db
 
 # Other
 import asyncio
+from collections import OrderedDict
+from datetime import datetime, timezone
 from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
 import os
 import random
@@ -47,6 +49,14 @@ bot = commands.Bot(
 
 experimental_branch = False
 
+message_created_times: OrderedDict[int, datetime] = OrderedDict()
+MAX_MESSAGES = 1000
+
+def add_created_time(message: Message):
+    if len(message_created_times) > 1000:
+        message_created_times.popitem(last=False)
+    message_created_times[message.id] = message.created_at.replace(tzinfo=timezone.utc)
+
 # Events
 @bot.event
 async def on_ready():
@@ -70,6 +80,8 @@ async def bot_loop():
     # Update bot presence
     guild_count = len(bot.guilds)
     await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
+
+    # I would add a clear last messages loop but using OrderedDict is better
 
 # Error handling
 @bot.event
@@ -117,7 +129,10 @@ async def on_message(message: Message):
             else:
                 await message.add_reaction("❌")
 
+    # Add message to OrderedDict
+    add_created_time(message)
 
+    # Finally, process commands
     await bot.process_commands(message)
 
 
@@ -188,6 +203,20 @@ async def isthistrue(interaction: Interaction, message: Message):
     for mess in _isthistrue:
         await interaction.followup.send(mess)
         await asyncio.sleep(0.2)
+
+# Other context menu commands
+@bot.tree.context_menu(name="See delay")
+async def delay(interaction: Interaction, message: Message):
+    await interaction.response.defer()
+    if message.id not in message_created_times:
+        await interaction.followup.send("Can't see delay :(")
+        return
+    
+    now = datetime.now(tz=timezone.utc)
+    recieved_time = message_created_times[message.id]
+    delay = (now - recieved_time).total_seconds()
+    
+    await interaction.followup.send(f"{delay:,.2f} seconds delay.")
 
 # App commands
 search = Search(bot, console)
