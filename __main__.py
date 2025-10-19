@@ -398,7 +398,7 @@ async def fill_embeds():
             case "Search":
                 search_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
-@bot.command()
+@bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
     view = View(timeout=300) # 5 minutes
