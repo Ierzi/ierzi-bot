@@ -192,7 +192,7 @@ async def isthistrue(interaction: Interaction, message: Message):
 # App commands
 search = Search(bot, console)
 
-@bot.tree.add_command(name="define", description="Look up the meaning of a word.")
+@bot.tree.command(name="define", description="Look up the meaning of a word.")
 @app_commands.describe(word="The word to get the definition from.")
 async def define(interaction: Interaction, word: str):
     await interaction.response.defer()
@@ -203,7 +203,7 @@ async def define(interaction: Interaction, word: str):
 
     await interaction.followup.send(_define)
 
-@bot.tree.add_command(name="ud", description="Look up the meaning of a word on the Urban Dictionary.")
+@bot.tree.command(name="ud", description="Look up the meaning of a word on the Urban Dictionary.")
 @app_commands.describe(word="The word to search the meaning on Urban Dictionary.")
 async def urban_dictionary(interaction: Interaction, word: str):
     await interaction.response.defer()
