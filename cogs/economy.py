@@ -316,7 +316,7 @@ class Economy(commands.Cog):
         
         finally:
             # Just a debug statement
-            self.console.print(f"ARGUMENTS {",".join(args)}")
+            self.console.print(f"ARGUMENTS {','.join(args)}")
             self.console.print(f"Case {_case}")
             self.console.print(f"Page {page}, offset {offset}, category {category}.")
 
