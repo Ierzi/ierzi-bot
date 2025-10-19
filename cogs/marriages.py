@@ -17,7 +17,7 @@ class Marriages(commands.Cog):
         # Ensure both users exist in the users table first
         for user_id in marriage_pair:
             await db.execute(
-                "INSERT INTO users (user_id, balance) VALUES ($1, $2) ON CONFLICT (user_id) DO NOTHING",
+                "INSERT INTO users user_id VALUES $1 ON CONFLICT (user_id) DO NOTHING",
                 user_id,
                 0,
             )
@@ -127,7 +127,7 @@ class Marriages(commands.Cog):
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
-        partner_pronouns_object = pronouns.get_pronoun(partner.id, PronounEnum.OBJECT)
+        partner_pronouns_object = await pronouns.get_pronoun(partner.id, PronounEnum.OBJECT)
 
         async def yes_button_callback(interaction: discord.Interaction):
             if not interaction.user.id == proposer.id:

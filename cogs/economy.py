@@ -783,7 +783,7 @@ class Economy(commands.Cog):
         """Spawns money out of thin air and gives it to someone. Can only be used by bot owners."""
 
         await self._add_money(member.id, amount)
-        await ctx.send(f"Successfully gave {amount:,.2f} coins to user ID {member}.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"Successfully gave {amount:,.2f} coins to user {member}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.is_owner()
