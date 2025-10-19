@@ -1,5 +1,5 @@
 import discord
-from discord import SelectOption
+from discord import SelectOption, Embed
 from discord.ext import commands
 from discord.ui import View, Select
 
@@ -168,7 +168,7 @@ class Economy(commands.Cog):
         balance = await self._get_balance(member.id)
         money_lost = await self._get_money_lost(member.id)
 
-        embed = discord.Embed(
+        embed = Embed(
             title=f"{member.display_name}'s Economy Profile",
             color=discord.Colour.gold()
         )
@@ -278,17 +278,50 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
-    async def eco_leaderboard(self, ctx: commands.Context, page: int = 1):
+    async def eco_leaderboard(self, ctx: commands.Context, *args: str):
         """See the economy leaderboard."""
         await ctx.typing()
-        if page < 1:
-            await ctx.send("whar?")
-            return
-        
-        per_page = 10
-        offset = (page - 1) * per_page
+        # args can be
+        # 1. !lb 2 -- page
+        # 2. !lb lost -- category
+        # 3. !lb lost 2 -- category and page
 
-        async def get_balance_leaderboard() -> Optional[discord.Embed]:
+        per_page = 10
+        page = 1
+        offset = (page - 1) * 10
+        category: Literal["lost", "balance"] = "balance" # by default
+        _case = 0 # Debug variable
+
+        # Slice the arguments 
+        arg_a, arg_b = args[0], args[1]
+
+        # If arg_a can be converted to int, its a page number
+        try:
+            page = int(arg_a)
+            offset = (page - 1) * 10 # Recalculate offset
+            # Unkwown category, balance by default
+            _case = 1
+        except Exception:
+            # Maybe argument 2? --> case 3
+            try: 
+                page = int(arg_b)
+                offset = (page - 1) * 10 # Recalculate offset
+                # Since its argument 2, set category to arg_a
+                category = arg_a
+                _case = 2
+            except Exception:
+                # Forcefully case 2
+                category = arg_a
+                _case = 3
+        
+        finally:
+            # Just a debug statement
+            self.console.print(f"ARGUMENTS {",".join(args)}")
+            self.console.print(f"Case {_case}")
+            self.console.print(f"Page {page}, offset {offset}, category {category}.")
+
+
+        async def get_balance_leaderboard() -> Optional[Embed]:
             rows = await db.fetch("""
                 SELECT user_id, balance FROM economy 
                 ORDER BY balance DESC 
@@ -299,7 +332,7 @@ class Economy(commands.Cog):
                 await ctx.send("There's a whopping 0 users on this page.")
                 return
             
-            embed = discord.Embed(
+            embed = Embed(
                 title=f"Economy Balance Leaderboard - Page {page}",
                 color=discord.Colour.gold()
             )
@@ -316,7 +349,7 @@ class Economy(commands.Cog):
 
             return embed
 
-        async def get_money_lost_leaderboard():
+        async def get_money_lost_leaderboard() -> Optional[Embed]:
             rows = await db.fetch("""
                 SELECT user_id, money_lost FROM economy 
                 ORDER BY money_lost DESC 
@@ -327,7 +360,7 @@ class Economy(commands.Cog):
                 await ctx.send("There's a whopping 0 users on this page.")
                 return
             
-            embed = discord.Embed(
+            embed = Embed(
                 title=f"Economy Money Lost Leaderboard - Page {page}",
                 color=discord.Colour.gold()
             )
@@ -364,7 +397,7 @@ class Economy(commands.Cog):
                 return
             await interaction.response.edit_message(embed=embed, view=view)
         
-        embed = await get_balance_leaderboard()
+        embed = await get_balance_leaderboard() if category == "balance" else await get_money_lost_leaderboard()
         select_item.callback = select_callback
         view.add_item(select_item)
 
@@ -703,7 +736,7 @@ class Economy(commands.Cog):
             return
         
         crash_point = random.uniform(1.00, 2.00)
-        crash_embed = discord.Embed(
+        crash_embed = Embed(
             title="Crash Game",
             description="The game is starting! The multiplier is increasing... Type cash to cash out!"
         )
