@@ -17,9 +17,8 @@ class Marriages(commands.Cog):
         # Ensure both users exist in the users table first
         for user_id in marriage_pair:
             await db.execute(
-                "INSERT INTO users user_id VALUES $1 ON CONFLICT (user_id) DO NOTHING",
+                "INSERT INTO users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING",
                 user_id,
-                0,
             )
         await db.execute(
             "INSERT INTO marriages (user1_id, user2_id) VALUES ($1, $2)", 
