@@ -36,7 +36,11 @@ class Search(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
                 data = await r.json()
-                definition = data['data'][0]['meaning']
+                try:
+                    definition = data['data'][0]['meaning']
+                except Exception as e:
+                    await ctx.send("Word not found/Error.")
+                    return
 
         # r = requests.get(request_url)
         # if r.status_code != 200:
@@ -133,6 +137,49 @@ class Search(commands.Cog):
             return
         
         await ctx.send(embed=search_embed)
+        
+    async def _define(self, word: str) -> str | None:
+        """Define but it doesnt send the messages"""
+        request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                r = await r.json()
+                
+        # r = requests.get(request_url).json()
+
+        try:
+            meanings = r[0]['meanings']
+        except Exception:
+            return None
+        
+        message = f"**{word}**: \n\n"
+        for meaning in meanings:
+            message += f"**({meaning['partOfSpeech']})**\n"
+            definitions = meaning['definitions']
+            for i, definition in enumerate(definitions):
+                d = definition['definition']
+                message += f"{i + 1}. {d} \n"
+            
+            message += "\n"
+        
+        return message
+
+    async def _urban_dictionary(self, word: str) -> str | None:
+        """Urban Dictionary but doesnt send the messages."""
+        request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                data = await r.json()
+                try:
+                    definition = data['data'][0]['meaning']
+                except Exception:
+                    return None
+        
+        message = f"**{word}**: \n\n{definition}"
+        return message
+
 
 
     # @commands.command()

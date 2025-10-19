@@ -2,7 +2,7 @@
 
 # Discord.py Improrts
 import discord
-from discord import Interaction, Embed, Message, SelectOption
+from discord import Interaction, Embed, Message, SelectOption, app_commands
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
 from discord.ui import View, Select
@@ -188,6 +188,31 @@ async def isthistrue(interaction: Interaction, message: Message):
     for mess in _isthistrue:
         await interaction.followup.send(mess)
         await asyncio.sleep(0.2)
+
+# App commands
+search = Search(bot, console)
+
+@bot.tree.add_command(name="define", description="Look up the meaning of a word.")
+@app_commands.describe(word="The word to get the definition from.")
+async def define(interaction: Interaction, word: str):
+    await interaction.response.defer()
+    _define = await search._define(word)
+    if _define is None:
+        await interaction.followup.send("Word not found / Error.")
+        return
+
+    await interaction.followup.send(_define)
+
+@bot.tree.add_command(name="ud", description="Look up the meaning of a word on the Urban Dictionary.")
+@app_commands.describe(word="The word to search the meaning on Urban Dictionary.")
+async def urban_dictionary(interaction: Interaction, word: str):
+    await interaction.response.defer()
+    _ud = search._urban_dictionary(word)
+    if _ud is None:
+        await interaction.followup.send("Word not found / Error.")
+        return
+    
+    await interaction.followup.send(_ud)
 
 # Other commands
 @bot.command(name="id")
