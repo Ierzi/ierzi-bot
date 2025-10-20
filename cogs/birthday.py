@@ -38,7 +38,9 @@ class BirthdayCog(commands.Cog):
             "compare",
             "today",
             "month",
-            "list"
+            "list",
+            "thismonth",
+            "total"
         ]
     
     # groups!!!
@@ -233,7 +235,7 @@ class BirthdayCog(commands.Cog):
     @birthday.command()
     async def thismonth(self, ctx: commands.Context):
         """Lists all birthdays coming this month."""
-        current_month_index = datetime.month
+        current_month_index = datetime.now().month
         birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", current_month_index)
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
