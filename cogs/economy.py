@@ -280,11 +280,13 @@ class Economy(commands.Cog):
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, arg_a: Optional[str] = None, arg_b: Optional[str] = None):
         """See the economy leaderboard."""
+        # TODO: Add arrows to switch pages
         await ctx.typing()
         # args can be
         # 1. !lb 2 -- page
         # 2. !lb lost -- category
         # 3. !lb lost 2 -- category and page
+        # 4. !lb -- nothing
 
         per_page = 10
         page = 1
@@ -293,30 +295,34 @@ class Economy(commands.Cog):
         _case = 0 # Debug variable
 
         # If arg_a can be converted to int, its a page number
-        try:
-            page = int(arg_a)
-            offset = (page - 1) * 10 # Recalculate offset
-            # Unkwown category, balance by default
-            _case = 1
-        except Exception:
-            # Maybe argument 2? --> case 3
-            try: 
-                page = int(arg_b)
+        if arg_a is not None and arg_b is not None:
+            try:
+                page = int(arg_a)
                 offset = (page - 1) * 10 # Recalculate offset
-                # Since its argument 2, set category to arg_a
-                category = arg_a
-                _case = 2
+                # Unkwown category, balance by default
+                _case = 1
             except Exception:
-                # Forcefully case 2
-                category = arg_a
-                _case = 3
-        
-        finally:
-            # Just a debug statement
-            self.console.print(f"ARGUMENTS {arg_a}, {arg_b}")
-            self.console.print(f"Case {_case}")
-            self.console.print(f"Page {page}, offset {offset}, category {category}.")
+                # Maybe argument 2? --> case 3
+                try: 
+                    page = int(arg_b)
+                    offset = (page - 1) * 10 # Recalculate offset
+                    # Since its argument 2, set category to arg_a
+                    category = arg_a
+                    _case = 2
+                except Exception:
+                    # Forcefully case 2
+                    category = arg_a
+                    _case = 3
+        else:
+            # Both are none, case 4
+            _case = 4
+            # category is still balance
+            #page is still 1
 
+        # Just a debug statement
+        self.console.print(f"ARGUMENTS {arg_a}, {arg_b}")
+        self.console.print(f"Case {_case}")
+        self.console.print(f"Page {page}, offset {offset}, category {category}.")
 
         async def get_balance_leaderboard() -> Optional[Embed]:
             rows = await db.fetch("""
@@ -394,7 +400,7 @@ class Economy(commands.Cog):
                 return
             await interaction.response.edit_message(embed=embed, view=view)
         
-        embed = await get_balance_leaderboard() if category == "balance" else await get_money_lost_leaderboard()
+        embed = await get_balance_leaderboard() if category == "balance" or category is None else await get_money_lost_leaderboard()
         select_item.callback = select_callback
         view.add_item(select_item)
 
