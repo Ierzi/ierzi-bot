@@ -1,6 +1,7 @@
 import discord
 from discord import Embed
 from discord.ext import commands
+from numpy import isin
 
 from .utils.database import db
 from .utils.functions import to_timestamp
@@ -65,6 +66,11 @@ class BirthdayCog(commands.Cog):
             return None
         
         return Birthday(row["day"], row["month"], row["year"])
+
+    async def _total_birthdays(self) -> int:
+        """Return total number of birthdays stored in the database."""
+        count = await db.fetchval("SELECT COUNT(*) FROM birthdays")
+        return int(count or 0)
 
     # Commands
     @birthday.command()
@@ -205,14 +211,32 @@ class BirthdayCog(commands.Cog):
     @birthday.command()
     async def month(self, ctx: commands.Context, month: Union[int, str]):
         """Lists all birthdays in a given month."""
-        if month < 1 or month > 12:
+        if isinstance(month, int) and (month < 1 or month > 12):
             await ctx.send("Month must be between 1 and 12")
             return
         
         if isinstance(month, str):
-            month = MONTHS.index(month.capitalize()) + 1
+            try:
+                month = MONTHS.index(month.capitalize()) + 1
+            except Exception:
+                await ctx.send("invalid month")
         
         birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", month)
+        if not birthdays:
+            await ctx.send("No one's birthday in this month.")
+            return
+        
+        birthday_users = []
+        for birthday in birthdays:
+            birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
+        
+        await ctx.send(f"{len(birthday_users)} person(s) have a birthday in this month: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
+
+    @birthday.command()
+    async def thismonth(self, ctx: commands.Context):
+        """Lists all birthdays coming this month."""
+        current_month_index = datetime.month
+        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", current_month_index)
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
@@ -247,13 +271,16 @@ class BirthdayCog(commands.Cog):
         
         await ctx.send(embed=bday_embed)
 
+    @birthday.command()
+    async def total(self, ctx: commands.Context):
+        """Gives the number of birthdays stored in the database."""
+        n = await self._total_birthdays()
+        await ctx.send(f"There is a total of {n} birthdays registered in the database.")
+
     @birthday.command(aliases=("fsb",))
+    @commands.is_owner()
     async def force_set_birthday(self, ctx: commands.Context, user: discord.User, day: int, month: Union[int, str], year: Optional[int] = None):
-        """Force set a user's birthday. Can only be used by Ierzi."""
-        if ctx.author.id != 966351518020300841:
-            await ctx.send("no.")
-            return
-        
+        """Force set a user's birthday. Can only be used by bot owners."""
         if isinstance(month, str):
             month = MONTHS.index(month.capitalize()) + 1
         
