@@ -278,7 +278,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
-    async def eco_leaderboard(self, ctx: commands.Context, *args: str):
+    async def eco_leaderboard(self, ctx: commands.Context, arg_a: Optional[str] = None, arg_b: Optional[str] = None):
         """See the economy leaderboard."""
         await ctx.typing()
         # args can be
@@ -291,9 +291,6 @@ class Economy(commands.Cog):
         offset = (page - 1) * 10
         category: Literal["lost", "balance"] = "balance" # by default
         _case = 0 # Debug variable
-
-        # Slice the arguments 
-        arg_a, arg_b = args
 
         # If arg_a can be converted to int, its a page number
         try:
@@ -316,7 +313,7 @@ class Economy(commands.Cog):
         
         finally:
             # Just a debug statement
-            self.console.print(f"ARGUMENTS {','.join(args)}")
+            self.console.print(f"ARGUMENTS {arg_a}, {arg_b}")
             self.console.print(f"Case {_case}")
             self.console.print(f"Page {page}, offset {offset}, category {category}.")
 
