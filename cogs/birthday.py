@@ -1,11 +1,9 @@
 import discord
 from discord import Embed
 from discord.ext import commands
-from numpy import isin
 
 from .utils.database import db
 from .utils.functions import to_timestamp
-from .utils.pronouns import get_pronoun, PronounEnum
 from .utils.types import Birthday
 
 from datetime import datetime
