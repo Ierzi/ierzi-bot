@@ -282,7 +282,7 @@ class Economy(commands.Cog):
         """See the economy leaderboard."""
         # TODO: Add arrows to switch pages
         await ctx.typing()
-        # args can be
+        # CASES
         # 1. !lb 2 -- page
         # 2. !lb lost -- category
         # 3. !lb lost 2 -- category and page
@@ -294,9 +294,14 @@ class Economy(commands.Cog):
         category: Literal["lost", "balance"] = "balance" # by default
         _case = 0 # Debug variable
 
-        # If arg_a can be converted to int, its a page number
-        if arg_a is not None and arg_b is not None:
+        if arg_a is None and arg_b is None:
+            # Both are none, case 4
+            _case = 4
+            # category is still balance
+            # page is still 1
+        else:
             try:
+                # If arg_a can be converted to int, its a page number
                 page = int(arg_a)
                 offset = (page - 1) * 10 # Recalculate offset
                 # Unkwown category, balance by default
@@ -308,16 +313,11 @@ class Economy(commands.Cog):
                     offset = (page - 1) * 10 # Recalculate offset
                     # Since its argument 2, set category to arg_a
                     category = arg_a
-                    _case = 2
+                    _case = 3
                 except Exception:
                     # Forcefully case 2
                     category = arg_a
-                    _case = 3
-        else:
-            # Both are none, case 4
-            _case = 4
-            # category is still balance
-            #page is still 1
+                    _case = 2
 
         # Just a debug statement
         self.console.print(f"ARGUMENTS {arg_a}, {arg_b}")
@@ -400,7 +400,7 @@ class Economy(commands.Cog):
                 return
             await interaction.response.edit_message(embed=embed, view=view)
         
-        embed = await get_balance_leaderboard() if category == "balance" or category is None else await get_money_lost_leaderboard()
+        embed = await get_balance_leaderboard() if category == "balance" else await get_money_lost_leaderboard()
         select_item.callback = select_callback
         view.add_item(select_item)
 
