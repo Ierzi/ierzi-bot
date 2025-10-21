@@ -722,63 +722,6 @@ class Economy(commands.Cog):
         await self._remove_money(user_id, bet.to_float())
         await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def crash(self, ctx: commands.Context, amount: float):
-        """Gamble your coins in a game of crash."""
-        user_id = ctx.author.id
-        if amount <= 0:
-            await ctx.send("wtf are you trying to do")
-            return
-        
-        bet = Currency(amount)
-        balance = await self._get_balance(user_id)
-
-        if bet > balance:
-            await ctx.send("you're broke :broken_heart:")
-            return
-        
-        crash_point = random.uniform(1.00, 2.00)
-        crash_embed = Embed(
-            title="Crash Game",
-            description="The game is starting! The multiplier is increasing... Type cash to cash out!"
-        )
-        crash_embed.add_field(name="Your Bet", value=f"{bet:,.2f} coins", inline=False)
-        crash_embed.add_field(name="Multiplier", value="1.00x", inline=False)
-
-        message = await ctx.send(embed=crash_embed, allowed_mentions=discord.AllowedMentions.none())
-
-        def check(m: discord.Message):
-            return m.author.id == user_id and m.channel.id == ctx.channel.id and m.content.strip().lower() == "cash"
-
-        multiplier = 1.00
-        try:
-            while multiplier < crash_point:
-                try:
-                    msg = await self.bot.wait_for("message", check=check, timeout=0.3)
-                    if msg:
-                        winnings = float(bet * multiplier)
-                        await self._add_money(user_id, winnings - float(bet))
-                        crash_embed.description = f"You cashed out at {multiplier:.2f}x and won {winnings:,.2f} coins! {self.coin_emoji}"
-                        await message.edit(embed=crash_embed)
-                        return
-                except asyncio.TimeoutError: # No cash out message
-                    pass  
-                
-                await asyncio.sleep(0.3)
-                multiplier += random.uniform(0.02, 0.10)
-                if multiplier > crash_point:
-                    multiplier = crash_point
-                crash_embed.set_field_at(1, name="Multiplier", value=f"{multiplier:.2f}x", inline=False)
-                await message.edit(embed=crash_embed)
-        except asyncio.TimeoutError:
-            pass
-        
-        # Game crashed, player loses their bet
-        await self._remove_money(user_id, float(bet))
-        crash_embed.description = f"The game crashed at {multiplier:.2f}x! You lost {bet:,.2f} coins."
-        await message.edit(embed=crash_embed)
-
     # Admin commands
     @commands.command()
     @commands.is_owner()
