@@ -67,7 +67,11 @@ class Marriages(commands.Cog):
                 await ctx.send(f"Congratulations {proposer.mention} and {self.bot.user.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none()) 
                 await self.add_marriage_list((proposer.id, self.bot.user.id))
                 return
-            
+            if ctx.guild.id != 1372240591043170496: # epikteam guild id, if not, no slurs 
+                await ctx.send("no.")
+                await ctx.send(f"{self.bot.user.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
+                return
+                
             await ctx.send("faggot")
             await ctx.send(f"{self.bot.user.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
             return
