@@ -584,7 +584,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
             return
         else:
-            if pronouns == 'fag/got' and guild_id == 980439011560661002: #eddgows server
+            if _pronouns == 'fag/got' and guild_id == 980439011560661002: #eddgows server
                 await ctx.send(f"{user_profile.mention}'s pronouns are a mf slur 💔")
                 return
             await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
@@ -593,7 +593,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
             return
         else:
-            if pronouns == 'fag/got' and guild_id == 980439011560661002: #eddgows server
+            if _pronouns == 'fag/got' and guild_id == 980439011560661002: #eddgows server
                 await ctx.send(f"Your pronouns are a slur and daddy eddgow dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")
