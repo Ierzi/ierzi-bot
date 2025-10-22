@@ -29,7 +29,7 @@ class Economy(commands.Cog):
             ("Retail Worker", 50.00, 130.00),
             ("Barista", 65.00, 155.00),
             ("Teacher", 90.00, 235.00),
-            ("Artist", 90.00, 260.00),
+            ("SFW Artist", 90.00, 260.00),
             ("Content Creator", 105.00, 275.00),
             ("Writer", 105.00, 315.00),
             ("Musician", 115.00, 350.00),
@@ -38,6 +38,11 @@ class Economy(commands.Cog):
             ("Software Developer", 195.00, 390.00),
             ("Lawyer", 235.00, 455.00),
             ("CEO", 325.00, 650.00)
+        ]
+        
+        self.rare_jobs = [ #Job Name, Rarity, Minimum pay, maximum pay 
+            ("NSFW Artist", 0.025, 325.00, 550.00),
+            ("onlyfans", 0.00125, 1500.00, 3000.00)
         ]
     
     # Helper functions
@@ -189,7 +194,20 @@ class Economy(commands.Cog):
             hours, minutes, seconds = output[1], output[2], output[3]
             await ctx.send(f"You already worked! Try again in {hours}h {minutes}m {seconds}s.")
             return
-
+        
+        # Handle rare jobs
+        for job, rarity, max_pay, min_pay in self.rare_jobs:
+            if random.random() < rarity:
+                pay = random.uniform(min_pay, max_pay)
+                # Say rare job message
+                if job == "onlyfans":
+                    await ctx.send(f"{ctx.author.mention} **sold pictures on OnlyFans** and gained {pay:,.2f} coins 🔥👅 {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+                else: 
+                    await ctx.send(f"{ctx.author.mention} worked as a **{job_name}** and earned {pay:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+                await self._add_money(user_id, pay)
+                await self._update_cooldown(user_id, "last_worked")
+                return
+        
         job = random.choice(self.jobs)
         job_name, min_pay, max_pay = job
         pay = random.uniform(min_pay, max_pay)
