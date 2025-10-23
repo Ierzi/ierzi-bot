@@ -591,7 +591,7 @@ class Economy(commands.Cog):
             await ctx.send(f"you only have {balance.to_float():,.2f} coins.")
             return
         
-        wheel_multipliers = [0, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
+        wheel_multipliers = [0, 0.3, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
         end_multiplier = random.choice(wheel_multipliers)
         animation_frames = random.randint(12, 16)
         
