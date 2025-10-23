@@ -576,7 +576,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 20, commands.BucketType.user)
     async def wheel(self, ctx: commands.Context, amount: float):
         """Spin the wheel and win or lose money."""
         user_id = ctx.author.id
@@ -615,54 +615,14 @@ class Economy(commands.Cog):
             await self._remove_money(user_id, winnings)
             await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {result:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
-
-        await self._add_money(user_id, winnings - bet.to_float())
-        result = winnings - bet.to_float()
-        await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {result:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
-    
-    @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
-    async def wheelall(self, ctx: commands.Context):
-        """take a wild guess"""
-        user_id = ctx.author.id
-        bet = await self._get_balance(user_id)
-        
-        if bet < Currency.none():
-            await ctx.send("no, check ur balance again")
-            return
-            
-        wheel_multipliers = [0, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
-        end_multiplier = random.choice(wheel_multipliers)
-        animation_frames = random.randint(12, 16)
-        
-        message = await ctx.send("Spinning the wheel...", allowed_mentions=discord.AllowedMentions.none())
-        await asyncio.sleep(1.5)
-
-        # Trying something new (making the animation slower and slower)
-        animation_speed = 0.1
-        for _ in range(animation_frames):
-            current_frame = random.choice(wheel_multipliers)
-            await message.edit(content=f"**{current_frame}x**")
-            await asyncio.sleep(animation_speed)
-            animation_speed += 0.1
-
-        await message.edit(content=f"**{end_multiplier}x**")
-        await asyncio.sleep(2)
-
-        winnings = float(bet * end_multiplier)
-        if winnings < bet.to_float():
-            result = winnings - bet.to_float()
-            await self._remove_money(user_id, winnings)
-            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {result:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
-            return
-
+ 
         await self._add_money(user_id, winnings - bet.to_float())
         result = winnings - bet.to_float()
         await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {result:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         
     
     @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 20, commands.BucketType.user)
     async def slots(self, ctx: commands.Context, amount: float):
         """slot machine idk"""
         user_id = ctx.author.id
@@ -706,7 +666,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} didn't win anything and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 20, commands.BucketType.user)
     async def roulette(self, ctx: commands.Context, _type: str, choice: str, amount: float):
         """roulette! Example: !roulette number 17 150 or !roulette color black 100"""
         # basic checks
