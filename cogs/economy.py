@@ -591,20 +591,20 @@ class Economy(commands.Cog):
             await ctx.send(f"you only have {balance.to_float():,.2f} coins.")
             return
         
-        wheel_multipliers = [0, 0, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
+        wheel_multipliers = [0, 0.25, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
         end_multiplier = random.choice(wheel_multipliers)
-        animation_frames = random.randint(12, 16)
+        animation_frames = random.randint(15, 20)
         
         message = await ctx.send("Spinning the wheel...", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(1.5)
 
         # Trying something new (making the animation slower and slower)
-        animation_speed = 0.1
+        animation_speed = 0.05
         for _ in range(animation_frames):
             current_frame = random.choice(wheel_multipliers)
             await message.edit(content=f"**{current_frame}x**")
             await asyncio.sleep(animation_speed)
-            animation_speed += 0.1
+            animation_speed += 0.05
 
         await message.edit(content=f"**{end_multiplier}x**")
         await asyncio.sleep(2)
