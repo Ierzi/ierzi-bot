@@ -611,7 +611,7 @@ class Economy(commands.Cog):
 
         winnings = float(bet * end_multiplier)
         if winnings < bet.to_float():
-            result = winnings - bet.to_float()
+            result = winnings + bet.to_float() #cuz im removing money
             await self._remove_money(user_id, result)
             await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {result:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
