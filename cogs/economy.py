@@ -591,7 +591,7 @@ class Economy(commands.Cog):
             await ctx.send(f"you only have {balance.to_float():,.2f} coins.")
             return
         
-        wheel_multipliers = [0, 0.3, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
+        wheel_multipliers = [0, 0, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
         end_multiplier = random.choice(wheel_multipliers)
         animation_frames = random.randint(12, 16)
         
@@ -612,7 +612,7 @@ class Economy(commands.Cog):
         winnings = float(bet * end_multiplier)
         if winnings < bet.to_float():
             result = winnings - bet.to_float()
-            await self._remove_money(user_id, winnings)
+            await self._remove_money(user_id, result)
             await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {result:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
  
