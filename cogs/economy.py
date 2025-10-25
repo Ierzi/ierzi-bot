@@ -114,6 +114,16 @@ class Economy(commands.Cog):
         """, user_id, float_balance, amount)
         self.console.print(f"Removed {amount} from user {user_id}. New balance: {new_balance}")
 
+    async def _add_rebirths(self, user_id: int, rebirths: int = 1):
+        """Add rebirths to a user."""
+        await self._ensure_user_exists(user_id)
+        await db.execute("""
+            UPDATE economy 
+            SET rebirths = rebirths + $2
+            WHERE user_id = $1
+        """, user_id, rebirths)
+        self.console.print(f"Added {rebirths} rebirths to user {user_id}.")
+
     async def _set_balance(self, user_id: int, amount: float):
         """Set the balance of a user."""
         await self._ensure_user_exists(user_id)
@@ -135,6 +145,16 @@ class Economy(commands.Cog):
             WHERE user_id = $1
         """, user_id, float_amount)
         self.console.print(f"Set money_lost of user {user_id} to {amount}.")
+
+    async def _set_rebirths(self, user_id: int, rebirths: int):
+        """Set the number of rebirths of a user."""
+        await self._ensure_user_exists(user_id)
+        await db.execute("""
+            UPDATE economy 
+            SET rebirths = $2
+            WHERE user_id = $1
+        """, user_id, rebirths)
+        self.console.print(f"Set rebirths of user {user_id} to {rebirths}.")
 
     async def _cooldown(
             self,
@@ -186,11 +206,12 @@ class Economy(commands.Cog):
 
     async def _calculate_rebirth_bonus(
             self,
-            user_id: int
+            user_id: int,
+            bonus_per_rebirth: float = 0.1
         ) -> float:
         """Calculate the rebirth bonus multiplier for a user."""
         rebirths = await self._get_rebirths(user_id)
-        bonus_multiplier = 1 + (rebirths * 0.1) # 10% bonus per rebirth
+        bonus_multiplier = 1 + (rebirths * bonus_per_rebirth) # 10% bonus per rebirth by default
         return bonus_multiplier
     
 
@@ -241,7 +262,11 @@ class Economy(commands.Cog):
         
         job = random.choice(self.jobs)
         job_name, min_pay, max_pay = job
-        pay = random.uniform(min_pay, max_pay)
+
+        rebirth_bonus = await self._calculate_rebirth_bonus(user_id)
+        usual_pay = random.uniform(min_pay, max_pay) * rebirth_bonus
+        rich_pay = 0.05 * (await self._get_balance(user_id)).to_float() * rebirth_bonus
+        pay = max(usual_pay, rich_pay)
 
         await self._add_money(user_id, pay)
         await self._update_cooldown(user_id, "last_worked")
@@ -260,7 +285,10 @@ class Economy(commands.Cog):
             await ctx.send(f"You already claimed your daily! Try again in {hours}h {minutes}m {seconds}s.")
             return
 
-        daily_amount = 3500
+        balance = (await self._get_balance(user_id)).to_float()
+        usual_daily_amount = 3500 * await self._calculate_rebirth_bonus(user_id)
+        rich_daily = 0.02 * balance * await self._calculate_rebirth_bonus(user_id)
+        daily_amount = max(usual_daily_amount, rich_daily)
         await self._add_money(user_id, daily_amount)
         await self._update_cooldown(user_id, "last_daily")
         await ctx.send(f"{ctx.author.mention} claimed {p_pronoun} daily! {daily_amount:,} coins {self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
@@ -278,14 +306,19 @@ class Economy(commands.Cog):
             await ctx.send(f"You already tried to rob a bank! Try again in {hours}h {minutes}m {seconds}s.")
             return
         
-        success_chance = 0.25
+        success_chance = 0.25 + await self._calculate_rebirth_bonus(user_id, bonus_per_rebirth=0.05)
+        user_balance = (await self._get_balance(user_id)).to_float()
         await self._update_cooldown(user_id, "last_robbed_bank")
         if random.random() < success_chance:
-            amount_stolen = random.uniform(500, 1000)
+            usual_amount_stolen = random.uniform(500, 1000) 
+            rich_amount_stolen = random.uniform(0.025 * user_balance, 0.06 * user_balance)
+            amount_stolen = max(usual_amount_stolen, rich_amount_stolen)
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} robbed a bank and got away with {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
-            fine = random.uniform(200, 800)
+            usual_fine = random.uniform(200, 800)
+            rich_fine = random.uniform(0.025 * user_balance, 0.045 * user_balance) # to fine-tune
+            fine = max(usual_fine, rich_fine)
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
@@ -310,11 +343,12 @@ class Economy(commands.Cog):
             return
         
         target_balance = await self._get_balance(member.id)
+        target_member_rebirths_bonus = await self._calculate_rebirth_bonus(member.id, bonus_per_rebirth=0.05)
         if target_balance.to_float() < 100:
             await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        success_chance = 0.25
+        success_chance = min(0.25 + target_member_rebirths_bonus, 0.5)
         await self._update_cooldown(user_id, "last_robbed_user")
         if random.random() < success_chance:
             amount_stolen = random.uniform(0.01 * target_balance.to_float(), 0.1 * target_balance.to_float()) 
@@ -772,7 +806,7 @@ class Economy(commands.Cog):
         await self._remove_money(user_id, bet.to_float())
         await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    # Rebirths
+    # Rebirth commands
     @commands.group()
     async def rebirth(self, ctx: commands.Context):
         """Rebirth commands."""
@@ -787,7 +821,7 @@ class Economy(commands.Cog):
         
         rebirths = await self._get_rebirths(member.id)
 
-        await ctx.send(f"{member.mention} has rebirthed {rebirths} times.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{member.mention} has rebirthed {rebirths} times. 💠", allowed_mentions=discord.AllowedMentions.none())
     
     @rebirth.command()
     async def buy(self, ctx: commands.Context):
@@ -813,10 +847,16 @@ class Economy(commands.Cog):
         """, user_id)
 
 
-        await self._add_rebirth(user_id)
+        await self._add_rebirths(user_id)
         bonus_multiplier = await self._calculate_rebirth_bonus(user_id)
-        await ctx.send(f"{ctx.author.mention} has successfully rebirthed! {self.coin_emoji} Your earnings are now multiplied by {bonus_multiplier:.2f}x!", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} has successfully rebirthed! {self.coin_emoji} Your earnings are now multiplied by {bonus_multiplier:.2f}x! 💠", allowed_mentions=discord.AllowedMentions.none())
 
+    @rebirth.command()
+    async def price(self, ctx: commands.Context):
+        """See the cost of rebirthing."""
+
+        rebirth_cost = await self._calculate_rebirth_cost(ctx.author.id)
+        await ctx.send(f"Your next rebirth will cost {rebirth_cost:,.2f} coins. 💠{self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     # Admin commands
     @commands.command()
@@ -826,6 +866,14 @@ class Economy(commands.Cog):
 
         await self._add_money(user.id, amount)
         await ctx.send(f"Successfully gave {amount:,.2f} coins to user {user}.", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command(aliases=("gr",))
+    @commands.is_owner()
+    async def give_rebirth(self, ctx: commands.Context, user: discord.User, amount: Optional[int] = 1):
+        """Give someone rebirths. Can only be used by bot owners."""
+        
+        await self._add_rebirths(user.id, amount)
+        await ctx.send(f"Successfully gave {amount} rebirth(s) to user {user}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.is_owner()
@@ -894,7 +942,7 @@ class Economy(commands.Cog):
 
         await db.execute("DELETE FROM economy WHERE user_id = $1", user1_id)
 
-        await ctx.send(f"Transferred all economy data from <@{user1_id}> to <@{user2_id}>.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"Transferred all economy data from {user1.mention} to {user2.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
 async def update_tables(reset: bool = False) -> None:
     # Just remaking the database schema lmao
