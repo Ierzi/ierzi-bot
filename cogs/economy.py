@@ -1,3 +1,4 @@
+from calendar import c
 import discord
 from discord import SelectOption, Embed
 from discord.ext import commands
@@ -193,7 +194,7 @@ class Economy(commands.Cog):
             ON CONFLICT (user_id) DO UPDATE SET {cooldown_type} = $2
         """, user_id, now)
 
-    async def _calculate_rebirth_cost(
+    async def calculate_rebirth_cost(
             self,
             user_id: int
         ) -> float:
@@ -292,7 +293,7 @@ class Economy(commands.Cog):
         daily_amount = max(usual_daily_amount, rich_daily)
         await self._add_money(user_id, daily_amount)
         await self._update_cooldown(user_id, "last_daily")
-        await ctx.send(f"{ctx.author.mention} claimed {p_pronoun} daily! {daily_amount:,} coins {self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{ctx.author.mention} claimed {p_pronoun} daily! {daily_amount:,.2f} coins {self.coin_emoji}!", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def robbank(self, ctx: commands.Context):
@@ -485,7 +486,7 @@ class Economy(commands.Cog):
                 user = self.bot.get_user(row["user_id"]) or await self.bot.fetch_user(row["user_id"])
                 user_name = user.mention
                 rebirths = row["rebirths"]
-                description += f"**{rank}. {user_name}** - {rebirths} rebirths\n"
+                description += f"**{rank}. {user_name}** - {rebirths:,} rebirths\n"
                 rank += 1
             
             embed.description = description
@@ -744,8 +745,10 @@ class Economy(commands.Cog):
         await asyncio.sleep(2)
 
         numbers_pool = [str(i) for i in range(1, 51)]
-        user_numbers = sorted(random.sample(numbers_pool, 6))
-        winning_numbers = sorted(random.sample(numbers_pool, 6))
+        user_numbers = random.sample(numbers_pool, 6)
+        winning_numbers = random.sample(numbers_pool, 6)
+        user_numbers.sort(key=lambda x: int(x))
+        winning_numbers.sort(key=lambda x: int(x))
 
         your_numbers = f"Your numbers: {', '.join(user_numbers)}"
         await message.edit(content=your_numbers)
@@ -759,7 +762,7 @@ class Economy(commands.Cog):
         num_matches = len(matches)
 
         if num_matches == 6:
-            await ctx.send(f"{ctx.author.mention} won the lottery jackpot of {winning_money:,.2f} coins!!! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(f"**{ctx.author.mention} won the lottery jackpot of {winning_money:,.2f} coins!!!** {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             await self._add_money(user_id, winning_money)
         else:
             await self._remove_money(user_id, float(lottery_cost))
@@ -962,7 +965,7 @@ class Economy(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def set_balance(self, ctx: commands.Context, user: discord.User, amount: float):
-        """Set someone's balance. Can only be used by bot owners, obviously."""
+        """Set someone's balance. Can only be used by bot owners."""
 
         await self._set_balance(user.id, amount)
         await ctx.send(f"Set the balance of {user.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
@@ -974,6 +977,14 @@ class Economy(commands.Cog):
         
         await self._set_money_lost(user.id, amount)
         await ctx.send(f"Set the money_lost of {user.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    @commands.is_owner()
+    async def set_rebirths(self, ctx: commands.Context, user: discord.User, amount: int):
+        """Set the rebirths of a user. Can only be used by bot owners."""
+        
+        await self._set_rebirths(user.id, amount)
+        await ctx.send(f"Set the rebirths of {user.mention} to {amount}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(aliases=("mm",))
     @commands.is_owner()
