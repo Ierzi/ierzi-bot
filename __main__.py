@@ -56,6 +56,8 @@ bot = commands.Bot(
 
 experimental_branch = False
 
+grok_cache: dict[int, str] = {} # message id - response
+
 # Events
 @bot.event
 async def on_ready():
@@ -127,10 +129,15 @@ async def on_message(message: Message):
         
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
-            if random.choice([True, False]):
-                await message.add_reaction("✅")
+            if message.id in grok_cache:
+                await message.add_reaction(grok_cache[message.id], allowed_mentions=discord.AllowedMentions.none())
             else:
-                await message.add_reaction("❌")
+                if random.choice([True, False]):
+                    await message.add_reaction("✅")
+                    grok_cache[message.id] = "✅"
+                else:
+                    await message.add_reaction("❌")
+                    grok_cache[message.id] = "❌"
 
     # Finally, process commands
     await bot.process_commands(message)
