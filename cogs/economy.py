@@ -2,6 +2,7 @@ import discord
 from discord import SelectOption, Embed
 from discord.ext import commands
 from discord.ui import View, Select
+from numpy import number
 
 from .utils.database import db
 from .utils.pronouns import get_pronoun, PronounEnum
@@ -701,8 +702,9 @@ class Economy(commands.Cog):
         message = await ctx.send("The lottery is starting... Good luck!", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(2)
 
-        user_numbers = sorted(random.sample(range(1, 51), 6))
-        winning_numbers = sorted(random.sample(range(1, 51), 6))
+        numbers_pool = list(range(1, 51))
+        user_numbers = sorted(random.sample(numbers_pool, 6))
+        winning_numbers = sorted(random.sample(numbers_pool, 6))
 
         your_numbers = f"Your numbers: {', '.join(user_numbers)}"
         await message.edit(content=your_numbers)
