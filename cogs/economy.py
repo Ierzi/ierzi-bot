@@ -194,7 +194,7 @@ class Economy(commands.Cog):
             ON CONFLICT (user_id) DO UPDATE SET {cooldown_type} = $2
         """, user_id, now)
 
-    async def calculate_rebirth_cost(
+    async def _calculate_rebirth_cost(
             self,
             user_id: int
         ) -> float:
