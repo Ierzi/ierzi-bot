@@ -107,6 +107,7 @@ async def on_message(message: Message):
     
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
+        #TODO: fix {bot.user.mention}
         if bot.user in message.mentions:
             if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
                 ai = AI(bot, console)
@@ -129,6 +130,7 @@ async def on_message(message: Message):
         
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
+            global grok_cache
             if message.id in grok_cache:
                 await message.add_reaction(grok_cache[message.id])
             else:
