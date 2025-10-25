@@ -63,6 +63,14 @@ class Economy(commands.Cog):
         else:
             return Currency.none()
 
+    async def _get_rebirths(self, user_id: int) -> int:
+        """Get the number of rebirths of a user."""
+        row = await db.fetchrow("SELECT rebirths FROM economy WHERE user_id = $1", user_id)
+        if row:
+            return row["rebirths"]
+        else:
+            return 0
+
     async def _ensure_user_exists(self, user_id: int) -> None:
         """Ensure the user exists in the database."""
         # First ensure user exists in users table (which economy references)
@@ -163,6 +171,28 @@ class Economy(commands.Cog):
             VALUES ($1, $2)
             ON CONFLICT (user_id) DO UPDATE SET {cooldown_type} = $2
         """, user_id, now)
+
+    async def _calculate_rebirth_cost(
+            self,
+            user_id: int
+        ) -> float:
+        """Calculate the rebirth cost for a user."""
+        rebirths = await self._get_rebirths(user_id)
+        base_cost = 100_000.00
+        cost_multiplier = 2.0 ** rebirths
+        cost = base_cost * cost_multiplier
+        return cost
+    
+
+    async def _calculate_rebirth_bonus(
+            self,
+            user_id: int
+        ) -> float:
+        """Calculate the rebirth bonus multiplier for a user."""
+        rebirths = await self._get_rebirths(user_id)
+        bonus_multiplier = 1 + (rebirths * 0.1) # 10% bonus per rebirth
+        return bonus_multiplier
+    
 
     # Commands
     @commands.command(name="ecoprofile", aliases=("balance", "bal"))
@@ -669,7 +699,7 @@ class Economy(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 20, commands.BucketType.user)
     async def roulette(self, ctx: commands.Context, _type: str, choice: str, amount: float):
-        """roulette! Example: !roulette number 17 150 or !roulette color black 100"""
+        """roulette! Usage: !roulette number 17 150 or !roulette color black 100"""
         # basic checks
         user_id = ctx.author.id
         if amount <= 0:
@@ -742,6 +772,52 @@ class Economy(commands.Cog):
         await self._remove_money(user_id, bet.to_float())
         await ctx.send(f"{ctx.author.mention} lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
+    # Rebirths
+    @commands.group()
+    async def rebirth(self, ctx: commands.Context):
+        """Rebirth commands."""
+        if ctx.invoked_subcommand is None:
+           return
+        
+    @rebirth.command()
+    async def see(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+        """See your or someone else's rebirths."""
+        if member is None:
+            member = ctx.author
+        
+        rebirths = await self._get_rebirths(member.id)
+
+        await ctx.send(f"{member.mention} has rebirthed {rebirths} times.", allowed_mentions=discord.AllowedMentions.none())
+    
+    @rebirth.command()
+    async def buy(self, ctx: commands.Context):
+        """Buy a rebirth."""
+        user_id = ctx.author.id
+        balance = await self._get_balance(user_id)
+        rebirth_cost = await self._calculate_rebirth_cost(user_id)
+
+        if balance < Currency(rebirth_cost):
+            await ctx.send(f"You need {rebirth_cost:,.2f} coins to rebirth, but you only have {balance:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
+        # Reset economy data except rebirths
+        await db.execute("""
+            UPDATE economy
+            SET balance = 0.00,
+                money_lost = 0.00,
+                last_daily = NULL,
+                last_worked = NULL,
+                last_robbed_bank = NULL,
+                last_robbed_user = NULL
+            WHERE user_id = $1
+        """, user_id)
+
+
+        await self._add_rebirth(user_id)
+        bonus_multiplier = await self._calculate_rebirth_bonus(user_id)
+        await ctx.send(f"{ctx.author.mention} has successfully rebirthed! {self.coin_emoji} Your earnings are now multiplied by {bonus_multiplier:.2f}x!", allowed_mentions=discord.AllowedMentions.none())
+
+
     # Admin commands
     @commands.command()
     @commands.is_owner()
@@ -812,8 +888,9 @@ class Economy(commands.Cog):
                 last_worked = $5,
                 last_robbed_bank = $6,
                 last_robbed_user = $7,
+                rebirths = $8
             WHERE user_id = $1
-        """, user2_id, row["balance"], row["money_lost"], row["last_daily"], row["last_worked"], row["last_robbed_bank"], row["last_robbed_user"])
+        """, user2_id, row["balance"], row["money_lost"], row["last_daily"], row["last_worked"], row["last_robbed_bank"], row["last_robbed_user"], row["rebirths"])
 
         await db.execute("DELETE FROM economy WHERE user_id = $1", user1_id)
 
