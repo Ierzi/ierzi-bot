@@ -732,9 +732,9 @@ class Economy(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 20, commands.BucketType.user)
     async def lottery(self, ctx: commands.Context):
-        """Participate in the lottery! Costs 1000 coins to enter btw."""
+        """Participate in the lottery! Costs 500 coins to enter btw."""
         user_id = ctx.author.id
-        lottery_cost = Currency(1000)
+        lottery_cost = Currency(500)
         balance = await self._get_balance(user_id)
         if lottery_cost > balance:
             await ctx.send("you broke bro")
