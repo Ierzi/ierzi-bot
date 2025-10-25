@@ -130,7 +130,7 @@ async def on_message(message: Message):
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
             if message.id in grok_cache:
-                await message.add_reaction(grok_cache[message.id], allowed_mentions=discord.AllowedMentions.none())
+                await message.add_reaction(grok_cache[message.id])
             else:
                 if random.choice([True, False]):
                     await message.add_reaction("✅")
