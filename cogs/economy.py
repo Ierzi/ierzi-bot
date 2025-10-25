@@ -931,9 +931,14 @@ class Economy(commands.Cog):
         await ctx.send(f"{ctx.author.mention} has successfully rebirthed! {self.coin_emoji} Your earnings are now multiplied by {bonus_multiplier:.2f}x! 💠", allowed_mentions=discord.AllowedMentions.none())
 
     @rebirth.command()
-    async def price(self, ctx: commands.Context):
-        """See the cost of rebirthing."""
+    async def price(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+        """See how much your next or someone else's rebirth will cost."""
 
+        if member is not None:
+            rebirth_cost = await self._calculate_rebirth_cost(member.id)
+            await ctx.send(f"{member.mention}'s next rebirth will cost {rebirth_cost:,.2f} coins. 💠{self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            return
+        
         rebirth_cost = await self._calculate_rebirth_cost(ctx.author.id)
         await ctx.send(f"Your next rebirth will cost {rebirth_cost:,.2f} coins. 💠{self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
