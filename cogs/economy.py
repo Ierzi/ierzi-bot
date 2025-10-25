@@ -522,7 +522,7 @@ class Economy(commands.Cog):
             case "lost" | "money_lost" | "ml":
                 embed = await get_money_lost_leaderboard()
             case "rebirths" | "rebirth" | "rb":
-                await ctx.send("rebirth leaderboard coming soon tm")
+                embed = await get_rebirths_leaderboard()
             case _:
                 embed = await get_balance_leaderboard() # Defaults to balance
 
