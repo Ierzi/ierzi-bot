@@ -1,6 +1,7 @@
 # Ierzi Bot
 
 # Discord.py Improrts
+from turtle import update
 import discord
 from discord import Interaction, Embed, Message, SelectOption, app_commands
 from discord.activity import CustomActivity
@@ -10,7 +11,7 @@ from discord.ui import View, Select
 # Cogs
 from cogs.ai import AI
 from cogs.birthday import BirthdayCog as Birthday
-from cogs.economy import Economy
+from cogs.economy import Economy, update_tables
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -664,7 +665,9 @@ async def gif(ctx: commands.Context):
 async def main():
     await db.init_pool()
     try:
-        await load_cogs() 
+        await load_cogs()
+        await update_tables(reset=True)
+        console.print("Economy tables updated.") 
         console.print("Bot is ready.")
         await bot.start(token)
     finally:

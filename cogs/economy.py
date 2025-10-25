@@ -810,27 +810,24 @@ class Economy(commands.Cog):
 
         await ctx.send(f"Transferred all economy data from <@{user1_id}> to <@{user2_id}>.", allowed_mentions=discord.AllowedMentions.none())
 
-async def update_tables():
+async def update_tables(reset: bool = False) -> None:
     # Just remaking the database schema lmao
     # New max balance is 999,999,999,999.99
+    # New max balance is 999,999,999,999,999.99
+
+    if reset:
+        await db.execute("DROP TABLE IF EXISTS economy")
 
     await db.execute("""
                 CREATE TABLE IF NOT EXISTS economy (
                 user_id BIGINT PRIMARY KEY REFERENCES users(user_id) ON DELETE CASCADE,
                 balance numeric(15, 2) NOT NULL DEFAULT 0.00,
-                money_lost numeric(15, 2) NOT NULL DEFAULT 0.00,
+                money_lost numeric(18, 2) NOT NULL DEFAULT 0.00,
                 last_daily TIMESTAMPTZ,
                 last_worked TIMESTAMPTZ,
                 last_robbed_bank TIMESTAMPTZ,
-                last_robbed_user TIMESTAMPTZ
+                last_robbed_user TIMESTAMPTZ,
+                rebirths INT NOT NULL DEFAULT 0
                 );
     """)
-    # Remove old columns (see schema.sql)
-    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS balance""")
-    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_daily""")
-    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_worked""")
-    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_robbed_bank""")
-    await db.execute("""ALTER TABLE users DROP COLUMN IF EXISTS last_robbed_user""")
-    # Remove old items column cause i wont use items
-    await db.execute("""ALTER TABLE economy DROP COLUMN IF EXISTS items""")
-
+    
