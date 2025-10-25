@@ -20,6 +20,7 @@ from cogs.songs import Songs
 # Utilities
 from cogs.utils import pronouns
 from cogs.utils.database import db
+from cogs.utils.variables import VIEW_TIMEOUT, NO_SLURS_SERVERS
 
 # Other
 import asyncio
@@ -401,7 +402,7 @@ async def fill_embeds():
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
-    view = View(timeout=300) # 5 minutes
+    view = View(VIEW_TIMEOUT) # 5 minutes
 
     help_options = [
         SelectOption(label="Home", description="Homepage and uncategorized commands"),
@@ -490,7 +491,7 @@ async def pronouns_set(ctx: commands.Context):
     current_pronouns = await pronouns.get_pronouns(user_id)
     set_pronouns_embed.add_field(name="Current pronouns", value=f"Current pronouns: {current_pronouns}")
 
-    view = View(timeout=500)
+    view = View(VIEW_TIMEOUT)
     pronouns_option = [
         SelectOption(label='he/him'),
         SelectOption(label='she/her'),
@@ -584,7 +585,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id == 980439011560661002: #eddgows server
+            if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
                 await ctx.send(f"{user_profile.mention}'s pronouns are a mf slur 💔")
                 return
             await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
@@ -593,7 +594,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id == 980439011560661002: #eddgows server
+            if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
                 await ctx.send(f"Your pronouns are a slur and daddy eddgow dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")

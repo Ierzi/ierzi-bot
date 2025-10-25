@@ -6,6 +6,7 @@ from discord.ui import View, Select
 from .utils.database import db
 from .utils.pronouns import get_pronoun, PronounEnum
 from .utils.types import Currency
+from .utils.variables import VIEW_TIMEOUT
 
 import asyncio
 from datetime import timedelta, datetime, timezone
@@ -399,7 +400,7 @@ class Economy(commands.Cog):
             return embed
 
         # View to change categories (balance and money lost)
-        view = View()
+        view = View(VIEW_TIMEOUT)
         select_item = Select(
             placeholder="Select Category",
             options=[

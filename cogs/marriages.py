@@ -5,6 +5,7 @@ from discord.ui import Button, View
 from .utils import pronouns
 from .utils.database import db
 from .utils.pronouns import PronounEnum
+from .utils.variables import *
 
 from rich.console import Console
 
@@ -67,7 +68,7 @@ class Marriages(commands.Cog):
                 await ctx.send(f"Congratulations {proposer.mention} and {self.bot.user.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none()) 
                 await self.add_marriage_list((proposer.id, self.bot.user.id))
                 return
-            if ctx.guild.id != 1372240591043170496: # epikteam guild id, if not, no slurs 
+            if ctx.guild.id in NO_SLURS_SERVERS: 
                 await ctx.send("no.")
                 await ctx.send(f"{self.bot.user.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
                 return
@@ -80,7 +81,7 @@ class Marriages(commands.Cog):
             return
         
         message = f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline. You have 60 seconds to respond."
-        view = View(timeout=60.0)
+        view = View(VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
@@ -126,7 +127,7 @@ class Marriages(commands.Cog):
 
         message = f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. You have 60 seconds to respond."
 
-        view = View(timeout=60.0)
+        view = View(VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
