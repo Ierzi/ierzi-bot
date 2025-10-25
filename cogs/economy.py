@@ -745,35 +745,44 @@ class Economy(commands.Cog):
     # Admin commands
     @commands.command()
     @commands.is_owner()
-    async def give_money(self, ctx: commands.Context, member: discord.User, amount: float):
+    async def give_money(self, ctx: commands.Context, user: discord.User, amount: float):
         """Spawns money out of thin air and gives it to someone. Can only be used by bot owners."""
 
-        await self._add_money(member.id, amount)
-        await ctx.send(f"Successfully gave {amount:,.2f} coins to user {member}.", allowed_mentions=discord.AllowedMentions.none())
+        await self._add_money(user.id, amount)
+        await ctx.send(f"Successfully gave {amount:,.2f} coins to user {user}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.is_owner()
-    async def set_balance(self, ctx: commands.Context, member: discord.User, amount: float):
+    async def set_balance(self, ctx: commands.Context, user: discord.User, amount: float):
         """Set someone's balance. Can only be used by bot owners, obviously."""
 
-        await self._set_balance(member.id, amount)
-        await ctx.send(f"Set the balance of {member.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+        await self._set_balance(user.id, amount)
+        await ctx.send(f"Set the balance of {user.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(aliases=("sml",))
     @commands.is_owner()
-    async def set_money_lost(self, ctx: commands.Context, member: discord.User, amount: float):
+    async def set_money_lost(self, ctx: commands.Context, user: discord.User, amount: float):
         """Set the money_lost of a user. Can only be used by bot owners."""
         
-        await self._set_money_lost(member.id, amount)
-        await ctx.send(f"Set the money_lost of {member.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+        await self._set_money_lost(user.id, amount)
+        await ctx.send(f"Set the money_lost of {user.mention} to {amount:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command(aliases=("mm",))
+    @commands.is_owner()
+    async def max_money(self, ctx: commands.Context, user: discord.User):
+        """Give someone the maximum balance possible. Can only be used by bot owners."""
+        
+        max_balance = 999_999_999_999.99
+        await self._set_balance(user.id, max_balance)
+        await ctx.send(f"Set the balance of {user.mention} to the maximum balance of {max_balance:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.is_owner()
-    async def ecoreset(self, ctx: commands.Context, member: discord.User):
+    async def ecoreset(self, ctx: commands.Context, user: discord.User):
         """Reset the economy data of a user. Can only be used by bot owners."""
         
-        await db.execute("DELETE FROM economy WHERE user_id = $1", member.id)
-        await ctx.send(f"Reset the economy data of {member.mention}.", allowed_mentions=discord.AllowedMentions.none())
+        await db.execute("DELETE FROM economy WHERE user_id = $1", user.id)
+        await ctx.send(f"Reset the economy data of {user.mention}.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     @commands.is_owner()
@@ -812,8 +821,8 @@ class Economy(commands.Cog):
 
 async def update_tables(reset: bool = False) -> None:
     # Just remaking the database schema lmao
-    # New max balance is 999,999,999,999.99
-    # New max balance is 999,999,999,999,999.99
+    # max balance is 999,999,999,999.99
+    # New max money lost is 999,999,999,999,999.99
 
     if reset:
         await db.execute("DROP TABLE IF EXISTS economy")
@@ -830,4 +839,4 @@ async def update_tables(reset: bool = False) -> None:
                 rebirths INT NOT NULL DEFAULT 0
                 );
     """)
-    
+

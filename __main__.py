@@ -666,8 +666,6 @@ async def main():
     await db.init_pool()
     try:
         await load_cogs()
-        await update_tables(reset=True)
-        console.print("Economy tables updated.") 
         console.print("Bot is ready.")
         await bot.start(token)
     finally:
