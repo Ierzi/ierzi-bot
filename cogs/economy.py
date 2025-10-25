@@ -699,10 +699,10 @@ class Economy(commands.Cog):
             return
         
         winning_money = random.randint(1_000_000, 5_000_000)
-        message = await ctx.send("The lottery is starting... Good luck!", allowed_mentions=discord.AllowedMentions.none())
+        message = await ctx.send("The lottery is starting...", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(2)
 
-        numbers_pool = list(range(1, 51))
+        numbers_pool = [str(i) for i in range(1, 51)]
         user_numbers = sorted(random.sample(numbers_pool, 6))
         winning_numbers = sorted(random.sample(numbers_pool, 6))
 
