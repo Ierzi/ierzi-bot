@@ -410,7 +410,7 @@ async def fill_embeds():
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
-    view = View(VIEW_TIMEOUT) # 5 minutes
+    view = View(timeout=VIEW_TIMEOUT) # 5 minutes
 
     help_options = [
         SelectOption(label="Home", description="Homepage and uncategorized commands"),
@@ -499,7 +499,7 @@ async def pronouns_set(ctx: commands.Context):
     current_pronouns = await pronouns.get_pronouns(user_id)
     set_pronouns_embed.add_field(name="Current pronouns", value=f"Current pronouns: {current_pronouns}")
 
-    view = View(VIEW_TIMEOUT)
+    view = View(timeout=VIEW_TIMEOUT)
     pronouns_option = [
         SelectOption(label='he/him'),
         SelectOption(label='she/her'),

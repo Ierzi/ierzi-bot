@@ -493,7 +493,7 @@ class Economy(commands.Cog):
             return embed
 
         # View to change categories (balance and money lost)
-        view = View(VIEW_TIMEOUT)
+        view = View(timeout=VIEW_TIMEOUT)
         select_item = Select(
             placeholder="Select Category",
             options=[

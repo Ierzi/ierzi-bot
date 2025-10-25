@@ -127,7 +127,7 @@ class Marriages(commands.Cog):
 
         message = f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. You have 60 seconds to respond."
 
-        view = View(VIEW_TIMEOUT)
+        view = View(timeout=VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
