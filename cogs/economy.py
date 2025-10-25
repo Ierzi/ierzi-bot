@@ -684,7 +684,43 @@ class Economy(commands.Cog):
         await self._add_money(user_id, winnings - bet.to_float())
         result = winnings - bet.to_float()
         await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {result:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+    
+    # guess what im bringing back
+    @commands.command()
+    @commands.cooldown(1, 20, commands.BucketType.user)
+    async def lottery(self, ctx: commands.Context):
+        """Participate in the lottery! Costs 1000 coins to enter btw."""
+        user_id = ctx.author.id
+        lottery_cost = Currency(1000)
+        balance = await self._get_balance(user_id)
+        if lottery_cost > balance:
+            await ctx.send("you broke bro")
+            return
         
+        winning_money = random.randint(1_000_000, 5_000_000)
+        message = await ctx.send("The lottery is starting... Good luck!", allowed_mentions=discord.AllowedMentions.none())
+        await asyncio.sleep(2)
+
+        user_numbers = sorted(random.sample(range(1, 51), 6))
+        winning_numbers = sorted(random.sample(range(1, 51), 6))
+
+        your_numbers = f"Your numbers: {', '.join(user_numbers)}"
+        await message.edit(content=your_numbers)
+        await asyncio.sleep(2)
+
+        for i in range(6):
+            await message.edit(content=f"{your_numbers}\nWinning numbers: {', '.join(winning_numbers[:i+1])}")
+            await asyncio.sleep(2)
+        
+        matches = set(user_numbers) & set(winning_numbers)
+        num_matches = len(matches)
+
+        if num_matches == 6:
+            await ctx.send(f"{ctx.author.mention} won the lottery jackpot of {winning_money:,.2f} coins!!! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await self._add_money(user_id, winning_money)
+        else:
+            await self._remove_money(user_id, float(lottery_cost))
+            await ctx.send(f"{ctx.author.mention} didn't win the lottery and lost {lottery_cost:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
     
     @commands.command()
     @commands.cooldown(1, 20, commands.BucketType.user)
