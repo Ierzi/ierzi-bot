@@ -375,7 +375,7 @@ class Economy(commands.Cog):
         per_page = 10
         page = 1
         offset = (page - 1) * 10
-        category: Literal["lost", "balance"] = "balance" # by default
+        category: str = "balance" # by default
         _case = 0 # Debug variable
 
         if arg_a is None and arg_b is None:
@@ -464,27 +464,68 @@ class Economy(commands.Cog):
 
             return embed
 
+        async def get_rebirths_leaderboard() -> Optional[Embed]:
+            rows = await db.fetch("""
+                SELECT user_id, rebirths FROM economy 
+                ORDER BY rebirths DESC 
+                LIMIT $1 OFFSET $2
+            """, per_page, offset)
+
+            if not rows:
+                await ctx.send("There's a whopping 0 users on this page.")
+                return
+            
+            embed = Embed(
+                title=f"Economy Rebirths Leaderboard - Page {page}",
+                color=discord.Colour.gold()
+            )
+            description = ""
+            rank = offset + 1
+            for row in rows:
+                user = self.bot.get_user(row["user_id"]) or await self.bot.fetch_user(row["user_id"])
+                user_name = user.mention
+                rebirths = row["rebirths"]
+                description += f"**{rank}. {user_name}** - {rebirths} rebirths\n"
+                rank += 1
+            
+            embed.description = description
+
+            return embed
+
         # View to change categories (balance and money lost)
         view = View(VIEW_TIMEOUT)
         select_item = Select(
             placeholder="Select Category",
             options=[
                 SelectOption(label="Balance", value="balance", description="See the balance leadeerboard"),
-                SelectOption(label="Money Lost", value="money_lost", description="See the money lost leaderboard")
+                SelectOption(label="Money Lost", value="money_lost", description="See the money lost leaderboard"),
+                SelectOption(label="Rebirths", value="rebirths", description="See the rebirths leaderboard")
             ]
         )
         async def select_callback(interaction: discord.Interaction):
             select_category = select_item.values[0]
             if select_category == "balance":
                 embed = await get_balance_leaderboard()
-            else:
+            elif select_category == "money_lost":
                 embed = await get_money_lost_leaderboard()
+            else:
+                embed = await get_rebirths_leaderboard()
             
             if not embed:
                 return
             await interaction.response.edit_message(embed=embed, view=view)
         
-        embed = await get_balance_leaderboard() if category == "balance" else await get_money_lost_leaderboard()
+        match category:
+            # Everything related to balance
+            case "balance" | "bal":
+                embed = await get_balance_leaderboard()
+            case "lost" | "money_lost" | "ml":
+                embed = await get_money_lost_leaderboard()
+            case "rebirths" | "rebirth" | "rb":
+                await ctx.send("rebirth leaderboard coming soon tm")
+            case _:
+                embed = await get_balance_leaderboard() # Defaults to balance
+
         select_item.callback = select_callback
         view.add_item(select_item)
 
