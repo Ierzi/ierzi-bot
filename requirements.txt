@@ -8,5 +8,6 @@ requests
 wikipedia-api
 aiofiles
 aiogoogletrans #gender
+moviepy
 
 # nltk - not used anymore (why did it ask for sqlite3)

@@ -23,13 +23,13 @@ from cogs.utils.database import db
 
 # Other
 import asyncio
-from collections import OrderedDict
 from datetime import datetime, timezone
 from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
+from moviepy import VideoFileClip
 import os
 import random
 from rich.console import Console
-from typing import Optional, Any
+from typing import Optional
 import time
 
 console = Console()
@@ -614,6 +614,51 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
 
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
+
+@bot.command()
+async def gif(ctx: commands.Context):
+    """Converts a photo/video into a gif."""
+    async with ctx.typing():
+        if ctx.message.attachments:
+            # Message attachements
+            # Get the first attachment
+            attachment = ctx.message.attachments[0]
+            attachment.save(attachment.filename)
+
+            # Convert to gif
+            clip = VideoFileClip(attachment.filename)
+            clip.write_gif("output.gif")
+
+            await ctx.send(file=discord.File("output.gif"))
+
+            # Remove files
+            os.remove(attachment.filename)
+            os.remove("output.gif")
+        else:
+            # Try getting the reply
+            if ctx.message.reference: 
+                reply = await ctx.channel.fetch_message(ctx.message.reference.message_id)
+                if reply.attachments:
+                    # Same thing again
+                    # Get the first attachment
+                    attachment = reply.attachments[0]
+                    await attachment.save(attachment.filename)
+
+                    # Convert to gif
+                    clip = VideoFileClip(attachment.filename)
+                    clip.write_gif("output.gif")
+
+                    await ctx.send(file=discord.File("output.gif"))
+
+                    # Remove files
+                    os.remove(attachment.filename)
+                    os.remove("output.gif")
+                else:
+                    await ctx.send("Send a photo/video or reply to one.")
+                    return
+            else:
+                await ctx.send("Send a photo/video or reply to one.")
+                return
 
 async def main():
     await db.init_pool()
