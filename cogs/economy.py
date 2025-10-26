@@ -430,7 +430,6 @@ class Economy(commands.Cog):
             """, per_page, offset)
 
             if not rows:
-                await ctx.send("There's a whopping 0 users on this page.")
                 return
             
             embed = Embed(
@@ -458,7 +457,6 @@ class Economy(commands.Cog):
             """, per_page, offset)
 
             if not rows:
-                await ctx.send("There's a whopping 0 users on this page.")
                 return
             
             embed = Embed(
@@ -486,7 +484,6 @@ class Economy(commands.Cog):
             """, per_page, offset)
 
             if not rows:
-                await ctx.send("There's a whopping 0 users on this page.")
                 return
             
             embed = Embed(
@@ -516,6 +513,7 @@ class Economy(commands.Cog):
                 SelectOption(label="Rebirths", value="rebirths", description="See the rebirths leaderboard")
             ]
         )
+
         async def select_callback(interaction: discord.Interaction):
             nonlocal category, embed
             select_category = select_item.values[0]
@@ -543,6 +541,10 @@ class Economy(commands.Cog):
                 embed = await get_rebirths_leaderboard()
             case _:
                 embed = await get_balance_leaderboard() # Defaults to balance
+            
+        if not embed:
+            await ctx.send("No users found on this page.")
+            return
 
         select_item.callback = select_callback
         view.add_item(select_item)
@@ -617,7 +619,7 @@ class Economy(commands.Cog):
             embed.description = new_embed.description
             await interaction.response.edit_message(embed=embed, view=view)
 
-        refresh_button = discord.ui.Button(label="🔄", style=discord.ButtonStyle.grey)
+        refresh_button = discord.ui.Button(label="🔄", style=discord.ButtonStyle.primary)
         refresh_button.callback = refresh_callback
         view.add_item(refresh_button)
 
