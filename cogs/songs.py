@@ -1,6 +1,7 @@
 from discord.ext import commands
 
 import aiohttp
+from async_lru import alru_cache
 import random
 import requests
 from rich.console import Console
@@ -65,6 +66,7 @@ class Songs(commands.Cog):
         title, album, artist = self.songs[index]
         await ctx.send(f"**{title}** - {album} - {artist}")
     
+    @alru_cache()
     async def async_get_page(self, index: int):
         url = self.deezer_playlist_url if index == 0 else f"{self.deezer_playlist_url}?index={index * 25}"
         async with aiohttp.ClientSession() as session:
