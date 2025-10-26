@@ -408,18 +408,18 @@ async def fill_embeds():
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
-    view = View(timeout=VIEW_TIMEOUT) # 5 minutes
+    view = View(timeout=VIEW_TIMEOUT) 
 
     help_options = [
-        SelectOption(label="Home", description="Homepage and uncategorized commands"),
-        SelectOption(label="AI", description="AI commands"),
-        SelectOption(label="Birthday", description="Birthday commands"),
-        SelectOption(label="Economy", description="Economy commands"),
-        SelectOption(label="Fun", description="Fun commands"),
-        SelectOption(label="Marriages", description="Marriage commands"),
-        SelectOption(label="Reactions", description="Reaction commands"),
-        SelectOption(label="Search", description="Search commands"),
-        SelectOption(label="Songs", description="Songs commands"),
+        SelectOption(label="Home", description="Homepage and uncategorized commands", emoji="🏠"),
+        SelectOption(label="AI", description="AI commands", emoji="🤖"),
+        SelectOption(label="Birthday", description="Birthday commands", emoji="🎂"),
+        SelectOption(label="Economy", description="Economy commands", emoji="💵"),
+        SelectOption(label="Fun", description="Fun commands", emoji="🎉"),
+        SelectOption(label="Marriages", description="Marriage commands", emoji="💍"),
+        SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
+        SelectOption(label="Search", description="Search commands", emoji="🔎"),
+        SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
     ]
     help_select = Select(
         placeholder="select category",
@@ -459,17 +459,17 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=home_embed, view=view)
             case "ai":
                 await ctx.send(embed=ai_embed, view=view)
-            case "birthday":
+            case "birthday" | "bday" | "birthdays":
                 await ctx.send(embed=birthday_embed, view=view)
-            case "economy":
+            case "economy" | "eco" | "econ":
                 await ctx.send(embed=economy_embed, view=view)
             case "fun":
                 await ctx.send(embed=fun_embed, view=view)
-            case "marriages":
+            case "marriages" | "marriage":
                 await ctx.send(embed=marriages_embed, view=view)
-            case "reactions":
+            case "reactions" | "reaction":
                 await ctx.send(embed=reactions_embed, view=view)
-            case "songs":
+            case "songs" | "song" | "music":
                 await ctx.send(embed=songs_embed, view=view)
             case "search":
                 await ctx.send(embed=search_embed, view=view)

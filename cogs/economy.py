@@ -47,6 +47,8 @@ class Economy(commands.Cog):
             ("NSFW Artist", 0.025, 325.00, 550.00),
             ("onlyfans", 0.00125, 1500.00, 3000.00)
         ]
+
+        self.latest_transactions = []
     
     # Helper functions
     async def _get_balance(self, user_id: int) -> Currency:
