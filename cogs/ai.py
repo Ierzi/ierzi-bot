@@ -54,7 +54,7 @@ class AI(commands.Cog):
 
     @commands.command()
     async def tldr(self, ctx: commands.Context):
-        """Reply to a messgae to shorten it."""
+        """Reply to a message to shorten it."""
         reply = ctx.message.reference
         if reply is None:
             await ctx.send("You didn't reply to a message.")

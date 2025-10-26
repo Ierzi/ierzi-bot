@@ -500,7 +500,7 @@ class Economy(commands.Cog):
         select_item = Select(
             placeholder="Select Category",
             options=[
-                SelectOption(label="Balance", value="balance", description="See the balance leadeerboard"),
+                SelectOption(label="Balance", value="balance", description="See the balance leaderboard"),
                 SelectOption(label="Money Lost", value="money_lost", description="See the money lost leaderboard"),
                 SelectOption(label="Rebirths", value="rebirths", description="See the rebirths leaderboard")
             ]
