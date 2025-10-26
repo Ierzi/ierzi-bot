@@ -493,7 +493,7 @@ class Economy(commands.Cog):
 
             return embed
 
-        # View to change categories (balance and money lost)
+        # View to change categories 
         view = View(timeout=VIEW_TIMEOUT)
         select_item = Select(
             placeholder="Select Category",
@@ -933,7 +933,7 @@ class Economy(commands.Cog):
         bonus_multiplier = await self._calculate_rebirth_bonus(user_id)
         await ctx.send(f"{ctx.author.mention} has successfully rebirthed! {self.coin_emoji} Your earnings are now multiplied by {bonus_multiplier:.2f}x! 💠", allowed_mentions=discord.AllowedMentions.none())
 
-    @rebirth.command()
+    @rebirth.command(aliases=("next",))
     async def price(self, ctx: commands.Context, member: Optional[discord.Member] = None):
         """See how much your next or someone else's rebirth will cost."""
 

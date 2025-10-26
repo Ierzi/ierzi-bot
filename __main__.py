@@ -82,7 +82,6 @@ async def bot_loop():
     guild_count = len(bot.guilds)
     await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
 
-    # I would add a clear last messages loop but using OrderedDict is better
 
 # Error handling
 @bot.event
@@ -99,7 +98,7 @@ async def on_command_error(ctx: commands.Context, error):
 
 @bot.event
 async def on_message(message: Message):
-    now = datetime.now(tz=timezone.utc) # Save it early
+    global grok_cache
 
     # Auto create threads in the poll channel
     if message.poll and message.channel.id == 1411714823405965342: 
@@ -107,30 +106,27 @@ async def on_message(message: Message):
     
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
-        #TODO: fix {bot.user.mention}
-        if bot.user in message.mentions:
-            if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
-                ai = AI(bot, console)
-                ctx = await bot.get_context(message)
-                # get reply
+        if f'{bot.user.mention} is this true' in message.content.lower() or f'{bot.user.mention} is ts true' in message.content.lower():
+            ai = AI(bot, console)
+            ctx = await bot.get_context(message)
+            # get reply
 
-                reply_id = message.reference.message_id
-                reply = await ctx.channel.fetch_message(reply_id)
-                reply_content = reply.content
-    
-                response = await ai.isthistrue(ctx, reply_content)
-                if isinstance(response, list):
-                    for m in response:
-                        await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
-                        await asyncio.sleep(0.2)
-                    
-                    return
+            reply_id = message.reference.message_id
+            reply = await ctx.channel.fetch_message(reply_id)
+            reply_content = reply.content
+
+            response = await ai.isthistrue(ctx, reply_content)
+            if isinstance(response, list):
+                for m in response:
+                    await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
+                    await asyncio.sleep(0.2)
                 
-                await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
-        
+                return
+            
+            await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
+    
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
-            global grok_cache
             if message.id in grok_cache:
                 await message.add_reaction(grok_cache[message.id])
             else:
