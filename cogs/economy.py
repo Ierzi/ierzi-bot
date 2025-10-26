@@ -1,11 +1,10 @@
-from calendar import c
 import discord
 from discord import SelectOption, Embed
 from discord.ext import commands
 from discord.ui import View, Select
-from numpy import number
 
 from .utils.database import db
+from .utils.functions import to_timestamp
 from .utils.pronouns import get_pronoun, PronounEnum
 from .utils.types import Currency
 from .utils.variables import VIEW_TIMEOUT
@@ -48,7 +47,7 @@ class Economy(commands.Cog):
             ("onlyfans", 0.00125, 1500.00, 3000.00)
         ]
 
-        self.latest_transactions = []
+        self.latest_transactions = [] # (user_id, amount, timestamp)
     
     # Helper functions
     async def _get_balance(self, user_id: int) -> Currency:
@@ -91,6 +90,16 @@ class Economy(commands.Cog):
             ON CONFLICT (user_id) DO NOTHING
         """, user_id)
 
+    async def _add_new_transaction(self, user_id: int, amount: float) -> None:
+        """Add a new transaction to the latest transactions list."""
+        now = datetime.now(tz=timezone.utc)
+        timestamp = to_timestamp(now, 'R')
+        self.latest_transactions.append((user_id, amount, timestamp))
+
+        # Keep only the last 100 transactions
+        if len(self.latest_transactions) > 100:
+            self.latest_transactions.pop(0)
+
     async def _add_money(self, user_id: int, amount: float):
         """Add money to a user."""
         await self._ensure_user_exists(user_id)
@@ -103,6 +112,7 @@ class Economy(commands.Cog):
             WHERE user_id = $1
         """, user_id, float_balance)
         self.console.print(f"Added {amount} to user {user_id}. New balance: {new_balance}")
+        await self._add_new_transaction(user_id, amount)
     
     async def _remove_money(self, user_id: int, amount: float):
         """Remove money from a user. This also updates the money_lost column."""
@@ -117,6 +127,7 @@ class Economy(commands.Cog):
             WHERE user_id = $1
         """, user_id, float_balance, amount)
         self.console.print(f"Removed {amount} from user {user_id}. New balance: {new_balance}")
+        await self._add_new_transaction(user_id, -amount)
 
     async def _add_rebirths(self, user_id: int, rebirths: int = 1):
         """Add rebirths to a user."""
@@ -589,6 +600,32 @@ class Economy(commands.Cog):
             await ctx.send(f"{member2.mention} has {diff:,.2f} more coins than {member1.mention}.", allowed_mentions=discord.AllowedMentions.none())
         else:
             await ctx.send(f"{member1.mention} and {member2.mention} have the same amount of coins!", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    async def transactions(self, ctx: commands.Context, page: Optional[int] = 1):
+        """See the latest economy transactions."""
+        offset = (page - 1) * 10
+        transactions = self.latest_transactions[offset:offset + 10] # (if offset was 0, gets 0-9, if 1 gets 10-19, etc)
+        if not transactions:
+            await ctx.send("No transactions found on this page.")
+            return
+        
+        embed = Embed(
+            title=f"Latest Economy Transactions - Page {page}",
+            color=discord.Colour.gold()
+        )
+
+        description = ""
+        for user_id, amount, timestamp in transactions:
+            user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+            if amount >= 0:
+                description += f"**{user.mention}** received {amount:,.2f} coins {timestamp} {self.coin_emoji}\n"
+            else:
+                description += f"**{user.mention}** lost {-amount:,.2f} coins {timestamp} {self.coin_emoji}\n"
+        
+        embed.description = description
+        await ctx.send(embed=embed)
+            
 
     # just other commands idk where to put
     @commands.command(aliases=("totalbal", "totbal", "tbal"))
