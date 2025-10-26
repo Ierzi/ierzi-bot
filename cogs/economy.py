@@ -517,13 +517,17 @@ class Economy(commands.Cog):
             ]
         )
         async def select_callback(interaction: discord.Interaction):
+            nonlocal category, embed
             select_category = select_item.values[0]
             if select_category == "balance":
                 embed = await get_balance_leaderboard()
+                category = "balance"
             elif select_category == "money_lost":
                 embed = await get_money_lost_leaderboard()
+                category = "money_lost"
             else:
                 embed = await get_rebirths_leaderboard()
+                category = "rebirths"
             
             if not embed:
                 return
@@ -543,6 +547,81 @@ class Economy(commands.Cog):
         select_item.callback = select_callback
         view.add_item(select_item)
 
+        # Next, back and refresh buttons
+        async def back_callback(interaction: discord.Interaction):
+            nonlocal page, offset
+            if page > 1:
+                page -= 1
+                offset = (page - 1) * per_page
+            match category:
+                case "balance" | "bal":
+                    new_embed = await get_balance_leaderboard()
+                case "lost" | "money_lost" | "ml":
+                    new_embed = await get_money_lost_leaderboard()
+                case "rebirths" | "rebirth" | "rb":
+                    new_embed = await get_rebirths_leaderboard()
+                case _:
+                    new_embed = await get_balance_leaderboard() # Defaults to balance
+            if not new_embed:
+                await interaction.response.send_message("No users found on this page.", ephemeral=True)
+                return
+            embed.title = new_embed.title
+            embed.description = new_embed.description
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        back_button = discord.ui.Button(label="⬅️", style=discord.ButtonStyle.grey)
+        back_button.callback = back_callback
+        view.add_item(back_button)
+
+        async def next_callback(interaction: discord.Interaction):
+            nonlocal page, offset
+            page += 1
+            offset = (page - 1) * per_page
+            match category:
+                case "balance" | "bal":
+                    new_embed = await get_balance_leaderboard()
+                case "lost" | "money_lost" | "ml":
+                    new_embed = await get_money_lost_leaderboard()
+                case "rebirths" | "rebirth" | "rb":
+                    new_embed = await get_rebirths_leaderboard()
+                case _:
+                    new_embed = await get_balance_leaderboard() # Defaults to balance
+            if not new_embed:
+                page -= 1 # revert page change
+                await interaction.response.send_message("No more users found on the next page.", ephemeral=True)
+                return
+            embed.title = new_embed.title
+            embed.description = new_embed.description
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        next_button = discord.ui.Button(label="➡️", style=discord.ButtonStyle.grey)
+        next_button.callback = next_callback
+        view.add_item(next_button)
+
+        async def refresh_callback(interaction: discord.Interaction):
+            nonlocal page, offset
+            offset = (page - 1) * per_page
+            match category:
+                case "balance" | "bal":
+                    new_embed = await get_balance_leaderboard()
+                case "lost" | "money_lost" | "ml":
+                    new_embed = await get_money_lost_leaderboard()
+                case "rebirths" | "rebirth" | "rb":
+                    new_embed = await get_rebirths_leaderboard()
+                case _:
+                    new_embed = await get_balance_leaderboard() # Defaults to balance
+            if not new_embed:
+                await interaction.response.send_message("No users found on this page.", ephemeral=True)
+                return
+            embed.title = new_embed.title
+            embed.description = new_embed.description
+            await interaction.response.edit_message(embed=embed, view=view)
+
+        refresh_button = discord.ui.Button(label="🔄", style=discord.ButtonStyle.grey)
+        refresh_button.callback = refresh_callback
+        view.add_item(refresh_button)
+
+        # Theres a lot of repeated code here, but its fine for now
         await ctx.send(embed=embed, view=view)
 
     @commands.command()
@@ -647,8 +726,7 @@ class Economy(commands.Cog):
             embed.title = f"Latest Economy Transactions - Page {page}"
             await interaction.response.edit_message(embed=embed, view=view)
         
-        locked = page == 1
-        back_button = discord.ui.Button(label="⬅️", style=discord.ButtonStyle.primary, disabled=locked)
+        back_button = discord.ui.Button(label="⬅️", style=discord.ButtonStyle.grey)
         back_button.callback = back_callback
         view.add_item(back_button)
 
@@ -665,7 +743,7 @@ class Economy(commands.Cog):
             embed.title = f"Latest Economy Transactions - Page {page}"
             await interaction.response.edit_message(embed=embed, view=view)
         
-        next_button = discord.ui.Button(label="➡️", style=discord.ButtonStyle.primary)
+        next_button = discord.ui.Button(label="➡️", style=discord.ButtonStyle.grey)
         next_button.callback = next_callback
         view.add_item(next_button)
 
