@@ -98,8 +98,6 @@ async def on_command_error(ctx: commands.Context, error):
 
 @bot.event
 async def on_message(message: Message):
-    global grok_cache
-
     # Auto create threads in the poll channel
     if message.poll and message.channel.id == 1411714823405965342: 
         await message.create_thread(name=message.poll.question)
@@ -127,15 +125,15 @@ async def on_message(message: Message):
     
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
-            if message.id in grok_cache:
-                await message.add_reaction(grok_cache[message.id])
+            target_id = message.reference.message_id if message.reference else None
+
+            if target_id in grok_cache:
+                await message.add_reaction(grok_cache[target_id])
             else:
-                if random.choice([True, False]):
-                    await message.add_reaction("✅")
-                    grok_cache[message.id] = "✅"
-                else:
-                    await message.add_reaction("❌")
-                    grok_cache[message.id] = "❌"
+                emoji = "✅" if random.choice([True, False]) else "❌"
+                await message.add_reaction(emoji)
+                if target_id:
+                   grok_cache[target_id] = emoji
 
     # Finally, process commands
     await bot.process_commands(message)
