@@ -280,10 +280,10 @@ async def github(ctx: commands.Context):
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
-        "add more reactions", "fix !listmarriages", 
-        "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
+        "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
-        "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot"
+        "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot", 
+        "more reactions (did i already say this?)"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
