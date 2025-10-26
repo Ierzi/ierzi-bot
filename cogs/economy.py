@@ -604,27 +604,82 @@ class Economy(commands.Cog):
     @commands.command()
     async def transactions(self, ctx: commands.Context, page: Optional[int] = 1):
         """See the latest economy transactions."""
-        offset = (page - 1) * 10
-        transactions = self.latest_transactions[offset:offset + 10] # (if offset was 0, gets 0-9, if 1 gets 10-19, etc)
+
+        def get_transactions(page: int):
+            offset = (page - 1) * 10
+            transactions = self.latest_transactions[offset:offset + 10] # (if offset was 0, gets 0-9, if 1 gets 10-19, etc)
+            return transactions
+        
+        async def format_description(transactions: list[tuple[int, float, str]]):
+            description = ""
+            for user_id, amount, timestamp in transactions:
+                user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
+                if amount >= 0:
+                    description += f"**{user.mention}** received {amount:,.2f} coins {timestamp} {self.coin_emoji}\n"
+                else:
+                    description += f"**{user.mention}** lost {-amount:,.2f} coins {timestamp} {self.coin_emoji}\n"
+            return description
+
+        transactions = get_transactions(page)
+
         if not transactions:
-            await ctx.send("No transactions found on this page.")
+            await ctx.send("No transactions found on this page." if page > 1 else "No transactions found.")
             return
         
-        embed = Embed(
-            title=f"Latest Economy Transactions - Page {page}",
-            color=discord.Colour.gold()
-        )
+        async with ctx.typing():
+            embed = Embed(
+                title=f"Latest Economy Transactions - Page {page}",
+                color=discord.Colour.gold()
+            )
 
-        description = ""
-        for user_id, amount, timestamp in transactions:
-            user = self.bot.get_user(user_id) or await self.bot.fetch_user(user_id)
-            if amount >= 0:
-                description += f"**{user.mention}** received {amount:,.2f} coins {timestamp} {self.coin_emoji}\n"
-            else:
-                description += f"**{user.mention}** lost {-amount:,.2f} coins {timestamp} {self.coin_emoji}\n"
+            description = await format_description(transactions)
+            embed.description = description
         
-        embed.description = description
-        await ctx.send(embed=embed)
+        # Refresh and Next buttons
+        view = View(timeout=VIEW_TIMEOUT)
+
+        async def back_callback(interaction: discord.Interaction):
+            nonlocal page
+            page -= 1
+            transactions = get_transactions(page)
+            description = await format_description(transactions)
+            embed.description = description
+            embed.title = f"Latest Economy Transactions - Page {page}"
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        locked = page == 1
+        back_button = discord.ui.Button(label="⬅️", style=discord.ButtonStyle.primary, disabled=locked)
+        back_button.callback = back_callback
+        view.add_item(back_button)
+
+        async def next_callback(interaction: discord.Interaction):
+            nonlocal page
+            page += 1
+            transactions = get_transactions(page)
+            if not transactions:
+                page -= 1 # revert page change
+                await interaction.response.send_message("No more transactions found on the next page.", ephemeral=True)
+                return
+            description = await format_description(transactions)
+            embed.description = description
+            embed.title = f"Latest Economy Transactions - Page {page}"
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        next_button = discord.ui.Button(label="➡️", style=discord.ButtonStyle.primary)
+        next_button.callback = next_callback
+        view.add_item(next_button)
+
+        async def refresh_callback(interaction: discord.Interaction):
+            transactions = get_transactions(page)
+            description = await format_description(transactions)
+            embed.description = description
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        refresh_button = discord.ui.Button(label="🔄", style=discord.ButtonStyle.primary)
+        refresh_button.callback = refresh_callback
+        view.add_item(refresh_button)
+        
+        await ctx.send(embed=embed, view=view)
             
 
     # just other commands idk where to put
@@ -641,6 +696,13 @@ class Economy(commands.Cog):
         row = await db.fetchrow("SELECT SUM(money_lost) AS total_money_lost FROM economy")
         total_money_lost = Currency(row["total_money_lost"]) if row and row["total_money_lost"] is not None else Currency.none()
         await ctx.send(f"The total money lost by all users is {total_money_lost:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
+
+    @commands.command()
+    async def total_rebirths(self, ctx: commands.Context):
+        """See the total number of rebirths by all users."""
+        row = await db.fetchrow("SELECT SUM(rebirths) AS total_rebirths FROM economy")
+        total_rebirths = row["total_rebirths"] if row and row["total_rebirths"] is not None else 0
+        await ctx.send(f"The total number of rebirths by all users is {total_rebirths:,}.", allowed_mentions=discord.AllowedMentions.none())
 
     # GAMBLING COMMANDS!!!
     @commands.command()
@@ -723,7 +785,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{ctx.author.mention} guessed incorrectly and lost {bet:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
-    @commands.cooldown(1, 20, commands.BucketType.user)
+    @commands.cooldown(1, 15, commands.BucketType.user)
     async def wheel(self, ctx: commands.Context, amount: float):
         """Spin the wheel and win or lose money."""
         user_id = ctx.author.id
@@ -738,7 +800,7 @@ class Economy(commands.Cog):
             await ctx.send(f"you only have {balance.to_float():,.2f} coins.")
             return
         
-        wheel_multipliers = [0, 0.25, 0.3, 0.5, 1, 1.5, 2, 2.5, 3]
+        wheel_multipliers = [0, 0.5, 1, 1.5, 2]
         end_multiplier = random.choice(wheel_multipliers)
         animation_frames = random.randint(15, 20)
         
@@ -746,12 +808,12 @@ class Economy(commands.Cog):
         await asyncio.sleep(1.5)
 
         # Trying something new (making the animation slower and slower)
-        animation_speed = 0.05
+        animation_speed = 0.02
         for _ in range(animation_frames):
             current_frame = random.choice(wheel_multipliers)
             await message.edit(content=f"**{current_frame}x**")
             await asyncio.sleep(animation_speed)
-            animation_speed += 0.05
+            animation_speed += 0.02
 
         await message.edit(content=f"**{end_multiplier}x**")
         await asyncio.sleep(2)
