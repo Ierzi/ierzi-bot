@@ -921,15 +921,25 @@ class Economy(commands.Cog):
         await asyncio.sleep(2)
 
         winnings = float(bet * end_multiplier)
-        if winnings < bet.to_float():
-            result = winnings + bet.to_float() #cuz im removing money
-            await self._remove_money(user_id, result)
-            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {result:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        bet_amount = bet.to_float()
+
+        if winnings < bet_amount:
+            # Player receives only a fraction of the bet back: remove the net loss (bet - winnings)
+            loss = bet_amount - winnings
+            await self._remove_money(user_id, loss)
+            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} lost {loss:,.2f} coins... {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
- 
-        await self._add_money(user_id, winnings - bet.to_float())
-        result = winnings - bet.to_float()
-        await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {result:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+        # Player made a net gain (winnings >= bet)
+        net_gain = winnings - bet_amount
+        if net_gain > 0:
+            await self._add_money(user_id, net_gain)
+            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} won {net_gain:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+        else:
+            # Exactly even (e.g. 1x): no money changes
+            await ctx.send(f"**{end_multiplier}x**: {ctx.author.mention} didn't win anything. {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+        #thank you gpt-5-mini
     
     # guess what im bringing back
     @commands.command()
