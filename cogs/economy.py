@@ -324,6 +324,7 @@ class Economy(commands.Cog):
             return
         
         success_chance = 0.25 + await self._calculate_rebirth_bonus(user_id, bonus_per_rebirth=0.05)
+        self.console.print(f"Success chance: {success_chance}")
         user_balance = (await self._get_balance(user_id)).to_float()
         await self._update_cooldown(user_id, "last_robbed_bank")
         if random.random() < success_chance:
@@ -380,7 +381,6 @@ class Economy(commands.Cog):
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, arg_a: Optional[str] = None, arg_b: Optional[str] = None):
         """See the economy leaderboard."""
-        # TODO: Add arrows to switch pages
         await ctx.typing()
         # CASES
         # 1. !lb 2 -- page
@@ -787,7 +787,7 @@ class Economy(commands.Cog):
         total_money_lost = Currency(row["total_money_lost"]) if row and row["total_money_lost"] is not None else Currency.none()
         await ctx.send(f"The total money lost by all users is {total_money_lost:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command()
+    @commands.command(aliases=("total_r", "totalr"))
     async def total_rebirths(self, ctx: commands.Context):
         """See the total number of rebirths by all users."""
         row = await db.fetchrow("SELECT SUM(rebirths) AS total_rebirths FROM economy")
