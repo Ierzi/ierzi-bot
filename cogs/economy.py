@@ -533,7 +533,7 @@ class Economy(commands.Cog):
                 category = "rebirths"
             
             if not embed: 
-                await interaction.response.send_message(f"page is {page}, offset is {offset}, category is {category}", ephemeral=True)
+                await interaction.response.send_message(f"try again idk my bot is weird", ephemeral=True)
                 return
 
             await interaction.response.edit_message(embed=embed, view=view)
