@@ -9,5 +9,5 @@ wikipedia-api
 aiofiles
 aiogoogletrans #gender
 moviepy
-
+async-lru
 # nltk - not used anymore (why did it ask for sqlite3)

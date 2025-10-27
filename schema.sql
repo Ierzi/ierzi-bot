@@ -12,13 +12,14 @@ CREATE TABLE users (
 
 CREATE TABLE economy (
     id SERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(user_id),
-    balance NUMERIC(5, 12) DEFAULT 0.00,
+    user_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
+    balance NUMERIC(15, 12) DEFAULT 0.00,
+    money_lost NUMERIC(18, 2) DEFAULT 0.00,
     last_daily TIMESTAMPTZ,
     last_worked TIMESTAMPTZ,
     last_robbed_bank TIMESTAMPTZ,
     last_robbed_user TIMESTAMPTZ,
-    items JSONB NOT NULL DEFAULT '[]'::JSONB
+    rebirths INT NOT NULL DEFAULT 0
 );
 
 -- Marriages Table

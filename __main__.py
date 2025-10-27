@@ -10,7 +10,7 @@ from discord.ui import View, Select
 # Cogs
 from cogs.ai import AI
 from cogs.birthday import BirthdayCog as Birthday
-from cogs.economy import Economy
+from cogs.economy import Economy, update_tables
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -55,6 +55,8 @@ bot = commands.Bot(
 
 experimental_branch = False
 
+grok_cache: dict[int, str] = {} # message id - response
+
 # Events
 @bot.event
 async def on_ready():
@@ -79,7 +81,6 @@ async def bot_loop():
     guild_count = len(bot.guilds)
     await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
 
-    # I would add a clear last messages loop but using OrderedDict is better
 
 # Error handling
 @bot.event
@@ -96,40 +97,42 @@ async def on_command_error(ctx: commands.Context, error):
 
 @bot.event
 async def on_message(message: Message):
-    now = datetime.now(tz=timezone.utc) # Save it early
-
     # Auto create threads in the poll channel
     if message.poll and message.channel.id == 1411714823405965342: 
         await message.create_thread(name=message.poll.question)
     
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
-        if bot.user in message.mentions:
-            if 'is this true' in message.content.lower() or 'is ts true' in message.content.lower():
-                ai = AI(bot, console)
-                ctx = await bot.get_context(message)
-                # get reply
+        if f'{bot.user.mention} is this true' in message.content.lower() or f'{bot.user.mention} is ts true' in message.content.lower():
+            ai = AI(bot, console)
+            ctx = await bot.get_context(message)
+            # get reply
 
-                reply_id = message.reference.message_id
-                reply = await ctx.channel.fetch_message(reply_id)
-                reply_content = reply.content
-    
-                response = await ai.isthistrue(ctx, reply_content)
-                if isinstance(response, list):
-                    for m in response:
-                        await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
-                        await asyncio.sleep(0.2)
-                    
-                    return
+            reply_id = message.reference.message_id
+            reply = await ctx.channel.fetch_message(reply_id)
+            reply_content = reply.content
+
+            response = await ai.isthistrue(ctx, reply_content)
+            if isinstance(response, list):
+                for m in response:
+                    await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
+                    await asyncio.sleep(0.2)
                 
-                await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
-        
+                return
+            
+            await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
+    
         # @Grok is this true
         if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
-            if random.choice([True, False]):
-                await message.add_reaction("✅")
+            target_id = message.reference.message_id if message.reference else None
+
+            if target_id in grok_cache:
+                await message.add_reaction(grok_cache[target_id])
             else:
-                await message.add_reaction("❌")
+                emoji = "✅" if random.choice([True, False]) else "❌"
+                await message.add_reaction(emoji)
+                if target_id:
+                   grok_cache[target_id] = emoji
 
     # Finally, process commands
     await bot.process_commands(message)
@@ -274,10 +277,10 @@ async def github(ctx: commands.Context):
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
-        "add more reactions", "fix !listmarriages", 
-        "counter that increases every time fact says something racist, homophobic, transphobic, sexist and everythin",
+        "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
-        "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot"
+        "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot", 
+        "more reactions (did i already say this?)"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
@@ -402,18 +405,18 @@ async def fill_embeds():
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
-    view = View(VIEW_TIMEOUT) # 5 minutes
+    view = View(timeout=VIEW_TIMEOUT) 
 
     help_options = [
-        SelectOption(label="Home", description="Homepage and uncategorized commands"),
-        SelectOption(label="AI", description="AI commands"),
-        SelectOption(label="Birthday", description="Birthday commands"),
-        SelectOption(label="Economy", description="Economy commands"),
-        SelectOption(label="Fun", description="Fun commands"),
-        SelectOption(label="Marriages", description="Marriage commands"),
-        SelectOption(label="Reactions", description="Reaction commands"),
-        SelectOption(label="Search", description="Search commands"),
-        SelectOption(label="Songs", description="Songs commands"),
+        SelectOption(label="Home", description="Homepage and uncategorized commands", emoji="🏠"),
+        SelectOption(label="AI", description="AI commands", emoji="🤖"),
+        SelectOption(label="Birthday", description="Birthday commands", emoji="🎂"),
+        SelectOption(label="Economy", description="Economy commands", emoji="💵"),
+        SelectOption(label="Fun", description="Fun commands", emoji="🎉"),
+        SelectOption(label="Marriages", description="Marriage commands", emoji="💍"),
+        SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
+        SelectOption(label="Search", description="Search commands", emoji="🔎"),
+        SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
     ]
     help_select = Select(
         placeholder="select category",
@@ -453,17 +456,17 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=home_embed, view=view)
             case "ai":
                 await ctx.send(embed=ai_embed, view=view)
-            case "birthday":
+            case "birthday" | "bday" | "birthdays":
                 await ctx.send(embed=birthday_embed, view=view)
-            case "economy":
+            case "economy" | "eco" | "econ":
                 await ctx.send(embed=economy_embed, view=view)
             case "fun":
                 await ctx.send(embed=fun_embed, view=view)
-            case "marriages":
+            case "marriages" | "marriage":
                 await ctx.send(embed=marriages_embed, view=view)
-            case "reactions":
+            case "reactions" | "reaction":
                 await ctx.send(embed=reactions_embed, view=view)
-            case "songs":
+            case "songs" | "song" | "music":
                 await ctx.send(embed=songs_embed, view=view)
             case "search":
                 await ctx.send(embed=search_embed, view=view)
@@ -491,7 +494,7 @@ async def pronouns_set(ctx: commands.Context):
     current_pronouns = await pronouns.get_pronouns(user_id)
     set_pronouns_embed.add_field(name="Current pronouns", value=f"Current pronouns: {current_pronouns}")
 
-    view = View(VIEW_TIMEOUT)
+    view = View(timeout=VIEW_TIMEOUT)
     pronouns_option = [
         SelectOption(label='he/him'),
         SelectOption(label='she/her'),
@@ -664,10 +667,12 @@ async def gif(ctx: commands.Context):
 async def main():
     await db.init_pool()
     try:
-        await load_cogs() 
+        await load_cogs()
         console.print("Bot is ready.")
         await bot.start(token)
     finally:
         await db.close_pool()
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
+
