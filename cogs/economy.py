@@ -931,23 +931,28 @@ class Economy(commands.Cog):
             await ctx.send("you broke bro")
             return
         
-        winning_money = random.randint(1_000_000, 5_000_000)
+        winning_money = random.randint(10_000_000, 50_000_000)
         message = await ctx.send("The lottery is starting...", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(2)
 
         numbers_pool = [str(i) for i in range(1, 51)]
         user_numbers = random.sample(numbers_pool, 6)
         winning_numbers = random.sample(numbers_pool, 6)
+        #  Sort in ascending order
         user_numbers.sort(key=lambda x: int(x))
         winning_numbers.sort(key=lambda x: int(x))
 
+        jackpot_message = f"The jackpot is {winning_money:,} coins! {self.coin_emoji}"
+        await message.edit(content=jackpot_message)
+        await asyncio.sleep(2)
+
         your_numbers = f"Your numbers: {', '.join(user_numbers)}"
-        await message.edit(content=your_numbers)
+        await message.edit(content=f"{jackpot_message}\n{your_numbers}")
         await asyncio.sleep(2)
 
         for i in range(6):
-            await message.edit(content=f"{your_numbers}\nWinning numbers: {', '.join(winning_numbers[:i+1])}")
-            await asyncio.sleep(2)
+            await message.edit(content=f"{jackpot_message}\n{your_numbers}\nWinning numbers: {', '.join(winning_numbers[:i+1])}")
+            await asyncio.sleep(1)
         
         matches = set(user_numbers) & set(winning_numbers)
         num_matches = len(matches)
