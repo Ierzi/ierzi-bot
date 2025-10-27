@@ -1,7 +1,6 @@
 # Ierzi Bot
 
 # Discord.py Improrts
-from turtle import update
 import discord
 from discord import Interaction, Embed, Message, SelectOption, app_commands
 from discord.activity import CustomActivity
