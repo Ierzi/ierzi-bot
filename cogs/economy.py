@@ -239,6 +239,7 @@ class Economy(commands.Cog):
         
         balance = await self._get_balance(member.id)
         money_lost = await self._get_money_lost(member.id)
+        rebirths = await self._get_rebirths(member.id)
 
         embed = Embed(
             title=f"{member.display_name}'s Economy Profile",
@@ -246,6 +247,7 @@ class Economy(commands.Cog):
         )
         embed.add_field(name="Balance", value=f"{self.coin_emoji} {balance:,.2f}", inline=False)
         embed.add_field(name="Total Money Lost", value=f"{self.coin_emoji} {money_lost:,.2f}", inline=False)
+        embed.add_field(name="Rebirths", value=f"💠 {rebirths:,} rebirths", inline=False)
 
         embed.set_thumbnail(url=member.display_avatar.url)
         await ctx.send(embed=embed)
@@ -496,7 +498,7 @@ class Economy(commands.Cog):
                 user = self.bot.get_user(row["user_id"]) or await self.bot.fetch_user(row["user_id"])
                 user_name = user.mention
                 rebirths = row["rebirths"]
-                description += f"**{rank}. {user_name}** - {rebirths:,} rebirths\n"
+                description += f"**{rank}. {user_name}** - {rebirths:,} rebirths 💠\n"
                 rank += 1
             
             embed.description = description
