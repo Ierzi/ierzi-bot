@@ -517,7 +517,7 @@ class Economy(commands.Cog):
         )
 
         async def select_callback(interaction: discord.Interaction):
-            nonlocal category
+            nonlocal category, embed, page, offset
             select_category = select_item.values[0]
             if select_category == "balance":
                 embed = await get_balance_leaderboard()
@@ -530,7 +530,7 @@ class Economy(commands.Cog):
                 category = "rebirths"
             
             if not embed: 
-                await interaction.response.send_message("aaaAAAAAAaa a a aaa", ephemeral=True)
+                await interaction.response.send_message(f"page is {page}, offset is {offset}, category is {category}", ephemeral=True)
                 return
 
             await interaction.response.edit_message(embed=embed, view=view)
