@@ -323,7 +323,7 @@ class Economy(commands.Cog):
             await ctx.send(f"You already tried to rob a bank! Try again in {hours}h {minutes}m {seconds}s.")
             return
         
-        success_chance = 0.25 + await self._calculate_rebirth_bonus(user_id, bonus_per_rebirth=0.05)
+        success_chance = 0.25 * await self._calculate_rebirth_bonus(user_id, bonus_per_rebirth=0.05)
         self.console.print(f"Success chance: {success_chance}")
         user_balance = (await self._get_balance(user_id)).to_float()
         await self._update_cooldown(user_id, "last_robbed_bank")
@@ -366,7 +366,7 @@ class Economy(commands.Cog):
             await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
-        success_chance = min(0.25 + target_member_rebirths_bonus, 0.5)
+        success_chance = min(0.25 * target_member_rebirths_bonus, 0.5)
         await self._update_cooldown(user_id, "last_robbed_user")
         if random.random() < success_chance:
             amount_stolen = random.uniform(0.01 * target_balance.to_float(), 0.1 * target_balance.to_float()) 
