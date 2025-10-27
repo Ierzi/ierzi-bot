@@ -425,6 +425,7 @@ class Economy(commands.Cog):
         self.console.print(f"Page {page}, offset {offset}, category {category}.")
 
         async def get_balance_leaderboard() -> Optional[Embed]:
+            nonlocal offset
             rows = await db.fetch("""
                 SELECT user_id, balance FROM economy 
                 ORDER BY balance DESC 
@@ -452,6 +453,7 @@ class Economy(commands.Cog):
             return embed
 
         async def get_money_lost_leaderboard() -> Optional[Embed]:
+            nonlocal offset
             rows = await db.fetch("""
                 SELECT user_id, money_lost FROM economy 
                 ORDER BY money_lost DESC 
@@ -479,6 +481,7 @@ class Economy(commands.Cog):
             return embed
 
         async def get_rebirths_leaderboard() -> Optional[Embed]:
+            nonlocal offset
             rows = await db.fetch("""
                 SELECT user_id, rebirths FROM economy 
                 ORDER BY rebirths DESC 
