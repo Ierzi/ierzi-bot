@@ -1,5 +1,5 @@
 import discord
-from discord import SelectOption, Embed
+from discord import Message, SelectOption, Embed
 from discord.ext import commands
 from discord.ui import View, Select
 
@@ -667,7 +667,19 @@ class Economy(commands.Cog):
         balance = await self._get_balance(user_id)
         if balance > Currency(5_000): # That's like 2 daily claims
             await ctx.send("aint you rich enough")
+
+            def check(m: Message):
+                return m.channel.id == ctx.channel.id and m.content.strip().lower() == "no" and m.author.id == ctx.author.id
+            
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=15.0)
+            except asyncio.TimeoutError:
+                return
+            
+            await self._add_money(user_id, 0.01)
+            await ctx.send(f"{ctx.author.mention} begged and received 0.01 coins. {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
             return
+
 
         amount = random.uniform(5, 20)
         await self._add_money(user_id, amount)
