@@ -81,7 +81,7 @@ class Marriages(commands.Cog):
             return
         
         message = f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline. You have 60 seconds to respond."
-        view = View(VIEW_TIMEOUT)
+        view = View(timeout=VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
