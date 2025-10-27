@@ -556,9 +556,11 @@ class Economy(commands.Cog):
         # Next, back and refresh buttons
         async def back_callback(interaction: discord.Interaction):
             nonlocal page, offset
-            if page > 1:
-                page -= 1
-                offset = (page - 1) * per_page
+            if page == 1:
+                await interaction.response.send_message("you are already on the first page dumbass", ephemeral=True)
+                return
+            page -= 1
+            offset = (page - 1) * per_page
             match category:
                 case "balance" | "bal":
                     new_embed = await get_balance_leaderboard()
@@ -569,6 +571,7 @@ class Economy(commands.Cog):
                 case _:
                     new_embed = await get_balance_leaderboard() # Defaults to balance
             if not new_embed:
+                page += 1 # revert page change
                 await interaction.response.send_message("No users found on this page.", ephemeral=True)
                 return
             embed.title = new_embed.title
