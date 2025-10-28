@@ -2,7 +2,7 @@
 
 # Discord.py Improrts
 import discord
-from discord import Interaction, Embed, Message, SelectOption, app_commands
+from discord import Interaction, Embed, Message, SelectOption, User, app_commands
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
 from discord.ui import View, Select
@@ -10,7 +10,7 @@ from discord.ui import View, Select
 # Cogs
 from cogs.ai import AI
 from cogs.birthday import BirthdayCog as Birthday
-from cogs.economy import Economy, update_tables
+from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
@@ -286,6 +286,21 @@ async def roadmap(ctx: commands.Context):
     for feature in features:
         message += f"- {feature}\n"
     await ctx.send(message)
+
+# Slash commands
+@bot.tree.command(name="gaydar", description="Sends a percentage based on how gay someone is.")
+@app_commands.describe(user="The user (no way)")
+async def gaydar(interaction: Interaction, user: User):
+    if user.id in [747918143745294356, 893298676003393536]: #ludwig and guest
+        await interaction.response.send_message(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
+        return
+    if user.id == 1399689963284467723: #the bot
+        await interaction.response.send_message("vro", ephemeral=True)
+        return
+    
+    percentage = random.randint(0, 100)
+
+    await interaction.response.send_message(f"{user.mention} is {percentage}% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
 
 # help command
 def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:

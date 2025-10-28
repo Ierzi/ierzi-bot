@@ -74,12 +74,12 @@ class Fun(commands.Cog):
     
     @commands.command()
     async def gaydar(self, ctx: commands.Context, user: Optional[discord.Member] = None):
-        """Gives a percentage based on how gay someone is."""
+        """Sends a percentage based on how gay someone is."""
         if user == None:
             user = ctx.author
         
         if user.id in [747918143745294356, 893298676003393536]: #ludwig and guest
-            await ctx.send(f"{user.mention} is 100% gay! 🌈")
+            await ctx.send(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == 1399689963284467723: #the bot
             await ctx.send("0%")
@@ -87,7 +87,7 @@ class Fun(commands.Cog):
         
         percentage = random.randint(0, 100)
 
-        await ctx.send(f"{user.mention} is {percentage}% gay! 🌈")
+        await ctx.send(f"{user.mention} is {percentage}% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
 
 
     @commands.command()
