@@ -80,7 +80,7 @@ class Marriages(commands.Cog):
             await ctx.send("dumbass")
             return
         
-        message = f"{partner.mention}, do you want to marry {proposer.mention}? \n You have 2 hours to respond."
+        message = f"{partner.mention}, do you want to marry {proposer.mention}? \nYou have 2 hours to respond."
         view = View(timeout=VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
@@ -135,7 +135,7 @@ class Marriages(commands.Cog):
 
         async def yes_button_callback(interaction: discord.Interaction):
             if not interaction.user.id == proposer.id:
-                await interaction.response.send_message("no.", ephemeral=True)
+                await interaction.response.send_message("wow you found the very secret message", ephemeral=True)
                 return
             
             await interaction.response.send_message(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...")
@@ -143,7 +143,7 @@ class Marriages(commands.Cog):
         
         async def no_button_callback(interaction: discord.Interaction):
             if not interaction.user.id == proposer.id:
-                await interaction.response.send_message("why do you wanna ruin someone's marriage? :sob:", ephemeral=True)
+                await interaction.response.send_message("a", ephemeral=True)
                 return
 
             await interaction.response.send_message(f"{proposer.mention} doesnt want to divorce {partner_pronouns_object} :D")
