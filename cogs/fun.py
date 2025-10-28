@@ -78,7 +78,7 @@ class Fun(commands.Cog):
         if user == None:
             user = ctx.author
         
-        if user.id in [747918143745294356, 893298676003393536]: #ludwig and guest
+        if user.id in [747918143745294356, 893298676003393536, 902296627325317150]: #ludwig, guest and masternigwardofthefifth (long ass name)
             await ctx.send(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
             return
         if user.id == 1399689963284467723: #the bot
