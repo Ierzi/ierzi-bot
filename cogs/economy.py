@@ -711,6 +711,7 @@ class Economy(commands.Cog):
         def get_transactions(page: int):
             offset = (page - 1) * 10
             transactions = self.latest_transactions[offset:offset + 10] # (if offset was 0, gets 0-9, if 1 gets 10-19, etc)
+            transactions = transactions[::-1]
             return transactions
         
         async def format_description(transactions: list[tuple[int, float, str]]):
