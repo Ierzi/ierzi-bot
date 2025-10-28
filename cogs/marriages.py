@@ -80,8 +80,8 @@ class Marriages(commands.Cog):
             await ctx.send("dumbass")
             return
         
-        message = f"{partner.mention}, do you want to marry {proposer.mention}? \nReply with yes if you accept, or no if you decline. You have 60 seconds to respond."
-        view = View(VIEW_TIMEOUT)
+        message = f"{partner.mention}, do you want to marry {proposer.mention}? \n You have 2 hours to respond."
+        view = View(timeout=VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
@@ -125,7 +125,7 @@ class Marriages(commands.Cog):
             await ctx.send("Not now big guy~")
             return
 
-        message = f"Are you sure you want to divorce {partner.mention}? \nReply with yes if you confirm, or no if you changed your mind. You have 60 seconds to respond."
+        message = f"Are you sure you want to divorce {partner.mention}? \nYou have 2 hours to respond."
 
         view = View(timeout=VIEW_TIMEOUT)
         yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
