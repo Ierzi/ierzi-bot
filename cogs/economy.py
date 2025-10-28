@@ -96,8 +96,8 @@ class Economy(commands.Cog):
         timestamp = to_timestamp(now, 'R')
         self.latest_transactions.append((user_id, amount, timestamp))
 
-        # Keep only the last 100 transactions
-        if len(self.latest_transactions) > 100:
+        # Keep only the last 500 transactions
+        if len(self.latest_transactions) > 500:
             self.latest_transactions.pop(0)
 
     async def _add_money(self, user_id: int, amount: float):
