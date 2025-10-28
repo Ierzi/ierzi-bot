@@ -3,11 +3,12 @@ from discord.ext import commands
 
 import asyncio
 import aiohttp
-from datetime import datetime, timezone
 from aiogoogletrans import Translator
+from datetime import datetime, timezone
 from pathlib import Path
 import random
 from rich.console import Console
+from typing import Optional
 
 console = Console()
 
@@ -70,6 +71,24 @@ class Fun(commands.Cog):
             return
         
         await ctx.send(random.choice(["no", "yes"]))
+    
+    @commands.command()
+    async def gaydar(self, ctx: commands.Context, user: Optional[discord.Member] = None):
+        """Gives a percentage based on how gay someone is."""
+        if user == None:
+            user = ctx.author
+        
+        if user.id in [747918143745294356, 893298676003393536]: #ludwig and guest
+            await ctx.send(f"{user.mention} is 100% gay! 🌈")
+            return
+        if user.id == 1399689963284467723: #the bot
+            await ctx.send("0%")
+            return
+        
+        percentage = random.randint(0, 100)
+
+        await ctx.send(f"{user.mention} is {percentage}% gay! 🌈")
+
 
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
