@@ -8,6 +8,7 @@ from .utils.pronouns import PronounEnum
 from .utils.variables import *
 
 from rich.console import Console
+from typing import Optional
 
 class Marriages(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -156,56 +157,6 @@ class Marriages(commands.Cog):
 
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none(), view=view)
 
-    # TODO: fix this
-    # @commands.command()
-    # async def listmarriages(self, ctx: commands.Context, page_number: int = 1):
-    #     marriages = await self.get_marriages()
-            
-    #     if not marriages:
-    #         await ctx.send("Nobody is married yet!")
-    #         return
-    #     else:
-    #         n_marriages = len(marriages) 
-    #         n_pages = round(n_marriages // 10 + 1)
-            
-    #         if page_number > n_pages or page_number < 1:
-    #             await ctx.send(f"Invalid page number. There are {n_pages} pages.")
-    #             return
-            
-    #         # Send some sort of message to indicate that the bot is processing the request
-    #         think = await ctx.send("Thinking...")
-
-    #         all_messages = ""
-    #         start_index = (page_number - 1) * 10
-    #         count = 0
-    #         mess_count = 0
-    #         marriages_ = []
-    #         for i, pair in enumerate(marriages):
-    #             if pair[::-1] in marriages_:
-    #                 continue
-
-    #             count += 1
-    #             if count <= start_index:
-    #                 continue
-
-    #             if mess_count == 10:
-    #                 # Reach the end of the page
-    #                 break
-
-    #             if i % 10 == 0:
-    #                 all_messages += f"**Page {page_number}/{n_pages}**\n"
-                
-    #             if i >= start_index:
-    #                 user_1 = self.bot.get_user(pair[0]) or await self.bot.fetch_user(pair[0])
-    #                 user_2 = self.bot.get_user(pair[1]) or await self.bot.fetch_user(pair[1])
-    #                 all_messages += f"{user_1.mention} and {user_2.mention}\n"
-    #                 marriages_.append(pair)
-    #                 mess_count += 1
-            
-    #         await think.delete()
-    #         await ctx.send(all_messages, allowed_mentions=discord.AllowedMentions.none())
-
-    # TODO
     @commands.command()
     async def aremarried(self, ctx: commands.Context, user1: discord.Member, user2: discord.Member):
         """Says if two people are married to each other."""
