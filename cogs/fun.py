@@ -72,7 +72,7 @@ class Fun(commands.Cog):
         
         await ctx.send(random.choice(["no", "yes"]))
     
-    @commands.command(aliases=("gaytector",)
+    @commands.command(aliases=("gaytector",))
     async def gaydar(self, ctx: commands.Context, user: Optional[discord.Member] = None):
         """Sends a percentage based on how gay someone is."""
         if user == None:
