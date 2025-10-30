@@ -213,7 +213,7 @@ class Economy(commands.Cog):
         ) -> float:
         """Calculate the rebirth cost for a user."""
         rebirths = await self._get_rebirths(user_id)
-        base_cost = 100_000.00
+        base_cost = 1_000_000.00
         cost_multiplier = 2.0 ** rebirths
         cost = base_cost * cost_multiplier
         return cost
