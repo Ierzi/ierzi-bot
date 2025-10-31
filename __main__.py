@@ -280,7 +280,8 @@ async def roadmap(ctx: commands.Context):
         "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
         "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot", 
-        "more reactions (did i already say this?)"
+        "more reactions (did i already say this?)",
+        "replace the birthday module with calendar, to implement pronouns.page calendar"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
