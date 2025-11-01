@@ -90,7 +90,7 @@ class WorldDateTime(commands.Cog):
         try:
             events = await self._get_events(now)
         except Exception as e:
-            ctx.send("error :(")
+            await ctx.send("error :(")
             self.console.print(f"Error fetching events: {e}")
             return
 
@@ -102,7 +102,7 @@ class WorldDateTime(commands.Cog):
 
         if not events:
             today_embed.description += "No events today."
-            ctx.send(embed=today_embed)
+            await ctx.send(embed=today_embed)
             return
         
         for event in events:
