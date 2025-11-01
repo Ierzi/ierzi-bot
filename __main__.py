@@ -142,7 +142,7 @@ async def load_cogs():
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
     await bot.add_cog(WorldDateTime(bot, console))
-    console.print("World, Dates and Time cog loaded.")
+    console.print("World, Date and Time cog loaded.")
     await bot.add_cog(Economy(bot, console))
     console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
@@ -277,7 +277,7 @@ async def roadmap(ctx: commands.Context):
     features = [
         "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
-        "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot", 
+        "more songs commands but idk what to add", "do thing to request ideas by dming the bot", 
         "more reactions (did i already say this?)",
         "replace the birthday module with calendar, to implement pronouns.page calendar"
         ]
@@ -638,7 +638,6 @@ async def main():
     await db.init_pool()
     try:
         await load_cogs()
-        await update_wdt_tables()
         console.print("Bot is ready.")
         await bot.start(token)
     finally:

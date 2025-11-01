@@ -83,11 +83,16 @@ class WorldDateTime(commands.Cog):
 
 
     # Commands!
-    @commands.command()
-    async def today(self, ctx: commands.Context):
+    @commands.command(name="et")
+    async def events_today(self, ctx: commands.Context):
         """Gets events today."""
         now = datetime.now()
-        events = await self._get_events(now)
+        try:
+            events = await self._get_events(now)
+        except Exception as e:
+            ctx.send("error :(")
+            self.console.print(f"Error fetching events: {e}")
+            return
 
         today_embed = Embed(
             colour=6016762, # transgender blue
@@ -95,6 +100,11 @@ class WorldDateTime(commands.Cog):
             description="**Events today: \n\n**"
         )
 
+        if not events:
+            today_embed.description += "No events today."
+            ctx.send(embed=today_embed)
+            return
+        
         for event in events:
             today_embed.description += f"- {event}\n"
         
