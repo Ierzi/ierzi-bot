@@ -298,8 +298,8 @@ async def update_wdt_tables(reset: bool = False):
         id SERIAL PRIMARY KEY,
         user_id BIGINT NULL REFERENCES users(user_id) ON DELETE CASCADE,
         custom_name VARCHAR(100) NULL,
-        day TINYINT NOT NULL,
-        month TINYINT NOT NULL,
+        day SMALLINT NOT NULL,
+        month SMALLINT NOT NULL,
         year SMALLINT NULL,
         timezone VARCHAR(50) NOT NULL,
         UNIQUE(discord_user_id, custom_name)
