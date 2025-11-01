@@ -6,6 +6,7 @@ from .utils.database import db
 from .utils.functions import to_timestamp
 from .utils.types import Birthday
 
+import aiohttp
 from datetime import datetime
 from rich.console import Console
 from typing import Optional, Union
@@ -29,26 +30,21 @@ class WorldDateTime(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
-        # Doing this differently 
-        self.avaliable_commands = [
-            "set",
-            "get",
-            "until",
-            "since",
-            "compare",
-            "today",
-            "month",
-            "list",
-            "thismonth",
-            "total"
-        ]
     
     # groups!!!
+
+    # Birthday
     @commands.group(name="birthday", aliases=("bday", "bd"))
     async def birthday(self, ctx: commands.Context):
         """Birthday commands."""
         if ctx.invoked_subcommand is None:
-            await ctx.send(f"Valid commands: {', '.join(self.avaliable_commands)}")
+            return
+        
+    # Timezone
+    @commands.group(name='timezone', aliases=("tz",))
+    async def timezone(self, ctx: commands.Context):
+        """Timezone commands."""
+        if ctx.invoked_subcommand is None:
             return
     
     # Helper functions
@@ -71,8 +67,40 @@ class WorldDateTime(commands.Cog):
         """Return total number of birthdays stored in the database."""
         count = await db.fetchval("SELECT COUNT(*) FROM birthdays")
         return int(count or 0)
+    
+    async def _get_events(self, dt: datetime) -> list:
+        """Gets events from pronouns.page (sorry non-queers, implementing other events later)"""
+        # Convert datetime to yyyy-mm-dd
+        date_str = f"{dt.year}-{dt.month}-{dt.day}"
+        url = f"https://en.pronouns.page/api/calendar/{date_str}"
 
-    # Commands
+        async with aiohttp.ClientSession() as client:
+            async with client.get(url) as request:
+                await request.raise_for_status()
+                response: dict = request.json()
+
+        return response.get("events", [])
+
+
+    # Commands!
+    @commands.command()
+    async def today(self, ctx: commands.Context):
+        """Gets events today."""
+        now = datetime.now()
+        events = await self._get_events(now)
+
+        today_embed = Embed(
+            colour=6016762, # transgender blue
+            title=f"Today - {now.day}/{now.month}/{now.year}",
+            description="**Events today: \n\n**"
+        )
+
+        for event in events:
+            today_embed.description += f"- {event}\n"
+        
+        await ctx.send(embed=today_embed)
+
+    # Birthday Commands
     @birthday.command()
     async def set(self, ctx: commands.Context, day: int, month: Union[int, str], year: Optional[int] = None):
         """Set your birthday. (Day Month and optionally Year)"""

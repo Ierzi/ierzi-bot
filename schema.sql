@@ -38,6 +38,6 @@ CREATE TABLE birthdays (
     day TINYINT NOT NULL,
     month TINYINT NOT NULL,
     year SMALLINT NULL,
-    timezone VARCHAR(50) NOT NULL,
+    timezone VARCHAR(50) NOT NULL DEFAULT "UTC",
     UNIQUE(discord_user_id, custom_name)
 );
