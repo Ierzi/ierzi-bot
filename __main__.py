@@ -9,7 +9,7 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.world_date_time import WorldDateTime
+from cogs.world_date_time import WorldDateTime, update_wdt_tables
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -24,9 +24,7 @@ from cogs.utils.variables import VIEW_TIMEOUT, NO_SLURS_SERVERS
 
 # Other
 import asyncio
-from datetime import datetime, timezone
 from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
-from moviepy import VideoFileClip
 import os
 import random
 from rich.console import Console
@@ -640,6 +638,7 @@ async def main():
     await db.init_pool()
     try:
         await load_cogs()
+        await update_wdt_tables()
         console.print("Bot is ready.")
         await bot.start(token)
     finally:

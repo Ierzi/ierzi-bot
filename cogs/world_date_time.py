@@ -288,4 +288,21 @@ class WorldDateTime(commands.Cog):
         await self._set_birthday(user.id, birthday)
         await ctx.send(f"{user.mention}'s birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
-    
+
+async def update_wdt_tables(reset: bool = False):
+    if reset:
+        await db.execute("DROP TABLE IF EXISTS birthdays;")
+
+    await db.execute("""
+    CREATE TABLE IF NOT EXISTS birthdays (
+        id SERIAL PRIMARY KEY,
+        user_id BIGINT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+        custom_name VARCHAR(100) NULL,
+        day TINYINT NOT NULL,
+        month TINYINT NOT NULL,
+        year SMALLINT NULL,
+        timezone VARCHAR(50) NOT NULL,
+        UNIQUE(discord_user_id, custom_name)
+    );
+    """)
+
