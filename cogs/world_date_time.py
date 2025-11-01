@@ -302,7 +302,7 @@ async def update_wdt_tables(reset: bool = False):
         month SMALLINT NOT NULL,
         year SMALLINT NULL,
         timezone VARCHAR(50) NOT NULL,
-        UNIQUE(discord_user_id, custom_name)
+        UNIQUE(user_id, custom_name)
     );
     """)
 
