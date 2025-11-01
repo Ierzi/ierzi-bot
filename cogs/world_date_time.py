@@ -73,11 +73,13 @@ class WorldDateTime(commands.Cog):
         # Convert datetime to yyyy-mm-dd
         date_str = f"{dt.year}-{dt.month}-{dt.day}"
         url = f"https://en.pronouns.page/api/calendar/{date_str}"
+        self.console.print(url)
 
         async with aiohttp.ClientSession() as client:
             async with client.get(url) as request:
                 await request.raise_for_status()
                 response: dict = request.json()
+                self.console.print(response)
 
         return response.get("events", [])
 
