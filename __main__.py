@@ -9,7 +9,7 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.birthday import BirthdayCog as Birthday
+from cogs.world_date_time import WorldDateTime
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -143,8 +143,8 @@ async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
-    await bot.add_cog(Birthday(bot, console))
-    console.print("Birthday cog loaded.")
+    await bot.add_cog(WorldDateTime(bot, console))
+    console.print("World, Dates and Time cog loaded.")
     await bot.add_cog(Economy(bot, console))
     console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
@@ -347,8 +347,8 @@ ai_embed = Embed(
     description=""
 )
 
-birthday_embed = Embed(
-    title="Birthday Commands",
+wdt_embed = Embed(
+    title="World, Date and Time Commands",
     description=""
 )
 
@@ -385,7 +385,7 @@ search_embed = Embed(
 async def fill_embeds(): 
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
-    birthday_embed.description = ""
+    wdt_embed.description = ""
     economy_embed.description = ""
     fun_embed.description = ""
     marriages_embed.description = ""
@@ -403,8 +403,6 @@ async def fill_embeds():
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
-            case "BirthdayCog":
-                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
@@ -417,6 +415,8 @@ async def fill_embeds():
                 songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Search":
                 search_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+            case "WorldDateTime":
+                wdt_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
@@ -426,13 +426,13 @@ async def help(ctx: commands.Context, category: str = None):
     help_options = [
         SelectOption(label="Home", description="Homepage and uncategorized commands", emoji="🏠"),
         SelectOption(label="AI", description="AI commands", emoji="🤖"),
-        SelectOption(label="Birthday", description="Birthday commands", emoji="🎂"),
         SelectOption(label="Economy", description="Economy commands", emoji="💵"),
         SelectOption(label="Fun", description="Fun commands", emoji="🎉"),
         SelectOption(label="Marriages", description="Marriage commands", emoji="💍"),
         SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
         SelectOption(label="Search", description="Search commands", emoji="🔎"),
         SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
+        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🎂"),
     ]
     help_select = Select(
         placeholder="select category",
@@ -446,8 +446,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await interaction.message.edit(embed=home_embed)
             case "ai":
                 await interaction.message.edit(embed=ai_embed)
-            case "birthday":
-                await interaction.message.edit(embed=birthday_embed)
+            case "wdt":
+                await interaction.message.edit(embed=wdt_embed)
             case "economy":
                 await interaction.message.edit(embed=economy_embed)
             case "fun":
@@ -472,8 +472,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=home_embed, view=view)
             case "ai":
                 await ctx.send(embed=ai_embed, view=view)
-            case "birthday" | "bday" | "birthdays":
-                await ctx.send(embed=birthday_embed, view=view)
+            case "wdt" | "world" | "worlddatetime" | "date" | "dates" | "time":
+                await ctx.send(embed=wdt_embed, view=view)
             case "economy" | "eco" | "econ":
                 await ctx.send(embed=economy_embed, view=view)
             case "fun":
