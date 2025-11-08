@@ -137,7 +137,24 @@ class Search(commands.Cog):
             return
         
         await ctx.send(embed=search_embed)
-        
+    
+    @commands.command()
+    async def synonym(self, ctx: commands.Context, *, word: str):
+        """Look up the synonyms of a word."""
+        request_url = f"https://www.synonyms.com/synonyms_api.php/synonyms/{word}"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                try:
+                    r.raise_for_status()
+                except Exception:
+                    await ctx.send("error :(")
+                    return
+                r = await r.json()
+
+        synonyms: list[str] = r['synonyms']
+        await ctx.send(f"Synonyms for {word}: {', '.join(synonyms)}", allowed_mentions=discord.AllowedMentions.none())
+
     async def _define(self, word: str) -> str | None:
         """Define but it doesnt send the messages"""
         request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
