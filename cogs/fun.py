@@ -39,7 +39,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member = None):
         """https://amitrans.org/"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [966351518020300841, 1399689963284467723]: #apex, ierzi and the bot
@@ -57,7 +57,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def isgay(self, ctx: commands.Context, user: discord.Member = None):
         """https://www.amigay.org/"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id == 1399689963284467723: #the bot
@@ -75,7 +75,7 @@ class Fun(commands.Cog):
     @commands.command(aliases=("gaytector",))
     async def gaydar(self, ctx: commands.Context, user: Optional[discord.Member] = None):
         """Sends a percentage based on how gay someone is."""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [
@@ -99,7 +99,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
         """no"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [1206615811792576614, 1344010392506208340, 902296627325317150]: #fa*t
@@ -111,7 +111,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def ishomophobic(self, ctx: commands.Context, user: discord.Member = None):
         """i hope not?? :sob:"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [1206615811792576614, 1344010392506208340]: #fa*t
@@ -123,7 +123,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def islesbian(self, ctx: commands.Context, user: discord.Member = None):
         """women loves women"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614, 1344010392506208340]: #ace (both accounts), syndey (lmao) and fa*t (both accounts)
