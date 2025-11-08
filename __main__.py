@@ -9,7 +9,7 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.world_date_time import WorldDateTime, update_wdt_tables
+from cogs.world_date_time import WorldDateTime # update_wdt_tables
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -612,7 +612,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             return
         else:
             if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
-                await ctx.send(f"Your pronouns are a slur and daddy eddgow dont allow them here")
+                await ctx.send("Your pronouns are a slur and daddy eddgow dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")
     
@@ -637,9 +637,8 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
 async def main():
     await db.init_pool()
     try:
-        # Update database tables
-        await update_wdt_tables(reset=True)
-        console.print("World Date Time tables updated.")
+        # await update_wdt_tables(reset=True)
+        # console.print("World Date Time tables updated.")
         
         await load_cogs()
         console.print("Bot is ready.")

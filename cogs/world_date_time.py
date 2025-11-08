@@ -3,11 +3,12 @@ from discord import Embed
 from discord.ext import commands
 
 from .utils.database import db
-from .utils.functions import to_timestamp
+from .utils.functions import to_ordinal, to_timestamp
 from .utils.types import Birthday
 
 import aiohttp
 from datetime import datetime
+import random
 from rich.console import Console
 from typing import Optional, Union
 
@@ -67,9 +68,10 @@ class WorldDateTime(commands.Cog):
         """Return total number of birthdays stored in the database."""
         count = await db.fetchval("SELECT COUNT(*) FROM birthdays")
         return int(count or 0)
-    
-    async def _get_events(self, dt: datetime) -> list:
-        """Gets events from pronouns.page (sorry non-queers, implementing other events later)"""
+
+
+    async def _get_pp_events(self, dt: datetime) -> list:
+        """Gets events from pronouns.page."""
         # Convert datetime to yyyy-mm-dd
         date_str = f"{dt.year}-{dt.month}-{dt.day}"
         url = f"https://en.pronouns.page/api/calendar/{date_str}"
@@ -82,7 +84,24 @@ class WorldDateTime(commands.Cog):
                 self.console.print(response)
 
         return response.get("events", [])
+    
+    async def _get_otd_events(self, dt: datetime, many: int, random_events: bool = False) -> list:
+        """Gets events from On This Day API."""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"https://api.ontoday.info/api/v1/events/{dt.month}/{dt.day}") as request:
+                request.raise_for_status()
+                response: dict = await request.json()
+                self.console.print(response)
 
+        events = response.get("data", {}).get("Events", [])
+        event_names = [event.get("text") for event in events]
+        if random_events:
+            return random.choice(event_names)
+        return event_names[:many]
+    
+    async def _get_events(self, dt: datetime) -> list:
+        """Gets events from different sources."""
+        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random=True)
 
     # Commands!
     @commands.command(name="et", aliases=("events-today", "events", "event"))
@@ -99,7 +118,7 @@ class WorldDateTime(commands.Cog):
         today_embed = Embed(
             colour=6016762, # transgender blue
             title=f"Today - {now.day}/{now.month}/{now.year}",
-            description="**Events today: \n\n**"
+            description="**Events today:**\n\n"
         )
 
         if not events:
@@ -242,7 +261,7 @@ class WorldDateTime(commands.Cog):
             await ctx.send("No one's birthday today.")
             return
         
-        birthday_users = []
+        birthday_users: list[discord.User] = []
         for birthday in birthdays:
             birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
 
@@ -266,7 +285,7 @@ class WorldDateTime(commands.Cog):
             await ctx.send("No one's birthday in this month.")
             return
         
-        birthday_users = []
+        birthday_users: list[discord.User] = []
         for birthday in birthdays:
             birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
         
@@ -281,7 +300,7 @@ class WorldDateTime(commands.Cog):
             await ctx.send("No one's birthday in this month.")
             return
         
-        birthday_users = []
+        birthday_users: list[discord.User] = []
         for birthday in birthdays:
             birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
         
@@ -296,7 +315,7 @@ class WorldDateTime(commands.Cog):
                 await ctx.send("There's a whopping 0 users on this page.")
                 return
             
-            birthday_users = []
+            birthday_users: list[tuple[discord.User, int, int]] = []
             for birthday in birthdays:
                 user = await self.bot.fetch_user(birthday["user_id"])
                 birthday_users.append((user, birthday["day"], birthday["month"]))
@@ -307,7 +326,7 @@ class WorldDateTime(commands.Cog):
                 color=discord.Colour.gold()
             )
             for user, day, month in birthday_users:
-                bday_embed.description += f"{user.mention} - {day} {MONTHS[month - 1]}\n"
+                bday_embed.description += f"{user.mention} - {MONTHS[month - 1]} {to_ordinal(day)}\n"
         
         await ctx.send(embed=bday_embed)
 

@@ -22,3 +22,16 @@ def to_timestamp(
     timestamp = int(time_value.timestamp()) if isinstance(time_value, datetime) else time_value
 
     return f"<t:{timestamp}:{format}>"
+
+
+def to_ordinal(number: int) -> str:
+    """Converts a number into a ordinal number (1 -> 1st, 2 -> 2nd, 3 -> 3rd, 4 -> 4th, etc.)"""
+    number_str = str(number)
+    if number_str.endswith("1") and not number_str.endswith("11"):
+        return number_str + "st"
+    elif number_str.endswith("2") and not number_str.endswith("12"):
+        return number_str + "nd"
+    elif number_str.endswith("3") and not number_str.endswith("13"):
+        return number_str + "rd"
+    else:
+        return number_str + "th"
