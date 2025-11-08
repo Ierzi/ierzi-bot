@@ -85,7 +85,7 @@ class WorldDateTime(commands.Cog):
 
 
     # Commands!
-    @commands.command(name="et")
+    @commands.command(name="et", aliases=("events-today", "events", "event"))
     async def events_today(self, ctx: commands.Context):
         """Gets events today."""
         now = datetime.now()
@@ -341,8 +341,9 @@ async def update_wdt_tables(reset: bool = False):
         day SMALLINT NOT NULL,
         month SMALLINT NOT NULL,
         year SMALLINT NULL,
-        timezone VARCHAR(50) NOT NULL,
-        UNIQUE(user_id, custom_name)
+        timezone VARCHAR(50) NULL,
+        UNIQUE(user_id, custom_name),
+        UNIQUE(user_id)
     );
     """)
 
