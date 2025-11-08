@@ -533,7 +533,7 @@ class Economy(commands.Cog):
                 category = "rebirths"
             
             if not embed: 
-                await interaction.response.send_message(f"try again idk my bot is weird", ephemeral=True)
+                await interaction.response.send_message("try again idk my bot is weird", ephemeral=True)
                 return
 
             await interaction.response.edit_message(embed=embed, view=view)
@@ -669,11 +669,14 @@ class Economy(commands.Cog):
             await ctx.send("aint you rich enough")
 
             def check(m: Message):
-                return m.channel.id == ctx.channel.id and m.content.strip().lower() == "no" and m.author.id == ctx.author.id
+                return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
             
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=15.0)
             except asyncio.TimeoutError:
+                return
+
+            if msg.content.strip().lower() != "no":
                 return
             
             await self._add_money(user_id, 0.01)
