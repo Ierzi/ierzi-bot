@@ -38,7 +38,7 @@ class Search(commands.Cog):
                 data = await r.json()
                 try:
                     definition = data['data'][0]['meaning']
-                except Exception as e:
+                except Exception:
                     await ctx.send("Word not found/Error.")
                     return
 
@@ -70,7 +70,7 @@ class Search(commands.Cog):
 
         try:
             meanings = r[0]['meanings']
-        except Exception as e:
+        except Exception:
             await ctx.send("Word not found / Error.")
             return
         
