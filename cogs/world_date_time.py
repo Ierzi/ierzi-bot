@@ -101,7 +101,7 @@ class WorldDateTime(commands.Cog):
     
     async def _get_events(self, dt: datetime) -> list:
         """Gets events from different sources."""
-        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random=True)
+        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True)
 
     # Commands!
     @commands.command(name="et", aliases=("events-today", "events", "event"))
