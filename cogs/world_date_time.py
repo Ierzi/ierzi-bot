@@ -11,6 +11,8 @@ from datetime import datetime
 import random
 from rich.console import Console
 from typing import Optional, Union
+import ssl
+import certifi
 
 MONTHS = [
     "January",
@@ -73,12 +75,14 @@ class WorldDateTime(commands.Cog):
     async def _get_pp_events(self, dt: datetime) -> list:
         """Gets events from pronouns.page."""
         # Convert datetime to yyyy-mm-dd
-        date_str = f"{dt.year}-{dt.month}-{dt.day}"
+        date_str = dt.strftime("%Y-%m-%d")
         url = f"https://en.pronouns.page/api/calendar/{date_str}"
         self.console.print(url)
 
-        async with aiohttp.ClientSession() as client:
-            async with client.get(url) as request:
+        timeout = aiohttp.ClientTimeout(total=10)
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        async with aiohttp.ClientSession(timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)) as client:
+            async with client.get(url, headers={"User-Agent": "ierzi-bot/1.0"}) as request:
                 request.raise_for_status()
                 response: dict = await request.json()
                 self.console.print(response)
@@ -87,16 +91,27 @@ class WorldDateTime(commands.Cog):
     
     async def _get_otd_events(self, dt: datetime, many: int, random_events: bool = False) -> list:
         """Gets events from On This Day API."""
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"https://api.ontoday.info/api/v1/events/{dt.month}/{dt.day}") as request:
-                request.raise_for_status()
-                response: dict = await request.json()
-                self.console.print(response)
+        ssl_context = ssl.create_default_context(cafile=certifi.where())
+        timeout = aiohttp.ClientTimeout(total=10)
+        url = f"https://api.ontoday.info/api/v1/events/{dt.month}/{dt.day}"
+        for attempt in range(3):
+            try:
+                async with aiohttp.ClientSession(timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
+                    async with session.get(url, headers={"User-Agent": "ierzi-bot/1.0"}) as request:
+                        request.raise_for_status()
+                        response: dict = await request.json()
+                        self.console.print(response)
+                        break
+            except Exception as e:
+                self.console.print(f"OTD fetch attempt {attempt+1} failed: {e}")
+                if attempt == 2:
+                    self.console.print("OTD fetch failed after retries.")
+                    return []
 
-        events = response.get("data", {}).get("Events", [])
+        events: list[dict] = response.get("data", {}).get("Events", [])
         event_names = [event.get("text") for event in events]
         if random_events:
-            return random.choice(event_names)
+            return [random.choice(event_names)] if event_names else []
         return event_names[:many]
     
     async def _get_events(self, dt: datetime) -> list:
