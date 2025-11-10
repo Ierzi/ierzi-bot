@@ -96,9 +96,26 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.poll and message.channel.id == 1411714823405965342: 
-        await message.create_thread(name=message.poll.question)
-    
+    if message.channel.id == 1412488425294139517: #TODO: change this to normal poll id : 1411714823405965342
+        if message.poll:
+            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:97]}..."
+        elif message.content.startswith("not a poll but "):
+            await message.create_thread(name=message.content[15:])
+        elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
+            await message.add_reaction("✅")
+            await message.add_reaction("❌")
+        elif message.content.endswith("1-10"):
+            await message.add_reaction("1️⃣")
+            await message.add_reaction("2️⃣")
+            await message.add_reaction("3️⃣")
+            await message.add_reaction("4️⃣")
+            await message.add_reaction("5️⃣")
+            await message.add_reaction("6️⃣")
+            await message.add_reaction("7️⃣")
+            await message.add_reaction("8️⃣")
+            await message.add_reaction("9️⃣")
+            await message.add_reaction("🔟")
+
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
         if f'{bot.user.mention} is this true' in message.content.lower() or f'{bot.user.mention} is ts true' in message.content.lower():
@@ -131,6 +148,9 @@ async def on_message(message: Message):
                 await message.add_reaction(emoji)
                 if target_id:
                    grok_cache[target_id] = emoji
+
+
+
 
     # Finally, process commands
     await bot.process_commands(message)
