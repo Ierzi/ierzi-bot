@@ -403,7 +403,7 @@ class WorldDateTime(commands.Cog):
     
     # Timezone commands
     @timezone.command(name="set")
-    async def set_timezone(self, ctx: commands.Context, timezone: str):
+    async def set_timezone(self, ctx: commands.Context):
         """Set your timezone."""
         # Pre-load buttons
         buttons_view = View(timeout=VIEW_TIMEOUT)
@@ -411,8 +411,8 @@ class WorldDateTime(commands.Cog):
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
         async def yes_callback(interaction: discord.Interaction):
-            await interaction.response.send_message(f"Your timezone has been set to {timezone}")
-            await self._set_timezone(ctx.author.id, timezone)
+            await interaction.response.send_message(f"Your timezone has been set to {tz_str}")
+            await self._set_timezone(ctx.author.id, tz_str)
 
         async def no_callback(interaction: discord.Interaction):
             await interaction.response.send_message("Your timezone has not been changed.")
@@ -433,9 +433,10 @@ class WorldDateTime(commands.Cog):
             await ctx.send("You took too long to respond.")
             return
 
-        tz = ZoneInfo(f"UTC{offset}" if offset < 0 else f"UTC+{offset}")
+        tz_str = f"UTC{offset}" if offset < 0 else f"UTC+{offset}"
+        tz = ZoneInfo(tz_str)
         dt = datetime.now(tz)
-        await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {timezone}?", view=buttons_view)
+        await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz}?", view=buttons_view)
         # Everything else is handled by the buttons
 
 
