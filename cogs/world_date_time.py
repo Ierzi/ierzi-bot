@@ -1,18 +1,23 @@
 import discord
-from discord import Embed
+from discord import Embed, Message
 from discord.ext import commands
+from discord.ui import View, Button
+
+from cogs.utils.variables import VIEW_TIMEOUT
 
 from .utils.database import db
 from .utils.functions import to_ordinal, to_timestamp
 from .utils.types import Birthday
 
 import aiohttp
+import asyncio
 from datetime import datetime
 import random
 from rich.console import Console
 from typing import Optional, Union
 import ssl
 import certifi
+from zoneinfo import available_timezones, ZoneInfo
 
 MONTHS = [
     "January",
@@ -33,6 +38,24 @@ class WorldDateTime(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
+
+        # Timezone thing
+        def offset_value(tz: str) -> int:
+            sign = -1 if "+" in tz else 1
+            num = int(tz.split("GMT")[-1].replace("+", "").replace("-", "") or 0)
+            return sign * num
+
+        timezone_list = [
+            tz for tz in available_timezones()
+            if tz.startswith("Etc/GMT")
+        ]
+        timezone_list.sort(key=offset_value)
+
+        self.list_utcs = [f"UTC{tz[7:]}" for tz in timezone_list]
+        self.list_utcs.remove("UTC+0")
+        self.list_utcs.remove("UTC-0") 
+        self.list_utcs.remove("UTC0") # useless timezones
+
     
     # groups!!!
 
@@ -118,6 +141,22 @@ class WorldDateTime(commands.Cog):
         """Gets events from different sources."""
         return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True)
 
+    async def _set_timezone(self, user_id: int, timezone: str):
+        """Set the timezone of a user."""
+        await db.execute(
+            "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
+            user_id, timezone
+        )
+    
+    async def _get_timezone(self, user_id: int) -> Optional[str]:
+        """Get the timezone of a user."""
+        row = await db.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", user_id)
+        if row is None:
+            return None
+        
+        return row["timezone"]
+
+        
     # Commands!
     @commands.command(name="et", aliases=("events-today", "events", "event"))
     async def events_today(self, ctx: commands.Context):
@@ -362,6 +401,43 @@ class WorldDateTime(commands.Cog):
         await self._set_birthday(user.id, birthday)
         await ctx.send(f"{user.mention}'s birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
     
+    # Timezone commands
+    @timezone.command(name="set")
+    async def set_timezone(self, ctx: commands.Context, timezone: str):
+        """Set your timezone."""
+        # Pre-load buttons
+        buttons_view = View(timeout=VIEW_TIMEOUT)
+        yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
+        no_button = Button(label="No", style=discord.ButtonStyle.red)
+
+        async def yes_callback(interaction: discord.Interaction):
+            await interaction.response.send_message(f"Your timezone has been set to {timezone}")
+            await self._set_timezone(ctx.author.id, timezone)
+
+        async def no_callback(interaction: discord.Interaction):
+            await interaction.response.send_message("Your timezone has not been changed.")
+
+        yes_button.callback = yes_callback
+        no_button.callback = no_callback
+        buttons_view.add_item(yes_button)
+        buttons_view.add_item(no_button)
+
+        def check(m: Message):
+            return m.author == ctx.author and m.channel == ctx.channel
+
+        try:
+            await ctx.send("Enter your UTC offset (just the number, e.g. 2 for UTC+2 or -2 for UTC-2)")
+            offset = await self.bot.wait_for("message", check=check, timeout=60)
+            offset = int(offset.content)
+        except asyncio.TimeoutError:
+            await ctx.send("You took too long to respond.")
+            return
+
+        tz = ZoneInfo(f"UTC{offset}" if offset < 0 else f"UTC+{offset}")
+        dt = datetime.now(tz)
+        await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {timezone}?", view=buttons_view)
+        # Everything else is handled by the buttons
+
 
 async def update_wdt_tables(reset: bool = False):
     if reset:
