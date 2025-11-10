@@ -11,13 +11,12 @@ from .utils.types import Birthday
 
 import aiohttp
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import random
 from rich.console import Console
 from typing import Optional, Union
 import ssl
 import certifi
-from zoneinfo import available_timezones, ZoneInfo
 
 MONTHS = [
     "January",
@@ -38,24 +37,6 @@ class WorldDateTime(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
-
-        # Timezone thing
-        def offset_value(tz: str) -> int:
-            sign = -1 if "+" in tz else 1
-            num = int(tz.split("GMT")[-1].replace("+", "").replace("-", "") or 0)
-            return sign * num
-
-        timezone_list = [
-            tz for tz in available_timezones()
-            if tz.startswith("Etc/GMT")
-        ]
-        timezone_list.sort(key=offset_value)
-
-        self.list_utcs = [f"UTC{tz[7:]}" for tz in timezone_list]
-        self.list_utcs.remove("UTC+0")
-        self.list_utcs.remove("UTC-0") 
-        self.list_utcs.remove("UTC0") # useless timezones
-
     
     # groups!!!
 
@@ -434,9 +415,9 @@ class WorldDateTime(commands.Cog):
             return
 
         tz_str = f"UTC{offset}" if offset < 0 else f"UTC+{offset}"
-        tz = ZoneInfo(tz_str)
+        tz = timezone(timedelta(hours=offset))
         dt = datetime.now(tz)
-        await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz}?", view=buttons_view)
+        await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz_str}?", view=buttons_view)
         # Everything else is handled by the buttons
 
 
