@@ -126,13 +126,13 @@ class WorldDateTime(commands.Cog):
     async def _set_timezone(self, user_id: int, timezone: str):
         """Set the timezone of a user."""
         await db.execute(
-            "INSERT INTO timezones (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
+            "INSERT INTO birthdays (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
             user_id, timezone
         )
     
     async def _get_timezone(self, user_id: int) -> Optional[str]:
         """Get the timezone of a user."""
-        row = await db.fetchrow("SELECT timezone FROM timezones WHERE user_id = $1", user_id)
+        row = await db.fetchrow("SELECT timezone FROM birthdays WHERE user_id = $1", user_id)
         if row is None:
             return None
         
