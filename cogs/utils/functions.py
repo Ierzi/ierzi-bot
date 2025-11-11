@@ -37,21 +37,21 @@ def to_ordinal(number: int) -> str:
     else:
         return number_str + "th"
 
-def parse_offset(offset: str | int) -> timezone:
+def parse_offset(offset: str | int) -> Union[timezone, ZoneInfo]:
     if isinstance(offset, int):
         return timezone(timedelta(hours=offset))
     elif isinstance(offset, str):
+        s = offset.strip()
         try:
-            return timezone(timedelta(hours=int(offset)))
+            return timezone(timedelta(hours=int(s)))
         except ValueError:
-            # Maybe its UTC+smth or UTC-smth
-            if offset.startswith("UTC"):
-                offset = offset[3:]
-            return timezone(timedelta(hours=int(offset)))
+            if s.upper().startswith("UTC"):
+                s = s[3:]
+                return timezone(timedelta(hours=int(s)))
+
+            return ZoneInfo(offset)
 
 def tz_to_str(offset: ZoneInfo | timezone) -> str:
-    if isinstance(offset, ZoneInfo):
-        return offset.tzname()
-    else:
-        utc = offset.fromutc(datetime.now(timezone.utc))
-        return utc.tzname()
+    # why did i make hella complicated code before
+    dt = datetime.now(offset)
+    return dt.tzname()

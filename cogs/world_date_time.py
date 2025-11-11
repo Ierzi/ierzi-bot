@@ -12,7 +12,7 @@ from .utils.types import Birthday
 import aiohttp
 import asyncio
 import certifi
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 import random
 from rich.console import Console
 from typing import Optional, Union
@@ -393,8 +393,8 @@ class WorldDateTime(commands.Cog):
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
         async def yes_callback(interaction: discord.Interaction):
-            await interaction.response.send_message(f"Your timezone has been set to {tz_str}")
-            await self._set_timezone(ctx.author.id, tz_str)
+            await interaction.response.send_message(f"Your timezone has been set to {stored_tz}")
+            await self._set_timezone(ctx.author.id, stored_tz)
 
         async def no_callback(interaction: discord.Interaction):
             await interaction.response.send_message("Your timezone has not been changed.")
@@ -419,8 +419,15 @@ class WorldDateTime(commands.Cog):
             return
 
         tz_str = tz_to_str(offset)
-        tz = timezone(timedelta(hours=offset)) if isinstance(offset, int) else offset
-        dt = datetime.now(tz)
+
+        if isinstance(offset, ZoneInfo):
+            stored_tz = offset.key
+        else:
+            utcoffset = offset.utcoffset(datetime.now()) or timedelta(0)
+            hours = int(utcoffset.total_seconds() // 3600)
+            stored_tz = f"UTC{hours:+d}"
+
+        dt = datetime.now(offset)
         await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz_str}?", view=buttons_view)
         # Everything else is handled by the buttons
     
