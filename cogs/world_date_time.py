@@ -459,20 +459,14 @@ class WorldDateTime(commands.Cog):
         )
 
 
-async def update_wdt_tables(reset: bool = False):
-    if reset:
-        await db.execute("DROP TABLE IF EXISTS birthdays;")
+async def update_wdt_tables():
+    # Drop old table
+    await db.execute("DROP TABLE IF EXISTS birthdays;")
 
     await db.execute("""
-    CREATE TABLE IF NOT EXISTS birthdays (
-        id SERIAL PRIMARY KEY,
-        user_id BIGINT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-        custom_name VARCHAR(100) NULL,
-        day SMALLINT NOT NULL,
-        month SMALLINT NOT NULL,
-        year SMALLINT NULL,
-        timezone VARCHAR(50) NULL,
-        UNIQUE(user_id)
-    );
+        ALTER TABLE users
+        ADD COLUMN day SMALLINT NULL,
+        ADD COLUMN month SMALLINT NULL,
+        ADD COLUMN year SMALLINT NULL,
+        ADD COLUMN timezone VARCHAR(50) NULL;
     """)
-

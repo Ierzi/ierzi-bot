@@ -1,13 +1,18 @@
--- new schema
+-- Schema v3
 
 -- Users table
--- now directly contains the economy table
+-- now directly contains the birthday table
 CREATE TABLE users (
     -- important things
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
     -- pronouns
     pronouns TEXT, 
+    -- birthday
+    day SMALLINT NULL,
+    month SMALLINT NULL,
+    year SMALLINT NULL,
+    timezone VARCHAR(50) NULL
 );
 
 CREATE TABLE economy (
@@ -29,14 +34,3 @@ CREATE TABLE marriages (
     user2_id BIGINT REFERENCES users(user_id)
 );
 
--- Birthdays Table
-CREATE TABLE birthdays (
-    id SERIAL PRIMARY KEY,
-    -- either discord id or custom
-    user_id BIGINT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    day SMALLINT NOT NULL,
-    month SMALLINT NOT NULL,
-    year SMALLINT NULL,
-    timezone VARCHAR(50) NULL,
-    UNIQUE(user_id)
-);
