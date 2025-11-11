@@ -1,4 +1,5 @@
 import discord
+from discord import Embed
 from discord.ext import commands
 
 import asyncio
@@ -267,3 +268,17 @@ class Fun(commands.Cog):
             current_translation = response.text
 
         await ctx.message.reply(current_translation, allowed_mentions=discord.AllowedMentions.none())
+
+
+    @commands.command()
+    async def ship(self, ctx: commands.Context, user1: str | discord.User, user2: str | discord.User):
+        """Ship two users."""
+
+        ship_percentage = random.randint(0, 100)
+
+        user1 = user1.mention if isinstance(user1, discord.User) else user1
+        user2 = user2.mention if isinstance(user2, discord.User) else user2
+        emoji = "💘" if ship_percentage >= 80 else "❤️" if ship_percentage >= 33 else "💔"
+
+        await ctx.send(f"{user1} X {user2}: {ship_percentage}% {emoji}", allowed_mentions=discord.AllowedMentions.none())
+        
