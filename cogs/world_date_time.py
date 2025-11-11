@@ -438,8 +438,25 @@ class WorldDateTime(commands.Cog):
             user = ctx.author
         
         tz = await self._get_timezone(user.id)
-        dt = datetime.now(parse_offset(tz))
-        await ctx.send(f"{user.mention}'s timezone is {tz}. It is currently {dt.hour}:{dt.minute} there.", allowed_mentions=discord.AllowedMentions.none())
+        if not tz:
+            await ctx.send(
+                f"{user.mention} doesn't have a timezone set. Use `!timezone set` to set one." if user != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+            return
+
+        try:
+            tzinfo = parse_offset(tz)
+        except Exception as e:
+            await ctx.send("error :(")
+            self.console.print(f"Error parsing timezone {tz}: {e}")
+            return
+
+        dt = datetime.now(tzinfo)
+        await ctx.send(
+            f"{user.mention}'s timezone is {tz}. It is currently {dt.hour}:{dt.minute} there.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
 
 async def update_wdt_tables(reset: bool = False):
