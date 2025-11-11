@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Literal, Union
 
 
@@ -35,3 +35,15 @@ def to_ordinal(number: int) -> str:
         return number_str + "rd"
     else:
         return number_str + "th"
+
+def parse_offset(offset: str | int) -> timezone:
+    if isinstance(offset, int):
+        return timezone(timedelta(hours=offset))
+    elif isinstance(offset, str):
+        try:
+            return timezone(timedelta(hours=int(offset)))
+        except ValueError:
+            # Maybe its UTC+smth or UTC-smth
+            if offset.startswith("UTC"):
+                offset = offset[3:]
+            return timezone(timedelta(hours=int(offset)))

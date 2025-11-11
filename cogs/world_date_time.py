@@ -6,17 +6,18 @@ from discord.ui import View, Button
 from cogs.utils.variables import VIEW_TIMEOUT
 
 from .utils.database import db
-from .utils.functions import to_ordinal, to_timestamp
+from .utils.functions import to_ordinal, to_timestamp, parse_offset
 from .utils.types import Birthday
 
 import aiohttp
 import asyncio
+import certifi
 from datetime import datetime, timezone, timedelta
 import random
 from rich.console import Console
 from typing import Optional, Union
 import ssl
-import certifi
+from zoneinfo import ZoneInfo
 
 MONTHS = [
     "January",
@@ -407,18 +408,31 @@ class WorldDateTime(commands.Cog):
             return m.author == ctx.author and m.channel == ctx.channel
 
         try:
-            await ctx.send("Enter your UTC offset (just the number, e.g. 2 for UTC+2 or -2 for UTC-2)")
-            offset = await self.bot.wait_for("message", check=check, timeout=60)
-            offset = int(offset.content)
+            await ctx.send("Enter the name of your timezone or your UTC offset.")
+            offset = await self.bot.wait_for("message", check=check, timeout=180)
+            if offset.content.isnumeric() or offset.content.startswith("UTC"):
+                offset = parse_offset(offset.content)
+            else:
+                offset = ZoneInfo(offset.content)
         except asyncio.TimeoutError:
             await ctx.send("You took too long to respond.")
             return
 
         tz_str = f"UTC{offset}" if offset < 0 else f"UTC+{offset}"
-        tz = timezone(timedelta(hours=offset))
+        tz = timezone(timedelta(hours=offset)) if isinstance(offset, int) else offset
         dt = datetime.now(tz)
         await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz_str}?", view=buttons_view)
         # Everything else is handled by the buttons
+    
+    @timezone.command(name="get")
+    async def get_timezone(self, ctx: commands.Context, user: Optional[discord.User] = None):
+        """Get a user's timezone."""
+        if not user:
+            user = ctx.author
+        
+        tz = await self._get_timezone(user.id)
+        dt = datetime.now(parse_offset(tz))
+        await ctx.send(f"{user.mention}'s timezone is {tz}. It is currently {dt.hour}:{dt.minute} there.", allowed_mentions=discord.AllowedMentions.none())
 
 
 async def update_wdt_tables(reset: bool = False):
