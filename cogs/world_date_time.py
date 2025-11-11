@@ -6,7 +6,7 @@ from discord.ui import View, Button
 from cogs.utils.variables import VIEW_TIMEOUT
 
 from .utils.database import db
-from .utils.functions import to_ordinal, to_timestamp, parse_offset, tz_to_str, offset_to_str
+from .utils.functions import to_ordinal, to_timestamp, parse_offset, tz_to_str
 from .utils.types import Birthday
 
 import aiohttp
