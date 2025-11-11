@@ -54,7 +54,7 @@ bot = commands.Bot(
     ]
 )
 
-experimental_branch = False
+experimental_branch: bool = False
 
 grok_cache: dict[int, str] = {} # message id - response
 
@@ -70,8 +70,9 @@ async def on_ready():
     console.print(f"Logged in as {bot.user}")
     await bot_loop.start()
 
-    if bot.user.id == 1412488383178998044: #experimental bot id
+    if bot.user.id == 1412488383178998044 or bot.user == "Ierzi Bot - Experimental#2987": #experimental bot id or fallback
         global experimental_branch
+        console.print("Experimental branch detected.")
         experimental_branch = True
 
 @tasks.loop(minutes=10)
@@ -681,7 +682,11 @@ async def info(ctx: commands.Context):
     message += f"By: {commit_author}\n"
 
     uptime = now - start_uptime
-    message += f"Uptime: {uptime}"
+    days, remainder = divmod(uptime.total_seconds(), 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    message += f"Uptime: {days}d {hours}h {minutes}m {seconds}s\n"
     
     await ctx.send(message)
 
