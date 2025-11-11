@@ -59,13 +59,13 @@ class WorldDateTime(commands.Cog):
     async def _set_birthday(self, user_id: int, birthday: Birthday):
         """Set the birthday of a user."""
         await db.execute(
-            "INSERT INTO birthdays (user_id, day, month, year) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO UPDATE SET day = $2, month = $3, year = $4",
+            "INSERT INTO users (user_id, day, month, year) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO UPDATE SET day = $2, month = $3, year = $4",
             user_id, birthday.day, birthday.month, birthday.year
         )
     
     async def _get_birthday(self, user_id: int) -> Optional[Birthday]:
         """Get the birthday of a user."""
-        row = await db.fetchrow("SELECT day, month, year FROM birthdays WHERE user_id = $1", user_id)
+        row = await db.fetchrow("SELECT day, month, year FROM users WHERE user_id = $1", user_id)
         if row is None:
             return None
         
@@ -73,7 +73,7 @@ class WorldDateTime(commands.Cog):
 
     async def _total_birthdays(self) -> int:
         """Return total number of birthdays stored in the database."""
-        count = await db.fetchval("SELECT COUNT(*) FROM birthdays")
+        count = await db.fetchval("SELECT COUNT(*) FROM users WHERE day IS NOT NULL;")
         return int(count or 0)
 
 
@@ -126,13 +126,13 @@ class WorldDateTime(commands.Cog):
     async def _set_timezone(self, user_id: int, timezone: str):
         """Set the timezone of a user."""
         await db.execute(
-            "INSERT INTO birthdays (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = EXCLUDED.timezone",
+            "INSERT INTO users (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = EXCLUDED.timezone",
             user_id, timezone
         )
     
     async def _get_timezone(self, user_id: int) -> Optional[str]:
         """Get the timezone of a user."""
-        row = await db.fetchrow("SELECT timezone FROM birthdays WHERE user_id = $1", user_id)
+        row = await db.fetchrow("SELECT timezone FROM users WHERE user_id = $1", user_id)
         if row is None:
             return None
         
@@ -292,7 +292,7 @@ class WorldDateTime(commands.Cog):
     async def today(self, ctx: commands.Context):
         """Anyone's birthday today?"""
         today = datetime.now()
-        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1 AND day = $2", today.month, today.day)
+        birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1 AND day = $2", today.month, today.day)
         if not birthdays:
             await ctx.send("No one's birthday today.")
             return
@@ -316,7 +316,7 @@ class WorldDateTime(commands.Cog):
             except Exception:
                 await ctx.send("invalid month")
         
-        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", month)
+        birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1", month)
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
@@ -331,7 +331,7 @@ class WorldDateTime(commands.Cog):
     async def thismonth(self, ctx: commands.Context):
         """Lists all birthdays coming this month."""
         current_month_index = datetime.now().month
-        birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays WHERE month = $1", current_month_index)
+        birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1", current_month_index)
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
@@ -346,7 +346,7 @@ class WorldDateTime(commands.Cog):
     async def list(self, ctx: commands.Context, page_number: int = 1):
         """Lists all birthdays."""
         async with ctx.typing():
-            birthdays = await db.fetch("SELECT user_id, day, month FROM birthdays ORDER BY month, day ASC LIMIT 10 OFFSET $1", (page_number - 1) * 10)
+            birthdays = await db.fetch("SELECT user_id, day, month FROM users ORDER BY month, day ASC LIMIT 10 OFFSET $1", (page_number - 1) * 10)
             if not birthdays:
                 await ctx.send("There's a whopping 0 users on this page.")
                 return

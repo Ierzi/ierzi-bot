@@ -656,9 +656,12 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
 
 async def main():
     await db.init_pool()
-    try:   
+    try:
+        await update_wdt_tables()
+        console.print("World Date Time tables updated.")
         await load_cogs()
         console.print("Bot is ready.")
+        
         await bot.start(token)
     finally:
         await db.close_pool()
