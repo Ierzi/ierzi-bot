@@ -688,8 +688,6 @@ async def info(ctx: commands.Context):
 async def main():
     await db.init_pool()
     try:
-        await update_wdt_tables()
-        console.print("World Date Time tables updated.")
         await load_cogs()
         console.print("Bot is ready.")
 
