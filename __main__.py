@@ -675,7 +675,7 @@ async def info(ctx: commands.Context):
             data = await response.json()
             commit_hash = data['sha'][:6]
             commit_name = data['commit']['message']
-            commit_author = data['author']['name']
+            commit_author = data['commit']['author']['name']
 
     message += f"Commit {commit_hash}: {commit_name}\n"
     message += f"By: {commit_author}\n"

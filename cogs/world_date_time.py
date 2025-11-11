@@ -316,7 +316,10 @@ class WorldDateTime(commands.Cog):
             except Exception:
                 await ctx.send("invalid month")
         
-        birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1", month)
+        birthdays = await db.fetch(
+            "SELECT user_id, day, month FROM users WHERE month = $1 AND day IS NOT NULL",
+            month,
+        )
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
@@ -331,7 +334,10 @@ class WorldDateTime(commands.Cog):
     async def thismonth(self, ctx: commands.Context):
         """Lists all birthdays coming this month."""
         current_month_index = datetime.now().month
-        birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1", current_month_index)
+        birthdays = await db.fetch(
+            "SELECT user_id, day, month FROM users WHERE month = $1 AND day IS NOT NULL",
+            current_month_index,
+        )
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
@@ -346,7 +352,10 @@ class WorldDateTime(commands.Cog):
     async def list(self, ctx: commands.Context, page_number: int = 1):
         """Lists all birthdays."""
         async with ctx.typing():
-            birthdays = await db.fetch("SELECT user_id, day, month FROM users ORDER BY month, day ASC LIMIT 10 OFFSET $1", (page_number - 1) * 10)
+            birthdays = await db.fetch(
+                "SELECT user_id, day, month FROM users WHERE month IS NOT NULL AND day IS NOT NULL ORDER BY month, day ASC LIMIT 10 OFFSET $1",
+                (page_number - 1) * 10,
+            )
             if not birthdays:
                 await ctx.send("There's a whopping 0 users on this page.")
                 return
