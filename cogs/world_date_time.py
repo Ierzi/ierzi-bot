@@ -126,7 +126,7 @@ class WorldDateTime(commands.Cog):
     async def _set_timezone(self, user_id: int, timezone: str):
         """Set the timezone of a user."""
         await db.execute(
-            "INSERT INTO birthdays (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = $2",
+            "INSERT INTO birthdays (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = EXCLUDED.timezone",
             user_id, timezone
         )
     
