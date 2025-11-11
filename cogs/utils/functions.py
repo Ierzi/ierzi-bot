@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from typing import Literal, Union
+from zoneinfo import ZoneInfo
 
 
 def to_timestamp(
@@ -47,3 +48,9 @@ def parse_offset(offset: str | int) -> timezone:
             if offset.startswith("UTC"):
                 offset = offset[3:]
             return timezone(timedelta(hours=int(offset)))
+
+def tz_to_str(offset: ZoneInfo) -> str:
+    return offset.tzname()
+
+def offset_to_str(offset: int) -> str:
+    return f"UTC{offset}" if offset < 0 else f"UTC+{offset}"

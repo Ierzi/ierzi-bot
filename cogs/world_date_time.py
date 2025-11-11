@@ -6,7 +6,7 @@ from discord.ui import View, Button
 from cogs.utils.variables import VIEW_TIMEOUT
 
 from .utils.database import db
-from .utils.functions import to_ordinal, to_timestamp, parse_offset
+from .utils.functions import to_ordinal, to_timestamp, parse_offset, tz_to_str, offset_to_str
 from .utils.types import Birthday
 
 import aiohttp
@@ -418,7 +418,7 @@ class WorldDateTime(commands.Cog):
             await ctx.send("You took too long to respond.")
             return
 
-        tz_str = f"UTC{offset}" if offset < 0 else f"UTC+{offset}"
+        tz_str = tz_to_str(offset) if isinstance(offset, ZoneInfo) else offset_to_str(offset)
         tz = timezone(timedelta(hours=offset)) if isinstance(offset, int) else offset
         dt = datetime.now(tz)
         await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz_str}?", view=buttons_view)
