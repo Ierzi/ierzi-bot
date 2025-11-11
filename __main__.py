@@ -23,7 +23,9 @@ from cogs.utils.database import db
 from cogs.utils.variables import VIEW_TIMEOUT, NO_SLURS_SERVERS
 
 # Other
+import aiohttp
 import asyncio
+from datetime import datetime, timezone
 from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
 import os
 import random
@@ -36,6 +38,7 @@ console = Console()
 load_dotenv()
 
 token = os.getenv("TOKEN")
+start_uptime = datetime.now(timezone.utc)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -653,6 +656,34 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
 
+@bot.command(aliases=("uptime",))
+async def info(ctx: commands.Context):
+    """info about the bot including uptime (new command!!)"""
+    global start_uptime, experimental_branch, console
+    now = datetime.now(timezone.utc)
+    message = ""
+
+    # Get commit name and hash (first 6 characters) with a request
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://api.github.com/repos/ierzi/ierzi-bot/commits/main" if not experimental_branch else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental") as response:
+            try:
+                response.raise_for_status()
+            except Exception as e:
+                await ctx.send("error :(")
+                console.print(e)
+                return
+            data = await response.json()
+            commit_hash = data['sha'][:6]
+            commit_name = data['commit']['message']
+            commit_author = data['author']['name']
+
+    message += f"Commit {commit_hash}: {commit_name}\n"
+    message += f"By: {commit_author}\n"
+
+    uptime = now - start_uptime
+    message += f"Uptime: {uptime}"
+    
+    await ctx.send(message)
 
 async def main():
     await db.init_pool()
@@ -661,7 +692,7 @@ async def main():
         console.print("World Date Time tables updated.")
         await load_cogs()
         console.print("Bot is ready.")
-        
+
         await bot.start(token)
     finally:
         await db.close_pool()

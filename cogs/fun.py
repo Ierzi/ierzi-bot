@@ -4,7 +4,6 @@ from discord.ext import commands
 import asyncio
 import aiohttp
 from aiogoogletrans import Translator
-from datetime import datetime, timezone
 from pathlib import Path
 import random
 from rich.console import Console
@@ -16,25 +15,9 @@ class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
-        self.start_uptime = datetime.now(tz=timezone.utc)
         self.cat_vid_names: list[Path] = []
         self.car_vids_folder = Path(__file__).resolve().parent.parent / "car_vids"
         self.fetch_cat_vids()
-
-    @commands.command()
-    async def uptime(self, ctx: commands.Context):
-        """basically how long since the last update lmao"""
-        now = datetime.now(tz=timezone.utc)
-        delta = now - self.start_uptime
-
-        # Calculate time in readable format
-        days, remainder = divmod(delta.total_seconds(), 86400)
-        hours, remainder = divmod(remainder, 3600)
-        minutes, seconds = divmod(remainder, 60)
-
-        messaage = f"Uptime: {int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s."
-        self.console.print(messaage)
-        await ctx.send(messaage)
 
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member = None):
