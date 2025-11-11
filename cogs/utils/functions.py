@@ -49,8 +49,9 @@ def parse_offset(offset: str | int) -> timezone:
                 offset = offset[3:]
             return timezone(timedelta(hours=int(offset)))
 
-def tz_to_str(offset: ZoneInfo) -> str:
-    return offset.tzname()
-
-def offset_to_str(offset: int) -> str:
-    return f"UTC{offset}" if offset < 0 else f"UTC+{offset}"
+def tz_to_str(offset: ZoneInfo | timezone) -> str:
+    if isinstance(offset, ZoneInfo):
+        return offset.tzname()
+    else:
+        utc = offset.fromutc(datetime.now(timezone.utc))
+        return utc.tzname()

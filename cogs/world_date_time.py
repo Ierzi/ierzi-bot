@@ -418,7 +418,7 @@ class WorldDateTime(commands.Cog):
             await ctx.send("You took too long to respond.")
             return
 
-        tz_str = tz_to_str(offset) if isinstance(offset, ZoneInfo) else offset_to_str(offset)
+        tz_str = tz_to_str(offset)
         tz = timezone(timedelta(hours=offset)) if isinstance(offset, int) else offset
         dt = datetime.now(tz)
         await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz_str}?", view=buttons_view)
