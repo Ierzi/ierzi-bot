@@ -472,7 +472,6 @@ async def update_wdt_tables(reset: bool = False):
         month SMALLINT NOT NULL,
         year SMALLINT NULL,
         timezone VARCHAR(50) NULL,
-        UNIQUE(user_id, custom_name),
         UNIQUE(user_id)
     );
     """)

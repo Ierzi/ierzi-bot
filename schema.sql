@@ -34,10 +34,9 @@ CREATE TABLE birthdays (
     id SERIAL PRIMARY KEY,
     -- either discord id or custom
     user_id BIGINT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    custom_name VARCHAR(100) NULL,
     day TINYINT NOT NULL,
     month TINYINT NOT NULL,
     year SMALLINT NULL,
-    timezone VARCHAR(50) NOT NULL DEFAULT "UTC",
-    UNIQUE(discord_user_id, custom_name)
+    timezone VARCHAR(50) NULL,
+    UNIQUE(user_id)
 );
