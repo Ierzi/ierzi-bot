@@ -467,6 +467,44 @@ class WorldDateTime(commands.Cog):
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
+    @timezone.command()
+    async def difference(self, ctx: commands.Context, tz1: str | discord.User, tz2: Optional[str | discord.User] = None):
+        """Get the difference between two timezones with its name or an user."""
+        if not tz2:
+            tz2 = ctx.author
+
+        if isinstance(tz1, discord.User):
+            _tz1 = await self._get_timezone(tz1.id)
+            if not _tz1:
+                await ctx.send(
+                    f"{tz1.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz1 != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
+                return
+            tz1 = parse_offset(_tz1)
+        elif isinstance(tz1, str):
+            tz1 = parse_offset(tz1)
+        
+        if isinstance(tz2, discord.User):
+            _tz2 = await self._get_timezone(tz2.id)
+            if not _tz2:
+                await ctx.send(
+                    f"{tz2.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz2 != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
+                return
+            tz2 = parse_offset(_tz2)
+        elif isinstance(tz2, str):
+            tz2 = parse_offset(tz2)
+        
+        dt1 = datetime.now(tz1)
+        dt2 = datetime.now(tz2)
+        
+        diff = dt1 - dt2
+        
+        await ctx.send(f"The difference between {tz1} and {tz2} is {diff.total_seconds() // 3600} hours.", allowed_mentions=discord.AllowedMentions.none())
+
+
 
 async def update_wdt_tables():
     # Drop old table

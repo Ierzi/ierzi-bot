@@ -9,7 +9,7 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.world_date_time import WorldDateTime, update_wdt_tables
+from cogs.world_date_time import WorldDateTime#, update_wdt_tables
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
