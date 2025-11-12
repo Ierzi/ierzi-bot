@@ -505,13 +505,9 @@ class WorldDateTime(commands.Cog):
         dt1 = datetime.now(tz1)
         dt2 = datetime.now(tz2)
         
-        diff = dt1 - dt2
-        if diff.total_seconds() < 0:
-            diff += timedelta(hours=24)
+        diff = dt1.utcoffset() - dt2.utcoffset()
         
-        hours = diff.total_seconds() // 3600
-        
-        await ctx.send(f"The difference between {tz1} and {tz2} is {hours} hours.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"The difference between {tz1} and {tz2} is {diff.total_seconds() // 3600} hours.", allowed_mentions=discord.AllowedMentions.none())
 
 
 async def update_wdt_tables():
