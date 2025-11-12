@@ -143,7 +143,12 @@ class WorldDateTime(commands.Cog):
     @commands.command(name="et", aliases=("events-today", "events", "event"))
     async def events_today(self, ctx: commands.Context):
         """Gets events today."""
-        now = datetime.now()
+        # Get user timezone or UTC
+        tz = await self._get_timezone(ctx.author.id)
+        if not tz:
+            tz = "UTC"
+        
+        now = datetime.now(parse_offset(tz))
         try:
             events = await self._get_events(now)
         except Exception as e:
@@ -501,9 +506,12 @@ class WorldDateTime(commands.Cog):
         dt2 = datetime.now(tz2)
         
         diff = dt1 - dt2
+        if diff.total_seconds() < 0:
+            diff += timedelta(hours=24)
         
-        await ctx.send(f"The difference between {tz1} and {tz2} is {diff.total_seconds() // 3600} hours.", allowed_mentions=discord.AllowedMentions.none())
-
+        hours = diff.total_seconds() // 3600
+        
+        await ctx.send(f"The difference between {tz1} and {tz2} is {hours} hours.", allowed_mentions=discord.AllowedMentions.none())
 
 
 async def update_wdt_tables():
