@@ -508,8 +508,28 @@ class WorldDateTime(commands.Cog):
         diff = dt2.utcoffset() - dt1.utcoffset()
         
         await ctx.send(
-            f"{tz2} is {diff.total_seconds() // 3600} hours ahead of {tz1}." if diff.total_seconds() > 0 else f"{tz2} is {diff.total_seconds() // 3600} hours behind of {tz1}.", 
+            f"{tz2} is {diff.total_seconds() // 3600} hours ahead of {tz1}." if diff.total_seconds() > 0 else f"{tz2} is {abs(diff.total_seconds() // 3600)} hours behind of {tz1}.", 
             allowed_mentions=discord.AllowedMentions.none()
+        )
+
+    @timezone.command(name="now")
+    async def tz_now(self, ctx: commands.Context, tz: str | discord.User):
+        if isinstance(tz, discord.User):
+            _tz = await self._get_timezone(tz.id)
+            if not _tz:
+                await ctx.send(
+                    f"{tz.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
+                return
+            tz = parse_offset(_tz)
+        elif isinstance(tz, str):
+            tz = parse_offset(tz)
+        
+        dt = datetime.now(tz)
+        await ctx.send(
+            f"It is currently {dt.hour}:{dt.minute} in {tz}.",
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
 
