@@ -498,9 +498,9 @@ class WorldDateTime(commands.Cog):
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
                 return
-            tz1 = parse_offset(_tz1)
+            timezone1 = parse_offset(_tz1)
         elif isinstance(tz1, str):
-            tz1 = parse_offset(tz1)
+            timezone1 = parse_offset(tz1)
         
         if isinstance(tz2, discord.User):
             _tz2 = await self._get_timezone(tz2.id)
@@ -510,12 +510,12 @@ class WorldDateTime(commands.Cog):
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
                 return
-            tz2 = parse_offset(_tz2)
+            timezone2 = parse_offset(_tz2)
         elif isinstance(tz2, str):
-            tz2 = parse_offset(tz2)
+            timezone2 = parse_offset(tz2)
         
-        dt1 = datetime.now(tz1)
-        dt2 = datetime.now(tz2)
+        dt1 = datetime.now(timezone1)
+        dt2 = datetime.now(timezone2)
         
         diff = dt2.utcoffset() - dt1.utcoffset()
         
@@ -535,13 +535,13 @@ class WorldDateTime(commands.Cog):
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
                 return
-            tz = parse_offset(_tz)
+            timezone = parse_offset(_tz)
         elif isinstance(tz, str):
-            tz = parse_offset(tz)
+            timezone = parse_offset(tz)
         
-        dt = datetime.now(tz)
+        dt = datetime.now(timezone)
         await ctx.send(
-            f"It is currently {dt.hour}:{dt.minute} in {tz}.",
+            f"It is currently {dt.hour}:{dt.minute} in {timezone.key if isinstance(timezone, ZoneInfo) else timezone}.",
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
