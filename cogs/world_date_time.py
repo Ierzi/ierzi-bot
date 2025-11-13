@@ -485,37 +485,30 @@ class WorldDateTime(commands.Cog):
         )
 
     @timezone.command()
-    async def difference(self, ctx: commands.Context, tz1: str | discord.User, tz2: Optional[str | discord.User] = None):
+    async def difference(self, ctx: commands.Context, tz1: str, tz2: Optional[str] = None):
         """Get the difference between two timezones with its name or an user."""
         if not tz2:
-            tz2 = ctx.author
-
-        if isinstance(tz1, discord.User):
-            _tz1 = await self._get_timezone(tz1.id)
-            if not _tz1:
-                await ctx.send(
-                    f"{tz1.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz1 != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
+            tz2 = await self._get_timezone(ctx.author.id)
+            if not tz2:
+                await ctx.send("You don't have a timezone set. Use `!timezone set` to set one.", allowed_mentions=discord.AllowedMentions.none())
                 return
-            timezone1 = parse_offset(_tz1)
-        elif isinstance(tz1, str):
-            timezone1 = parse_offset(tz1)
+            
+        try:
+            tzinfo1 = parse_offset(tz1)
+        except Exception as e:
+            await ctx.send("error :(")
+            self.console.print(f"Error parsing timezone {tz1}: {e}")
+            return
         
-        if isinstance(tz2, discord.User):
-            _tz2 = await self._get_timezone(tz2.id)
-            if not _tz2:
-                await ctx.send(
-                    f"{tz2.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz2 != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
-                return
-            timezone2 = parse_offset(_tz2)
-        elif isinstance(tz2, str):
-            timezone2 = parse_offset(tz2)
+        try:
+            tzinfo2 = parse_offset(tz2)
+        except Exception as e:
+            await ctx.send("error :(")
+            self.console.print(f"Error parsing timezone {tz2}: {e}")
+            return
         
-        dt1 = datetime.now(timezone1)
-        dt2 = datetime.now(timezone2)
+        dt1 = datetime.now(tzinfo1)
+        dt2 = datetime.now(tzinfo2)
         
         diff = dt2.utcoffset() - dt1.utcoffset()
         
@@ -525,9 +518,12 @@ class WorldDateTime(commands.Cog):
         )
 
     @timezone.command(name="now")
-    async def tz_now(self, ctx: commands.Context, tz: str | discord.User):
+    async def tz_now(self, ctx: commands.Context, tz: Optional[str | discord.Member] = None):
         """Get the current time in a timezone with its name or an user."""
-        if isinstance(tz, discord.User):
+        if not tz:
+            tz = ctx.author
+        
+        if isinstance(tz, discord.Member):
             _tz = await self._get_timezone(tz.id)
             if not _tz:
                 await ctx.send(
@@ -536,7 +532,7 @@ class WorldDateTime(commands.Cog):
                 )
                 return
             timezone = parse_offset(_tz)
-        elif isinstance(tz, str):
+        else:
             timezone = parse_offset(tz)
         
         dt = datetime.now(timezone)
