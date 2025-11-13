@@ -217,6 +217,8 @@ class WorldDateTime(commands.Cog):
         user_id = user.id if user else ctx.author.id
 
         birthday = await self._get_birthday(user_id)
+        tz = await self._get_timezone(user_id)
+        tz = parse_offset(tz) if tz else parse_offset("UTC")
         if birthday is None:
             await ctx.send(f"{user.mention} doesn't have a birthday set." if user else "You don't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
             return
@@ -224,8 +226,8 @@ class WorldDateTime(commands.Cog):
         if isinstance(month, str):
             month = MONTHS.index(month.capitalize()) + 1
 
-        today = datetime.now()
-        birthday_date = datetime(today.year, birthday.month, birthday.day)
+        today = datetime.now(tz)
+        birthday_date = datetime(today.year, birthday.month, birthday.day, tzinfo=tz)
         
         user = user if user else ctx.author
 
@@ -244,14 +246,16 @@ class WorldDateTime(commands.Cog):
         user_id = user.id if user else ctx.author.id
 
         birthday = await self._get_birthday(user_id)
+        tz = await self._get_timezone(user_id)
+        tz = parse_offset(tz) if tz else parse_offset("UTC")
         if birthday is None:
             await ctx.send(f"{user.mention} doesn't have a birthday set." if user else "You don't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
             return
         
         user = user if user else ctx.author
 
-        today = datetime.now()
-        birthday_date = datetime(today.year, birthday.month, birthday.day)
+        today = datetime.now(tz)
+        birthday_date = datetime(today.year, birthday.month, birthday.day, tzinfo=tz)
 
         if birthday_date > today:
             # Birthday hasn't happened this year yet, show last year's birthday
@@ -267,6 +271,10 @@ class WorldDateTime(commands.Cog):
         """Compare two users' birthdays."""
         birthday1 = await self._get_birthday(user1.id)
         birthday2 = await self._get_birthday(user2.id)
+        tz = await self._get_timezone(user1.id)
+        tz = parse_offset(tz) if tz else parse_offset("UTC")
+        tz2 = await self._get_timezone(user2.id)
+        tz2 = parse_offset(tz2) if tz2 else parse_offset("UTC")
 
         if birthday1 is None:
             await ctx.send(f"{user1.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
@@ -281,9 +289,9 @@ class WorldDateTime(commands.Cog):
             return
 
         # Create datetime objects for this year to compare
-        today = datetime.now()
-        date1 = datetime(today.year, birthday1.month, birthday1.day)
-        date2 = datetime(today.year, birthday2.month, birthday2.day)
+        today = datetime.now(tz)
+        date1 = datetime(today.year, birthday1.month, birthday1.day, tzinfo=tz)
+        date2 = datetime(today.year, birthday2.month, birthday2.day, tzinfo=tz2)
         
         # Calculate days between birthdays
         if date1 < date2:
@@ -296,7 +304,9 @@ class WorldDateTime(commands.Cog):
     @birthday.command()
     async def today(self, ctx: commands.Context):
         """Anyone's birthday today?"""
-        today = datetime.now()
+        tz = await self._get_timezone(ctx.author.id)
+        tz = parse_offset(tz) if tz else parse_offset("UTC")
+        today = datetime.now(tz)
         birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1 AND day = $2", today.month, today.day)
         if not birthdays:
             await ctx.send("No one's birthday today.")
@@ -338,7 +348,9 @@ class WorldDateTime(commands.Cog):
     @birthday.command()
     async def thismonth(self, ctx: commands.Context):
         """Lists all birthdays coming this month."""
-        current_month_index = datetime.now().month
+        tz = await self._get_timezone(ctx.author.id)
+        tz = parse_offset(tz) if tz else parse_offset("UTC")
+        current_month_index = datetime.now(tz).month
         birthdays = await db.fetch(
             "SELECT user_id, day, month FROM users WHERE month = $1 AND day IS NOT NULL",
             current_month_index,
