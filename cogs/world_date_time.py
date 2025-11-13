@@ -526,6 +526,7 @@ class WorldDateTime(commands.Cog):
 
     @timezone.command(name="now")
     async def tz_now(self, ctx: commands.Context, tz: str | discord.User):
+        """Get the current time in a timezone with its name or an user."""
         if isinstance(tz, discord.User):
             _tz = await self._get_timezone(tz.id)
             if not _tz:
