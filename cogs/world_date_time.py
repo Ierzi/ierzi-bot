@@ -532,7 +532,7 @@ class WorldDateTime(commands.Cog):
             timezone = await self._get_timezone(tz.id)
             if not timezone:
                 await ctx.send(
-                    f"{tz.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
+                    f"{tz.mention} doesn't have a timezone set. \n-# Use !timezone set to set one." if tz != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
                     allowed_mentions=discord.AllowedMentions.none()
                 )
                 return
