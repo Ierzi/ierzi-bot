@@ -515,7 +515,7 @@ class WorldDateTime(commands.Cog):
         )
 
     @timezone.command(name="now")
-    async def tz_now(self, ctx: commands.Context, tz: Optional[str | discord.Member] = None):
+    async def tz_now(self, ctx: commands.Context, tz: Optional[discord.Member | str] = None):
         """Get the current time in a timezone with its name or an user."""
         if not tz:
             tz = ctx.author
@@ -525,17 +525,23 @@ class WorldDateTime(commands.Cog):
             if not timezone:
                 await ctx.send(
                     f"{tz.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
-                    allowed_mentions=discord.AllowedMentions.none(),
+                    allowed_mentions=discord.AllowedMentions.none()
                 )
                 return
         else:
             timezone = tz
         
-        tzinfo = parse_offset(timezone)
+        try:
+            tzinfo = parse_offset(timezone)
+        except Exception as e:
+            await ctx.send("error :(")
+            self.console.print(f"Error parsing timezone {timezone}: {e}")
+            return
+        
         dt = datetime.now(tzinfo)
         await ctx.send(
             f"It is currently {dt.hour}:{dt.minute} in {tzinfo.key if isinstance(tzinfo, ZoneInfo) else tzinfo}.",
-            allowed_mentions=discord.AllowedMentions.none(),
+            allowed_mentions=discord.AllowedMentions.none()
         )
 
 
