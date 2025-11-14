@@ -411,7 +411,7 @@ class WorldDateTime(commands.Cog):
     
     # Timezone commands
     @timezone.command(name="set")
-    async def set_timezone(self, ctx: commands.Context):
+    async def set_timezone(self, ctx: commands.Context, timezone: Optional[str] = None):
         """Set your timezone."""
         # Pre-load buttons
         buttons_view = View(timeout=VIEW_TIMEOUT)
@@ -433,17 +433,25 @@ class WorldDateTime(commands.Cog):
         def check(m: Message):
             return m.author == ctx.author and m.channel == ctx.channel
 
-        try:
-            await ctx.send("Enter the name of your timezone or your UTC offset.")
-            offset = await self.bot.wait_for("message", check=check, timeout=180)
-            if offset.content.isnumeric() or offset.content.startswith("UTC"):
-                offset = parse_offset(offset.content)
-            else:
-                offset = ZoneInfo(offset.content)
-        except asyncio.TimeoutError:
-            await ctx.send("You took too long to respond.")
-            return
-
+        if not timezone:
+            try:
+                await ctx.send("Enter the name of your timezone or your UTC offset.")
+                offset = await self.bot.wait_for("message", check=check, timeout=180)
+                if offset.content.isnumeric() or offset.content.startswith("UTC"):
+                    offset = parse_offset(offset.content)
+                else:
+                    offset = ZoneInfo(offset.content)
+            except asyncio.TimeoutError:
+                await ctx.send("You took too long to respond.")
+                return
+        else:
+            try:
+                offset = parse_offset(timezone)
+            except Exception as e:
+                await ctx.send("error :(")
+                self.console.print(f"Error parsing timezone {timezone}: {e}")
+                return
+        
         tz_str = tz_to_str(offset)
 
         if isinstance(offset, ZoneInfo):
@@ -454,7 +462,7 @@ class WorldDateTime(commands.Cog):
             stored_tz = f"UTC{hours:+d}"
 
         dt = datetime.now(offset)
-        await ctx.send(f"Is it currently {dt.hour}:{dt.minute} in {tz_str}?", view=buttons_view)
+        await ctx.send(f"Is it currently {dt.hour:02d}:{dt.minute:02d} in {tz_str}?", view=buttons_view)
         # Everything else is handled by the buttons
     
     @timezone.command(name="get")
@@ -480,7 +488,7 @@ class WorldDateTime(commands.Cog):
 
         dt = datetime.now(tzinfo)
         await ctx.send(
-            f"{user.mention}'s timezone is {tz}. It is currently {dt.hour}:{dt.minute} there.",
+            f"{user.mention}'s timezone is {tz}. It is currently {dt.hour:02d}:{dt.minute:02d} there.",
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
@@ -540,7 +548,7 @@ class WorldDateTime(commands.Cog):
         
         dt = datetime.now(tzinfo)
         await ctx.send(
-            f"It is currently {dt.hour}:{dt.minute} in {tzinfo.key if isinstance(tzinfo, ZoneInfo) else tzinfo}.",
+            f"It is currently {dt.hour:02d}:{dt.minute:02d} in {tzinfo.key if isinstance(tzinfo, ZoneInfo) else tzinfo}.",
             allowed_mentions=discord.AllowedMentions.none()
         )
 

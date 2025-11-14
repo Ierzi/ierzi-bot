@@ -687,7 +687,7 @@ async def info(ctx: commands.Context):
     hours, remainder = divmod(remainder, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    message += f"Uptime: {days}d {hours}h {minutes}m {seconds}s\n"
+    message += f"Uptime: {days:,.0f}d {hours:.0f}h {minutes:.0f}m {seconds:.0f}s\n"
     
     await ctx.send(message)
 
