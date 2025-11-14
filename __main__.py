@@ -68,12 +68,13 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
-    await bot_loop.start()
-
+    
     if bot.user.id == 1412488383178998044 or bot.user == "Ierzi Bot - Experimental#2987": #experimental bot id or fallback
         global experimental_branch
         console.print("Experimental branch detected.")
         experimental_branch = True
+
+    await bot_loop.start()
 
 @tasks.loop(minutes=10)
 async def bot_loop():

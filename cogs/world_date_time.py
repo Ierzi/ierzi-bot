@@ -495,16 +495,10 @@ class WorldDateTime(commands.Cog):
             
         try:
             tzinfo1 = parse_offset(tz1)
-        except Exception as e:
-            await ctx.send("error :(")
-            self.console.print(f"Error parsing timezone {tz1}: {e}")
-            return
-        
-        try:
             tzinfo2 = parse_offset(tz2)
         except Exception as e:
             await ctx.send("error :(")
-            self.console.print(f"Error parsing timezone {tz2}: {e}")
+            self.console.print(f"Error parsing timezone {tz1 if not tz2 else tz2}: {e}")
             return
         
         dt1 = datetime.now(tzinfo1)
@@ -512,8 +506,11 @@ class WorldDateTime(commands.Cog):
         
         diff = dt2.utcoffset() - dt1.utcoffset()
         
+        hours = int(diff.total_seconds() // 3600)
+        direction = "ahead" if diff.total_seconds() > 0 else "behind"
+        
         await ctx.send(
-            f"{tz2} is {diff.total_seconds() // 3600} hours ahead of {tz1}." if diff.total_seconds() > 0 else f"{tz2} is {abs(diff.total_seconds() // 3600)} hours behind of {tz1}.", 
+            f"{tz2} is {hours} hours {direction} of {tz1}." if diff.total_seconds() > 0 else f"{tz2} is {abs(hours)} hours {direction} of {tz1}.", 
             allowed_mentions=discord.AllowedMentions.none()
         )
 
@@ -524,20 +521,20 @@ class WorldDateTime(commands.Cog):
             tz = ctx.author
         
         if isinstance(tz, discord.Member):
-            _tz = await self._get_timezone(tz.id)
-            if not _tz:
+            timezone = await self._get_timezone(tz.id)
+            if not timezone:
                 await ctx.send(
                     f"{tz.mention} doesn't have a timezone set. Use `!timezone set` to set one." if tz != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
                     allowed_mentions=discord.AllowedMentions.none(),
                 )
                 return
-            timezone = parse_offset(_tz)
         else:
-            timezone = parse_offset(tz)
+            timezone = tz
         
-        dt = datetime.now(timezone)
+        tzinfo = parse_offset(timezone)
+        dt = datetime.now(tzinfo)
         await ctx.send(
-            f"It is currently {dt.hour}:{dt.minute} in {timezone.key if isinstance(timezone, ZoneInfo) else timezone}.",
+            f"It is currently {dt.hour}:{dt.minute} in {tzinfo.key if isinstance(tzinfo, ZoneInfo) else tzinfo}.",
             allowed_mentions=discord.AllowedMentions.none(),
         )
 
