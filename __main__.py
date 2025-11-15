@@ -9,13 +9,13 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.world_date_time import WorldDateTime#, update_wdt_tables
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
 from cogs.songs import Songs
+from cogs.world_date_time import WorldDateTime, update_wdt_tables
 
 # Utilities
 from cogs.utils import pronouns
@@ -101,7 +101,7 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.channel.id == 1412488425294139517: #TODO: change this to normal poll id : 1411714823405965342
+    if message.channel.id == 1411714823405965342:
         if message.poll:
             await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:97]}..."
         elif message.content.startswith("not a poll but "):
@@ -166,8 +166,6 @@ async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
-    await bot.add_cog(WorldDateTime(bot, console))
-    console.print("World, Date and Time cog loaded.")
     await bot.add_cog(Economy(bot, console))
     console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
@@ -182,6 +180,8 @@ async def load_cogs():
     console.print(f"Songs cog loaded in {round(end - start, 2)} seconds.")
     await bot.add_cog(Search(bot, console))
     console.print("Search cog loaded.")
+    await bot.add_cog(WorldDateTime(bot, console))
+    console.print("World, Date and Time cog loaded.")
     console.print("All cogs loaded.")
 
 
@@ -696,6 +696,7 @@ async def main():
     try:
         await load_cogs()
         console.print("Bot is ready.")
+        await update_wdt_tables()
 
         await bot.start(token)
     finally:
