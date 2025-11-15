@@ -15,7 +15,7 @@ from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
 from cogs.songs import Songs
-from cogs.world_date_time import WorldDateTime, update_wdt_tables
+from cogs.world_date_time import WorldDateTime
 
 # Utilities
 from cogs.utils import pronouns
@@ -455,7 +455,7 @@ async def help(ctx: commands.Context, category: str = None):
         SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
         SelectOption(label="Search", description="Search commands", emoji="🔎"),
         SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
-        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🎂"),
+        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🌍"),
     ]
     help_select = Select(
         placeholder="select category",
@@ -696,7 +696,6 @@ async def main():
     try:
         await load_cogs()
         console.print("Bot is ready.")
-        await update_wdt_tables()
 
         await bot.start(token)
     finally:
