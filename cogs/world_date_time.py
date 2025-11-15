@@ -119,9 +119,17 @@ class WorldDateTime(commands.Cog):
             return [random.choice(event_names)] if event_names else []
         return event_names[:many]
     
+    def _get_custom_events(dt: datetime) -> list:
+        custom_events: dict[str, list[str]] = {
+            "29/07": ["Creation of Ierzi Bot"],
+            "14/05": ["Creation of EpikTeam"]
+        }
+        date_str = f"{dt.day:02d}/{dt.month:02d}"
+        return custom_events.get(date_str, [])
+
     async def _get_events(self, dt: datetime) -> list:
         """Gets events from different sources."""
-        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True)
+        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True) + self._get_custom_events(dt)
 
     async def _set_timezone(self, user_id: int, timezone: str):
         """Set the timezone of a user."""
