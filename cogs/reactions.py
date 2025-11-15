@@ -109,7 +109,7 @@ class Reactions(commands.Cog):
         """Kill someone."""
         if user == ctx.author:
             if ctx.author.id == 1153301933231181824: #apex 
-                await ctx.send("uhh listen to the heart part III by kendrick lamar \nhttps://www.youtube.com/watch?v=duavU5KzO3U")
+                await ctx.send("try again tomorrow")
                 return
             await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
             return
