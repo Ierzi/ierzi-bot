@@ -9,7 +9,7 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.birthday import BirthdayCog as Birthday
+from cogs.world_date_time import WorldDateTime#, update_wdt_tables
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
@@ -23,10 +23,10 @@ from cogs.utils.database import db
 from cogs.utils.variables import VIEW_TIMEOUT, NO_SLURS_SERVERS
 
 # Other
+import aiohttp
 import asyncio
 from datetime import datetime, timezone
 from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
-from moviepy import VideoFileClip
 import os
 import random
 from rich.console import Console
@@ -38,6 +38,7 @@ console = Console()
 load_dotenv()
 
 token = os.getenv("TOKEN")
+start_uptime = datetime.now(timezone.utc)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -53,7 +54,7 @@ bot = commands.Bot(
     ]
 )
 
-experimental_branch = False
+experimental_branch: bool = False
 
 grok_cache: dict[int, str] = {} # message id - response
 
@@ -67,11 +68,13 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
-    await bot_loop.start()
-
-    if bot.user.id == 1412488383178998044: #experimental bot id
+    
+    if bot.user.id == 1412488383178998044 or bot.user == "Ierzi Bot - Experimental#2987": #experimental bot id or fallback
         global experimental_branch
+        console.print("Experimental branch detected.")
         experimental_branch = True
+
+    await bot_loop.start()
 
 @tasks.loop(minutes=10)
 async def bot_loop():
@@ -98,9 +101,26 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.poll and message.channel.id == 1411714823405965342: 
-        await message.create_thread(name=message.poll.question)
-    
+    if message.channel.id == 1412488425294139517: #TODO: change this to normal poll id : 1411714823405965342
+        if message.poll:
+            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:97]}..."
+        elif message.content.startswith("not a poll but "):
+            await message.create_thread(name=message.content[15:])
+        elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
+            await message.add_reaction("✅")
+            await message.add_reaction("❌")
+        elif message.content.endswith("1-10"):
+            await message.add_reaction("1️⃣")
+            await message.add_reaction("2️⃣")
+            await message.add_reaction("3️⃣")
+            await message.add_reaction("4️⃣")
+            await message.add_reaction("5️⃣")
+            await message.add_reaction("6️⃣")
+            await message.add_reaction("7️⃣")
+            await message.add_reaction("8️⃣")
+            await message.add_reaction("9️⃣")
+            await message.add_reaction("🔟")
+
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
         if f'{bot.user.mention} is this true' in message.content.lower() or f'{bot.user.mention} is ts true' in message.content.lower():
@@ -134,6 +154,9 @@ async def on_message(message: Message):
                 if target_id:
                    grok_cache[target_id] = emoji
 
+
+
+
     # Finally, process commands
     await bot.process_commands(message)
 
@@ -143,8 +166,8 @@ async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
-    await bot.add_cog(Birthday(bot, console))
-    console.print("Birthday cog loaded.")
+    await bot.add_cog(WorldDateTime(bot, console))
+    console.print("World, Date and Time cog loaded.")
     await bot.add_cog(Economy(bot, console))
     console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
@@ -279,7 +302,7 @@ async def roadmap(ctx: commands.Context):
     features = [
         "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
-        "more songs commands but idk what to add", "more birthday commands", "do thing to request ideas by dming the bot", 
+        "more songs commands but idk what to add", "do thing to request ideas by dming the bot", 
         "more reactions (did i already say this?)",
         "replace the birthday module with calendar, to implement pronouns.page calendar"
         ]
@@ -347,8 +370,8 @@ ai_embed = Embed(
     description=""
 )
 
-birthday_embed = Embed(
-    title="Birthday Commands",
+wdt_embed = Embed(
+    title="World, Date and Time Commands",
     description=""
 )
 
@@ -385,7 +408,7 @@ search_embed = Embed(
 async def fill_embeds(): 
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
-    birthday_embed.description = ""
+    wdt_embed.description = ""
     economy_embed.description = ""
     fun_embed.description = ""
     marriages_embed.description = ""
@@ -403,8 +426,6 @@ async def fill_embeds():
                 home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
                 ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
-            case "BirthdayCog":
-                birthday_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
                 economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
@@ -417,6 +438,8 @@ async def fill_embeds():
                 songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Search":
                 search_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+            case "WorldDateTime":
+                wdt_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
 
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
@@ -426,13 +449,13 @@ async def help(ctx: commands.Context, category: str = None):
     help_options = [
         SelectOption(label="Home", description="Homepage and uncategorized commands", emoji="🏠"),
         SelectOption(label="AI", description="AI commands", emoji="🤖"),
-        SelectOption(label="Birthday", description="Birthday commands", emoji="🎂"),
         SelectOption(label="Economy", description="Economy commands", emoji="💵"),
         SelectOption(label="Fun", description="Fun commands", emoji="🎉"),
         SelectOption(label="Marriages", description="Marriage commands", emoji="💍"),
         SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
         SelectOption(label="Search", description="Search commands", emoji="🔎"),
         SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
+        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🎂"),
     ]
     help_select = Select(
         placeholder="select category",
@@ -446,8 +469,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await interaction.message.edit(embed=home_embed)
             case "ai":
                 await interaction.message.edit(embed=ai_embed)
-            case "birthday":
-                await interaction.message.edit(embed=birthday_embed)
+            case "wdt":
+                await interaction.message.edit(embed=wdt_embed)
             case "economy":
                 await interaction.message.edit(embed=economy_embed)
             case "fun":
@@ -472,8 +495,8 @@ async def help(ctx: commands.Context, category: str = None):
                 await ctx.send(embed=home_embed, view=view)
             case "ai":
                 await ctx.send(embed=ai_embed, view=view)
-            case "birthday" | "bday" | "birthdays":
-                await ctx.send(embed=birthday_embed, view=view)
+            case "wdt" | "world" | "worlddatetime" | "date" | "dates" | "time":
+                await ctx.send(embed=wdt_embed, view=view)
             case "economy" | "eco" | "econ":
                 await ctx.send(embed=economy_embed, view=view)
             case "fun":
@@ -614,7 +637,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             return
         else:
             if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
-                await ctx.send(f"Your pronouns are a slur and daddy eddgow dont allow them here")
+                await ctx.send("Your pronouns are a slur and daddy eddgow dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")
     
@@ -635,12 +658,45 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
 
+@bot.command(aliases=("uptime",))
+async def info(ctx: commands.Context):
+    """info about the bot including uptime (new command!!)"""
+    global start_uptime, experimental_branch, console
+    now = datetime.now(timezone.utc)
+    message = ""
+
+    # Get commit name and hash (first 6 characters) with a request
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://api.github.com/repos/ierzi/ierzi-bot/commits/main" if not experimental_branch else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental") as response:
+            try:
+                response.raise_for_status()
+            except Exception as e:
+                await ctx.send("error :(")
+                console.print(e)
+                return
+            data = await response.json()
+            commit_hash = data['sha'][:6]
+            commit_name = data['commit']['message']
+            commit_author = data['commit']['author']['name']
+
+    message += f"Commit {commit_hash}: {commit_name}\n"
+    message += f"By: {commit_author}\n"
+
+    uptime = now - start_uptime
+    days, remainder = divmod(uptime.total_seconds(), 86400)
+    hours, remainder = divmod(remainder, 3600)
+    minutes, seconds = divmod(remainder, 60)
+
+    message += f"Uptime: {days:,.0f}d {hours:.0f}h {minutes:.0f}m {seconds:.0f}s\n"
+    
+    await ctx.send(message)
 
 async def main():
     await db.init_pool()
     try:
         await load_cogs()
         console.print("Bot is ready.")
+
         await bot.start(token)
     finally:
         await db.close_pool()

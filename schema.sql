@@ -1,13 +1,18 @@
--- new schema
+-- Schema v3
 
 -- Users table
--- now directly contains the economy table
+-- now directly contains the birthday table
 CREATE TABLE users (
     -- important things
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
     -- pronouns
     pronouns TEXT, 
+    -- birthday
+    day SMALLINT NULL,
+    month SMALLINT NULL,
+    year SMALLINT NULL,
+    timezone VARCHAR(50) NULL
 );
 
 CREATE TABLE economy (
@@ -29,10 +34,3 @@ CREATE TABLE marriages (
     user2_id BIGINT REFERENCES users(user_id)
 );
 
--- Birthdays Table
-CREATE TABLE birthdays (
-    user_id BIGINT PRIMARY KEY, -- I kinda fucked up while making this, but it's too late to change it now
-    day INT NOT NULL,
-    month INT NOT NULL,
-    year INT
-);

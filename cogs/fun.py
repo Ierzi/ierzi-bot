@@ -4,7 +4,6 @@ from discord.ext import commands
 import asyncio
 import aiohttp
 from aiogoogletrans import Translator
-from datetime import datetime, timezone
 from pathlib import Path
 import random
 from rich.console import Console
@@ -16,30 +15,14 @@ class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
-        self.start_uptime = datetime.now(tz=timezone.utc)
         self.cat_vid_names: list[Path] = []
         self.car_vids_folder = Path(__file__).resolve().parent.parent / "car_vids"
         self.fetch_cat_vids()
 
     @commands.command()
-    async def uptime(self, ctx: commands.Context):
-        """basically how long since the last update lmao"""
-        now = datetime.now(tz=timezone.utc)
-        delta = now - self.start_uptime
-
-        # Calculate time in readable format
-        days, remainder = divmod(delta.total_seconds(), 86400)
-        hours, remainder = divmod(remainder, 3600)
-        minutes, seconds = divmod(remainder, 60)
-
-        messaage = f"Uptime: {int(days)}d {int(hours)}h {int(minutes)}m {int(seconds)}s."
-        self.console.print(messaage)
-        await ctx.send(messaage)
-
-    @commands.command()
     async def istrans(self, ctx: commands.Context, user: discord.Member = None):
         """https://amitrans.org/"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [966351518020300841, 1399689963284467723]: #apex, ierzi and the bot
@@ -57,7 +40,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def isgay(self, ctx: commands.Context, user: discord.Member = None):
         """https://www.amigay.org/"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id == 1399689963284467723: #the bot
@@ -75,7 +58,7 @@ class Fun(commands.Cog):
     @commands.command(aliases=("gaytector",))
     async def gaydar(self, ctx: commands.Context, user: Optional[discord.Member] = None):
         """Sends a percentage based on how gay someone is."""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [
@@ -99,7 +82,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def isrich(self, ctx: commands.Context, user: discord.Member = None):
         """no"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [1206615811792576614, 1344010392506208340, 902296627325317150]: #fa*t
@@ -111,7 +94,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def ishomophobic(self, ctx: commands.Context, user: discord.Member = None):
         """i hope not?? :sob:"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [1206615811792576614, 1344010392506208340]: #fa*t
@@ -123,7 +106,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def islesbian(self, ctx: commands.Context, user: discord.Member = None):
         """women loves women"""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         if user.id in [1387497689259835563, 1076823281442754652, 953630995830165514, 1206615811792576614, 1344010392506208340]: #ace (both accounts), syndey (lmao) and fa*t (both accounts)
@@ -267,3 +250,17 @@ class Fun(commands.Cog):
             current_translation = response.text
 
         await ctx.message.reply(current_translation, allowed_mentions=discord.AllowedMentions.none())
+
+
+    @commands.command()
+    async def ship(self, ctx: commands.Context, user1: str | discord.User, user2: str | discord.User):
+        """Ship two users."""
+
+        ship_percentage = random.randint(0, 100)
+
+        user1 = user1.mention if isinstance(user1, discord.User) else user1
+        user2 = user2.mention if isinstance(user2, discord.User) else user2
+        emoji = "💘" if ship_percentage >= 80 else "❤️" if ship_percentage >= 33 else "💔"
+
+        await ctx.send(f"{user1} X {user2}: {ship_percentage}% {emoji}", allowed_mentions=discord.AllowedMentions.none())
+        

@@ -272,7 +272,7 @@ class Economy(commands.Cog):
                 if job == "onlyfans":
                     await ctx.send(f"{ctx.author.mention} **sold pictures on OnlyFans** and gained {pay:,.2f} coins 🔥👅 {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
                 else: 
-                    await ctx.send(f"{ctx.author.mention} worked as a **{job_name}** and earned {pay:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
+                    await ctx.send(f"{ctx.author.mention} worked as a **{job}** and earned {pay:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
                 await self._add_money(user_id, pay)
                 await self._update_cooldown(user_id, "last_worked")
                 return
@@ -282,7 +282,7 @@ class Economy(commands.Cog):
 
         rebirth_bonus = await self._calculate_rebirth_bonus(user_id)
         usual_pay = random.uniform(min_pay, max_pay) * rebirth_bonus
-        rich_pay = 0.05 * (await self._get_balance(user_id)).to_float() * rebirth_bonus
+        rich_pay = 0.005 * (await self._get_balance(user_id)).to_float() * rebirth_bonus
         pay = max(usual_pay, rich_pay)
 
         await self._add_money(user_id, pay)
@@ -304,7 +304,7 @@ class Economy(commands.Cog):
 
         balance = (await self._get_balance(user_id)).to_float()
         usual_daily_amount = 3500 * await self._calculate_rebirth_bonus(user_id)
-        rich_daily = 0.02 * balance * await self._calculate_rebirth_bonus(user_id)
+        rich_daily = 0.002 * balance * await self._calculate_rebirth_bonus(user_id)
         daily_amount = max(usual_daily_amount, rich_daily)
         await self._add_money(user_id, daily_amount)
         await self._update_cooldown(user_id, "last_daily")
@@ -533,7 +533,7 @@ class Economy(commands.Cog):
                 category = "rebirths"
             
             if not embed: 
-                await interaction.response.send_message(f"try again idk my bot is weird", ephemeral=True)
+                await interaction.response.send_message("try again idk my bot is weird", ephemeral=True)
                 return
 
             await interaction.response.edit_message(embed=embed, view=view)
@@ -669,11 +669,14 @@ class Economy(commands.Cog):
             await ctx.send("aint you rich enough")
 
             def check(m: Message):
-                return m.channel.id == ctx.channel.id and m.content.strip().lower() == "no" and m.author.id == ctx.author.id
+                return m.channel.id == ctx.channel.id and m.author.id == ctx.author.id
             
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=15.0)
             except asyncio.TimeoutError:
+                return
+
+            if msg.content.strip().lower() != "no":
                 return
             
             await self._add_money(user_id, 0.01)

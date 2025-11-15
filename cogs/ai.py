@@ -1,9 +1,6 @@
 import discord
-from discord import Embed, File
+from discord import File
 from discord.ext import commands
-
-import aiofiles
-import aiohttp
 import asyncio
 import os
 from groq import AsyncGroq
@@ -240,7 +237,7 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
+                {"role": "system", "content": "You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
                 {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
             ],
         )
@@ -312,7 +309,7 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": f"You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
+                {"role": "system", "content": "You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
                 {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
             ],
         )
