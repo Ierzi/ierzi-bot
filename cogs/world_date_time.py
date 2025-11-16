@@ -122,32 +122,27 @@ class WorldDateTime(commands.Cog):
     
     async def _get_historical_events(self, dt: datetime, many: int, random_events: bool = False) -> list:
         """Gets events from Historical Events API."""
-        ssl_context = ssl.create_default_context(cafile=certifi.where())
         timeout = aiohttp.ClientTimeout(total=10)
         url = "https://api.api-ninjas.com/v1/historicalevents"
-        for attempt in range(3):
-            try:
-                async with aiohttp.ClientSession(timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
-                    async with session.get(
-                        url, 
-                        headers={"User-Agent": "ierzi-bot/1.0"},
-                        params={
-                            "api_key": self.historical_events_api_key,
-                            "day": dt.day,
-                            "month": dt.month
-                        }
-                        ) as request:
-                        request.raise_for_status()
-                        response: list[dict[str, str]] = await request.json()
-                        self.console.print(response)
-                        break
-            except Exception as e:
-                self.console.print(f"Historical Events fetch attempt {attempt+1} failed: {e}")
-                if attempt == 2:
-                    self.console.print("Historical Events fetch failed after retries.")
-                    return []
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(
+                url, 
+                headers={"User-Agent": "ierzi-bot/1.0"},
+                params={
+                    "api_key": self.historical_events_api_key,
+                    "day": dt.day,
+                    "month": dt.month
+                }
+            ) as request:
+                request.raise_for_status()
+                response: list[dict[str, str]] = await request.json()
+                self.console.print(response)
         
-        names = [r.get("event") for r in response]
+        # Filter out any entries without an "event" key and ensure we only keep strings
+        names = [str(r["event"]) for r in response if r.get("event") is not None]
+
+        if not names:
+            return []
 
         if random_events:
             names = random.choices(names, k=5)
