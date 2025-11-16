@@ -119,7 +119,7 @@ class WorldDateTime(commands.Cog):
             return [random.choice(event_names)] if event_names else []
         return event_names[:many]
     
-    def _get_custom_events(dt: datetime) -> list:
+    def _get_custom_events(self, dt: datetime) -> list:
         custom_events: dict[str, list[str]] = {
             "29/07": ["Creation of Ierzi Bot"],
             "14/05": ["Creation of EpikTeam"]
