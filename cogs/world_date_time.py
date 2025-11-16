@@ -126,19 +126,20 @@ class WorldDateTime(commands.Cog):
         url = "https://api.api-ninjas.com/v1/historicalevents"
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(
-                url, 
-                headers={"User-Agent": "ierzi-bot/1.0"},
+                url,
+                headers={
+                    "User-Agent": "ierzi-bot/1.0",
+                    "X-Api-Key": self.historical_events_api_key,
+                },
                 params={
-                    "api_key": self.historical_events_api_key,
                     "day": dt.day,
-                    "month": dt.month
+                    "month": dt.month,
                 }
             ) as request:
                 request.raise_for_status()
                 response: list[dict[str, str]] = await request.json()
                 self.console.print(response)
         
-        # Filter out any entries without an "event" key and ensure we only keep strings
         names = [str(r["event"]) for r in response if r.get("event") is not None]
 
         if not names:
