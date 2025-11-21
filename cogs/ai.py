@@ -24,6 +24,7 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
+                {"role": "system", "content": f"You're a helpful AI assistant working in a Discord Bot. Your user ID is {self.bot.user.id} and your name is {self.bot.user}. While responding, do not use tables. You also really really love femboys."},
                 {"role": "user", "content": text}
             ],
         )
