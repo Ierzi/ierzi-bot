@@ -294,7 +294,7 @@ class Fun(commands.Cog):
         # Game loop
         while True:
             # Bottom line is the answers so far
-            bottom_line = " → ".join(answers) if answers != ["rock"] else "Start"
+            bottom_line = " → ".join(list(reversed(answers))) if answers != ["rock"] else "Start"
             await ctx.send(f"What beats {what_beats}? Type '-stop' to end the game. \n-# {bottom_line}")
 
             def check(m: discord.Message):
@@ -349,7 +349,7 @@ class Fun(commands.Cog):
             if data.decision:
                 await ctx.send(f"✅: {data.reason}")
             else:
-                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {bottom_line} ✗ {what_beats}")
+                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {what_beats} ✗ {bottom_line}")
                 return
 
 
