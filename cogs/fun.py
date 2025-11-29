@@ -4,12 +4,21 @@ from discord.ext import commands
 import asyncio
 import aiohttp
 from aiogoogletrans import Translator
+from dotenv import load_dotenv
+from openai import AsyncOpenAI
+import os
 from pathlib import Path
+from pydantic import BaseModel
 import random
 from rich.console import Console
 from typing import Optional
 
 console = Console()
+load_dotenv()
+
+class WhatBeatsRockResponse(BaseModel):
+    decision: bool
+    reason: str
 
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -17,6 +26,7 @@ class Fun(commands.Cog):
         self.console = console
         self.cat_vid_names: list[Path] = []
         self.car_vids_folder = Path(__file__).resolve().parent.parent / "car_vids"
+        self.openai_api_key = os.getenv("OPENAI_KEY")
         self.fetch_cat_vids()
 
     @commands.command()
@@ -263,4 +273,82 @@ class Fun(commands.Cog):
         emoji = "💘" if ship_percentage >= 80 else "❤️" if ship_percentage >= 33 else "💔"
 
         await ctx.send(f"{user1} X {user2}: {ship_percentage}% {emoji}", allowed_mentions=discord.AllowedMentions.none())
-        
+    
+    @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def whatbeatsrock(self, ctx: commands.Context): # TODO: maybe add a leaderboard
+        """like the game on the website"""
+        # Uses AI to answer
+        schema = {
+            "type": "object",
+            "properties": {
+                "decision": {"type": "boolean"},
+                "reason": {"type": "string"}
+            },
+            "required": ["decision", "reason"]
+        }
+
+        answers = ["rock"] # User answers
+        what_beats = "rock"
+
+        # Game loop
+        while True:
+            # Bottom line is the answers so far
+            bottom_line_raw = " → ".join(answers) if answers != ["rock"] else "Start"
+            await ctx.send(f"What beats {what_beats}? Type '-stop' to end the game.")
+
+            def check(m: discord.Message):
+                return m.author == ctx.author and m.channel == ctx.channel
+            
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=90)
+            except asyncio.TimeoutError:
+                await ctx.send("Game timed out.")
+                return
+            
+            if msg.content.lower() == "-stop":
+                await ctx.send("Game ended.")
+                return
+            
+            answers.append(msg.content)
+            old_item = what_beats
+            what_beats = msg.content
+
+            # AI decision
+            client = AsyncOpenAI(api_key=self.openai_api_key)
+            response = await client.chat.completions.create(
+                model="gpt-5-mini",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not."
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"The current item is '{old_item}'. "
+                            f"The user suggests '{what_beats}' as the next item. "
+                            "Does this item logically beat the previous one?"
+                        )
+                    }
+                ],
+                functions=[
+                    {
+                        "name": "what_beats_rock_response",
+                        "description": "Determines if the suggested item beats the previous item.",
+                        "parameters": schema
+                    }
+                ],
+                function_call="what_beats_rock_response"
+            )
+
+            raw_args = response.choices[0].message.function_call.arguments
+            data = WhatBeatsRockResponse.model_validate_json(raw_args)
+
+            if data.decision:
+                await ctx.send(f"✅: {data.reason}")
+            else:
+                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {bottom_line_raw} → {what_beats}")
+                return
+
+

@@ -137,6 +137,31 @@ class AI(commands.Cog):
 
         await ctx.send(file=File(output_file))
         os.remove(output_file)
+    
+    @commands.command()
+    async def aitwist(self, ctx: commands.Context):
+        """Tries to twist your words to get a new meaning out of them."""
+        reply = ctx.message.reference
+        if reply is None:
+            await ctx.send("You didn't reply to a message.")
+            return
+        
+        reply = await ctx.channel.fetch_message(reply.message_id)
+        reply_content = reply.content
+
+        async with ctx.typing():
+            client = AsyncGroq(api_key=self.groq_key)
+            response = await client.chat.completions.create(
+                model="openai/gpt-oss-20b",
+                messages=[
+                    {"role": "system", "content": "Your goal is to twist the words of messages to get a new meaning out of them. Be creative and funny."},
+                    {"role": "user", "content": f"Twist this message: {reply_content}"}
+                ],
+            )
+
+        output = response.choices[0].message.content
+        await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
+
 
     # # @commands.command()
     # # async def aivid(self, ctx: commands.Context, *, text: str):
