@@ -282,8 +282,8 @@ class Fun(commands.Cog):
         schema = {
             "type": "object",
             "properties": {
-                "decision": {"type": "boolean"},
-                "reason": {"type": "string"}
+                "decision": {"type": "boolean", "description": "True if the suggested item beats the previous one, false otherwise."},
+                "reason": {"type": "string", "description": "A brief explanation of why the suggested item does or does not beat the previous one."}
             },
             "required": ["decision", "reason"]
         }
@@ -294,7 +294,7 @@ class Fun(commands.Cog):
         # Game loop
         while True:
             # Bottom line is the answers so far
-            bottom_line_raw = " → ".join(answers) if answers != ["rock"] else "Start"
+            bottom_line = " → ".join(answers) if answers != ["rock"] else "Start"
             await ctx.send(f"What beats {what_beats}? Type '-stop' to end the game.")
 
             def check(m: discord.Message):
@@ -315,40 +315,42 @@ class Fun(commands.Cog):
             what_beats = msg.content
 
             # AI decision
-            client = AsyncOpenAI(api_key=self.openai_api_key)
-            response = await client.chat.completions.create(
-                model="gpt-5-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not."
-                    },
-                    {
-                        "role": "user",
-                        "content": (
-                            f"The current item is '{old_item}'. "
-                            f"The user suggests '{what_beats}' as the next item. "
-                            "Does this item logically beat the previous one?"
-                        )
-                    }
-                ],
-                functions=[
-                    {
-                        "name": "what_beats_rock_response",
-                        "description": "Determines if the suggested item beats the previous item.",
-                        "parameters": schema
-                    }
-                ],
-                function_call="what_beats_rock_response"
-            )
+            async with ctx.typing():
+                client = AsyncOpenAI(api_key=self.openai_api_key)
+                response = await client.chat.completions.create(
+                    model="gpt-5-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not."
+                        },
+                        {
+                            "role": "user",
+                            "content": (
+                                f"The current item is '{old_item}'. "
+                                f"The user suggests '{what_beats}' as the next item. "
+                                "Does this item logically beat the previous one?"
+                            )
+                        }
+                    ],
 
-            raw_args = response.choices[0].message.function_call.arguments
-            data = WhatBeatsRockResponse.model_validate_json(raw_args)
+                    functions=[
+                        {
+                            "name": "what_beats_rock_response",
+                            "description": "Determines if the suggested item beats the previous item.",
+                            "parameters": schema,
+                            "strict": True
+                        }
+                    ]
+                )
+
+                raw_args = response.choices[0].message.function_call.arguments
+                data = WhatBeatsRockResponse.model_validate_json(raw_args)
 
             if data.decision:
                 await ctx.send(f"✅: {data.reason}")
             else:
-                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {bottom_line_raw} → {what_beats}")
+                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {bottom_line} ✗ {what_beats}")
                 return
 
 
