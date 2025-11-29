@@ -295,7 +295,7 @@ class Fun(commands.Cog):
         while True:
             # Bottom line is the answers so far
             bottom_line = " → ".join(answers) if answers != ["rock"] else "Start"
-            await ctx.send(f"What beats {what_beats}? Type '-stop' to end the game.")
+            await ctx.send(f"What beats {what_beats}? Type '-stop' to end the game. \n-# {bottom_line}")
 
             def check(m: discord.Message):
                 return m.author == ctx.author and m.channel == ctx.channel
