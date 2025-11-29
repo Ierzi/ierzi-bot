@@ -338,8 +338,7 @@ class Fun(commands.Cog):
                         {
                             "name": "what_beats_rock_response",
                             "description": "Determines if the suggested item beats the previous item.",
-                            "parameters": schema,
-                            "strict": True
+                            "parameters": schema
                         }
                     ]
                 )
