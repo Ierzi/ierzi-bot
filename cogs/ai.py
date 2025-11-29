@@ -154,7 +154,7 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="openai/gpt-oss-20b",
                 messages=[
-                    {"role": "system", "content": "Your goal is to twist the words of messages to get a new meaning out of them. Be creative and funny."},
+                    {"role": "system", "content": "Your goal is to twist the words of messages to get a new meaning out of them. You must fuck up the interpretation of said sentence to say something the original author didn't mean. Only reply with this and nothing else."},
                     {"role": "user", "content": f"Twist this message: {reply_content}"}
                 ],
             )

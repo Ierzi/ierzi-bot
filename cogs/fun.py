@@ -274,7 +274,7 @@ class Fun(commands.Cog):
 
         await ctx.send(f"{user1} X {user2}: {ship_percentage}% {emoji}", allowed_mentions=discord.AllowedMentions.none())
     
-    @commands.command()
+    @commands.command(aliases=("wbr",))
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def whatbeatsrock(self, ctx: commands.Context): # TODO: maybe add a leaderboard
         """like the game on the website"""
@@ -295,7 +295,7 @@ class Fun(commands.Cog):
         while True:
             # Bottom line is the answers so far
             bottom_line = " → ".join(list(reversed(answers))) if answers != ["rock"] else "Start"
-            await ctx.send(f"What beats {what_beats}? Type '-stop' to end the game. \n-# {bottom_line}")
+            await ctx.send(f"What beats **{what_beats}**? Type '-stop' to end the game. \n-# {bottom_line}")
 
             def check(m: discord.Message):
                 return m.author == ctx.author and m.channel == ctx.channel
@@ -349,7 +349,7 @@ class Fun(commands.Cog):
             if data.decision:
                 await ctx.send(f"✅: {data.reason}")
             else:
-                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}")
+                await ctx.send(f"❌: {data.reason}\n**Game over!** \n-# Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}")
                 return
 
 
