@@ -349,7 +349,7 @@ class Fun(commands.Cog):
             if data.decision:
                 await ctx.send(f"✅: {data.reason}")
             else:
-                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {what_beats} ✗ {bottom_line}")
+                await ctx.send(f"❌: {data.reason}\nGame over! Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}")
                 return
 
 
