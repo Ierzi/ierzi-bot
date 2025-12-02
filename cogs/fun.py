@@ -279,8 +279,8 @@ class Fun(commands.Cog):
             ship_percentage = hardcoded_ships[(user1, user2)]
         elif (user2, user1) in hardcoded_ships:
             ship_percentage = hardcoded_ships[(user2, user1)]
-
-        ship_percentage = random.randint(0, 100)
+        else:
+            ship_percentage = random.randint(0, 100)
 
         emoji = "💘" if ship_percentage >= 80 else "❤️" if ship_percentage >= 33 else "💔"
 
