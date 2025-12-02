@@ -101,9 +101,9 @@ async def on_command_error(ctx: commands.Context, error):
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.channel.id == 1411714823405965342:
+    if message.channel.id in [1411714823405965342, 1425852593657348198]:
         if message.poll:
-            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:97]}..."
+            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:95]}..."
         elif message.content.startswith("not a poll but "):
             await message.create_thread(name=message.content[15:])
         elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
