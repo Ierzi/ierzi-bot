@@ -266,10 +266,22 @@ class Fun(commands.Cog):
     async def ship(self, ctx: commands.Context, user1: str | discord.User, user2: str | discord.User):
         """Ship two users."""
 
-        ship_percentage = random.randint(0, 100)
-
         user1 = user1.mention if isinstance(user1, discord.User) else user1
         user2 = user2.mention if isinstance(user2, discord.User) else user2
+
+        # Hardcoded ships
+        hardcoded_ships = {
+            (980436567531335700, 976276627346559017): 100, # eddgow and roob
+            (1245098829116866560, 1220973198875693156): 100, # winter and epik
+        }
+
+        if (user1, user2) in hardcoded_ships:
+            ship_percentage = hardcoded_ships[(user1, user2)]
+        elif (user2, user1) in hardcoded_ships:
+            ship_percentage = hardcoded_ships[(user2, user1)]
+
+        ship_percentage = random.randint(0, 100)
+
         emoji = "💘" if ship_percentage >= 80 else "❤️" if ship_percentage >= 33 else "💔"
 
         await ctx.send(f"{user1} X {user2}: {ship_percentage}% {emoji}", allowed_mentions=discord.AllowedMentions.none())
@@ -313,6 +325,11 @@ class Fun(commands.Cog):
             answers.append(msg.content)
             old_item = what_beats
             what_beats = msg.content
+
+            # No repeats
+            if what_beats in answers[:-1]:
+                await ctx.send(f"❌: You already said '{what_beats}'!\n**Game over!** \n-# Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}")
+                return
 
             # AI decision
             async with ctx.typing():
