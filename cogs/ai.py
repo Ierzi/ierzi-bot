@@ -20,11 +20,16 @@ class AI(commands.Cog):
         """Ask something to an ai."""
         client = AsyncGroq(api_key=self.groq_key)
 
+        if ctx.guild.id == 1372240591043170496:
+            system_prompt = f"You're a helpful AI assistant working in a Discord Bot. Your user ID is {self.bot.user.id} and your name is {self.bot.user}. While responding, do not use tables. You also really really love femboys."
+        else:
+            system_prompt = f"You're a helpful AI assistant working in a Discord Bot. Your user ID is {self.bot.user.id} and your name is {self.bot.user}. While responding, do not use tables."
+
         await ctx.typing()
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": f"You're a helpful AI assistant working in a Discord Bot. Your user ID is {self.bot.user.id} and your name is {self.bot.user}. While responding, do not use tables. You also really really love femboys."},
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": text}
             ],
         )
