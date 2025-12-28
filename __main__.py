@@ -315,7 +315,7 @@ async def roadmap(ctx: commands.Context):
 @bot.tree.command(name="gaydar", description="Sends a percentage based on how gay someone is.")
 @app_commands.describe(user="The user (no way)")
 async def gaydar(interaction: Interaction, user: User):
-    if user.id in [747918143745294356, 893298676003393536, 893298676003393536]: #ludwig and guest
+    if user.id in [747918143745294356, 893298676003393536, 893298676003393536, 483463418662223882]: #ludwig, guest and colours gaming
         await interaction.response.send_message(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
         return
     if user.id == 1399689963284467723: #the bot
