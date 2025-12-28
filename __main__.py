@@ -63,7 +63,7 @@ grok_cache: dict[int, str] = {} # message id - response
 async def on_ready():
     # Change the presence based on the bot's number of servers
     guild_count = len(bot.guilds)
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers")) # Discord bot starter pack
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"JOLLY dtupid - {guild_count} servers", emoji="🎄"))
     await fill_embeds()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
@@ -82,7 +82,7 @@ async def bot_loop():
 
     # Update bot presence
     guild_count = len(bot.guilds)
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"JOLLY dtupid - {guild_count} servers", emoji="🎄"))
 
 
 # Error handling
@@ -103,7 +103,7 @@ async def on_message(message: Message):
     # Auto create threads in the poll channel
     if message.channel.id in [1411714823405965342, 1425852593657348198, 783638604454821892]:
         if message.poll:
-            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:95]}..."
+            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 75 else f"{message.poll.question[:72]}..."
         elif message.content.startswith("not a poll but "):
             await message.create_thread(name=message.content[15:])
         elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
