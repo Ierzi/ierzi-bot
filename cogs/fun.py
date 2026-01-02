@@ -155,6 +155,7 @@ class Fun(commands.Cog):
         await ctx.send(result)
 
     @commands.command()
+    @commands.cooldown(1, 15, commands.BucketType.user)
     async def guessnumber(self, ctx: commands.Context, guess: int):
         """Guess the number between 0 and 10000."""
         number = random.randint(0, 10000)
