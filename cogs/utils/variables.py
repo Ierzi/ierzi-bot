@@ -5,4 +5,5 @@ LONGER_VIEW_TIMEOUT = 86400 # one day
 
 NO_SLURS_SERVERS = [
     980439011560661002, # eddgows server
+    1127314346066837635, #goldens server
 ]
