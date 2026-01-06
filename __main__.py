@@ -20,7 +20,7 @@ from cogs.world_date_time import WorldDateTime
 # Utilities
 from cogs.utils import pronouns
 from cogs.utils.database import db
-from cogs.utils.variables import VIEW_TIMEOUT, NO_SLURS_SERVERS
+from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 
 # Other
 import aiohttp
@@ -627,7 +627,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
+            if _pronouns == 'fag/got' and guild_id not in SLURS_SERVERS:
                 await ctx.send(f"{user_profile.mention}'s pronouns are a mf slur 💔")
                 return
             await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
@@ -636,8 +636,8 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
-                await ctx.send("Your pronouns are a slur and daddy eddgow dont allow them here")
+            if _pronouns == 'fag/got' and guild_id not in SLURS_SERVERS:
+                await ctx.send("Your pronouns are a slur and they dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")
     

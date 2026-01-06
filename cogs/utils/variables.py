@@ -3,7 +3,8 @@
 VIEW_TIMEOUT = 7200 # 2 hours
 LONGER_VIEW_TIMEOUT = 86400 # one day
 
-NO_SLURS_SERVERS = [
-    980439011560661002, # eddgows server
-    1127314346066837635, #goldens server
+SLURS_SERVERS = [
+    1372240591043170496, # epikteam
+    783638604454821889, # test server
+    1458068918978482264, #zgang
 ]

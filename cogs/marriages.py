@@ -5,10 +5,9 @@ from discord.ui import Button, View
 from .utils import pronouns
 from .utils.database import db
 from .utils.pronouns import PronounEnum
-from .utils.variables import *
+from .utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 
 from rich.console import Console
-from typing import Optional
 
 class Marriages(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -69,7 +68,7 @@ class Marriages(commands.Cog):
                 await ctx.send(f"Congratulations {proposer.mention} and {self.bot.user.mention}, you are now happily married!", allowed_mentions=discord.AllowedMentions.none()) 
                 await self.add_marriage_list((proposer.id, self.bot.user.id))
                 return
-            if ctx.guild.id in NO_SLURS_SERVERS: 
+            if ctx.guild.id not in SLURS_SERVERS: 
                 await ctx.send("no.")
                 await ctx.send(f"{self.bot.user.mention} has declined the marriage proposal.", allowed_mentions=discord.AllowedMentions.none())
                 return
@@ -140,6 +139,7 @@ class Marriages(commands.Cog):
                 return
             
             await interaction.response.send_message(f"{proposer.mention} and {partner.mention} have been divorced. \n-# its over...")
+            await self.remove_marriage_list((proposer.id, partner.id))
             await interaction.message.edit(view=None)
         
         async def no_button_callback(interaction: discord.Interaction):
@@ -171,7 +171,7 @@ class Marriages(commands.Cog):
     @commands.command()
     async def countmarriages(self, ctx: commands.Context, user: discord.Member = None):
         """Count the number of marriages a member has."""
-        if user == None:
+        if user is None:
             user = ctx.author
         
         marriages = await self.get_marriages()
@@ -182,19 +182,19 @@ class Marriages(commands.Cog):
             return
         
         number_marriages = len(user_marriages) // 2
-        await ctx.send(f"{user.mention} has {number_marriages} marriages.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(f"{user.mention} is married to {number_marriages} people.", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
     async def totalmarriages(self, ctx: commands.Context):
         """Amount of marriages globally."""
         marriages = await self.get_marriages()
         number_marriages = len(marriages) // 2
-        await ctx.send(f"There are {number_marriages} marriages." if number_marriages != 1 else f"There is 1 marriage.")
+        await ctx.send(f"There are {number_marriages} marriages in the database." if number_marriages != 1 else "There is 1 marriage.")
 
     @commands.command()
     async def marriagestatus(self, ctx: commands.Context, user: discord.Member = None):
         """Check all the marriages of an user."""
-        if user == None:
+        if user is None:
             user = ctx.author
 
         marriages = await self.get_marriages()
