@@ -103,7 +103,7 @@ async def on_message(message: Message):
     # Auto create threads in the poll channel
     if message.channel.id in [1411714823405965342, 1425852593657348198, 783638604454821892, 1458720623621705790]:
         if message.poll:
-            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 50 else f"{message.poll.question[:47]}..."
+            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 97 else message.create_thread(f"{message.poll.question[:97]}...")
         elif message.content.startswith("not a poll but "):
             await message.create_thread(name=message.content[15:])
         elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
@@ -153,9 +153,6 @@ async def on_message(message: Message):
                 await message.add_reaction(emoji)
                 if target_id:
                    grok_cache[target_id] = emoji
-
-
-
 
     # Finally, process commands
     await bot.process_commands(message)

@@ -15,6 +15,8 @@ from typing import Literal, Optional
 import random
 from rich.console import Console
 
+from cogs.utils import pronouns
+
 
 _hours = Optional[int]
 _minutes = Optional[int]
@@ -376,7 +378,9 @@ class Economy(commands.Cog):
         else:
             fine = random.uniform(200, 600) 
             await self._remove_money(user_id, fine)
-            await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
+            await self._add_money(user_id, fine)
+            robbed_pronouns = await pronouns.get_pronoun(member.id)
+            await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and gave {robbed_pronouns[1]} {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, arg_a: Optional[str] = None, arg_b: Optional[str] = None):
