@@ -331,13 +331,13 @@ class Economy(commands.Cog):
         await self._update_cooldown(user_id, "last_robbed_bank")
         if random.random() < success_chance:
             usual_amount_stolen = random.uniform(500, 1000) 
-            rich_amount_stolen = random.uniform(0.025 * user_balance, 0.06 * user_balance)
+            rich_amount_stolen = random.uniform(0.025 * user_balance, 0.05 * user_balance)
             amount_stolen = max(usual_amount_stolen, rich_amount_stolen)
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} robbed a bank and got away with {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
             usual_fine = random.uniform(200, 800)
-            rich_fine = random.uniform(0.025 * user_balance, 0.045 * user_balance) # to fine-tune
+            rich_fine = random.uniform(0.02 * user_balance, 0.0375 * user_balance) # to fine-tune
             fine = max(usual_fine, rich_fine)
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
@@ -364,7 +364,7 @@ class Economy(commands.Cog):
         
         target_balance = await self._get_balance(member.id)
         target_member_rebirths_bonus = await self._calculate_rebirth_bonus(member.id, bonus_per_rebirth=0.05)
-        if target_balance.to_float() < 100:
+        if target_balance.to_float() < 100 and not target_balance.to_float() < 0:
             await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
