@@ -378,7 +378,7 @@ class Economy(commands.Cog):
         else:
             fine = random.uniform(200, 600) 
             await self._remove_money(user_id, fine)
-            await self._add_money(user_id, fine)
+            await self._add_money(member.id, fine)
             robbed_pronouns = await pronouns.get_pronoun(member.id)
             await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and gave {robbed_pronouns[1]} {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
