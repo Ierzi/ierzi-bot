@@ -416,7 +416,7 @@ async def fill_embeds():
 
     all_commands = get_commands(bot)
     for command_name, command_aliases, cog_name, command_help in all_commands:
-        name = " / ".join(command_aliases + [command_name])
+        name = " / ".join((command_name,) + command_aliases)
         match cog_name:
             case None:
                 if command_name in ["download", "export", "load", 'fsp']:
