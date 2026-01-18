@@ -355,6 +355,7 @@ def get_commands(bot: commands.Bot) -> list[tuple[str, tuple[str], str, str]]:
                 # Regular command
                 all_commands.append((command.name, command.aliases, None, command.help))
 
+    console.print(all_commands)
     return all_commands
 
 home_embed = Embed(
