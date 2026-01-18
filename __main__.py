@@ -324,21 +324,21 @@ async def gaydar(interaction: Interaction, user: User):
     await interaction.response.send_message(f"{user.mention} is {percentage}% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
 
 # help command
-def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:
-    all_commands: list[tuple[str, str, str]] = [] # Format: Command name, cog name, command help
+def get_commands(bot: commands.Bot) -> list[tuple[str, tuple[str], str, str]]:
+    all_commands: list[tuple[str, tuple[str], str, str]] = [] # Format: Command name, aliases, cog name, command help
     for cog_name, cog in bot.cogs.items():
         for command in cog.get_commands():
             # Check if this is a group command with subcommands
             if isinstance(command, commands.Group) and command.commands:
                 # Add the group command itself
-                all_commands.append((command.name, cog_name, command.help))
+                all_commands.append((command.name, command.aliases, cog_name, command.help))
                 # Add all subcommands with their full name (group.subcommand)
                 for subcommand in command.commands:
                     full_name = f"{command.name} {subcommand.name}"
-                    all_commands.append((full_name, cog_name, subcommand.help))
+                    all_commands.append((full_name, command.aliases, cog_name, subcommand.help))
             else:
                 # Regular command
-                all_commands.append((command.name, cog_name, command.help))
+                all_commands.append((command.name, command.aliases, cog_name, command.help))
     
     no_cogs_commands = [cmd for cmd in bot.commands if cmd.cog is None]
     if no_cogs_commands:
@@ -346,14 +346,14 @@ def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:
             # Check if this is a group command with subcommands (for commands not in cogs)
             if isinstance(command, commands.Group) and command.commands:
                 # Add the group command itself
-                all_commands.append((command.name, None, command.help))
+                all_commands.append((command.name, command.aliases, None, command.help))
                 # Add all subcommands with their full name (group.subcommand)
                 for subcommand in command.commands:
                     full_name = f"{command.name} {subcommand.name}"
-                    all_commands.append((full_name, None, subcommand.help))
+                    all_commands.append((full_name, command.aliases, None, subcommand.help))
             else:
                 # Regular command
-                all_commands.append((command.name, None, command.help))
+                all_commands.append((command.name, command.aliases, None, command.help))
 
     return all_commands
 
@@ -414,29 +414,30 @@ async def fill_embeds():
     search_embed.description = ""
 
     all_commands = get_commands(bot)
-    for command_name, cog_name, command_help in all_commands:
+    for command_name, command_aliases, cog_name, command_help in all_commands:
+        name = " / ".join(command_aliases + [command_name])
         match cog_name:
             case None:
                 if command_name in ["download", "export", "load", 'fsp']:
                     # Testing commands to ignore
                     continue
-                home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                home_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
-                ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                ai_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
-                economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                economy_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
-                fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                fun_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Marriages":
-                marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                marriages_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Reactions":
-                reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                reactions_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Songs":
-                songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                songs_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Search":
-                search_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                search_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "WorldDateTime":
-                wdt_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                wdt_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
 
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
