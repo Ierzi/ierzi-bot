@@ -382,6 +382,16 @@ class Economy(commands.Cog):
             robbed_pronouns = await pronouns.get_pronoun(member.id)
             await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and gave {robbed_pronouns[1]} {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
 
+    # TODO
+    # @commands.command()
+    # async def robback(self, ctx: commands.Context, member: discord.Member):
+    #     """Rob someone back for the same amount of coins."""
+    #     user_id = ctx.author.id
+
+    #     if member.bot:
+    #         await ctx.send("I don't think bro robbed you :broken_heart:")
+
+
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, arg_a: Optional[str] = None, arg_b: Optional[str] = None):
         """See the economy leaderboard."""

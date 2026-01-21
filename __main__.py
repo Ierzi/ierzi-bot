@@ -300,8 +300,7 @@ async def roadmap(ctx: commands.Context):
         "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
         "more songs commands but idk what to add", "do thing to request ideas by dming the bot", 
-        "more reactions (did i already say this?)",
-        "replace the birthday module with calendar, to implement pronouns.page calendar"
+        "more reactions (did i already say this?)", "other leaderboards idkkkkk"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
@@ -403,7 +402,7 @@ search_embed = Embed(
     description=""
 )
 
-async def fill_embeds(): 
+async def fill_embeds(): #TODO: fix this
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
     wdt_embed.description = ""
@@ -416,7 +415,8 @@ async def fill_embeds():
 
     all_commands = get_commands(bot)
     for command_name, command_aliases, cog_name, command_help in all_commands:
-        full = command_aliases.copy().insert(0, command_name)
+        full = command_aliases.copy()
+        full.insert(0, command_name)
         name = " / ".join(full)
         console.print(name)
         match cog_name:
