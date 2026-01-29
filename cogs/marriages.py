@@ -120,7 +120,7 @@ class Marriages(commands.Cog):
             await ctx.send("You are not married to this person!")
             return
         
-        # fact cant divorce guest
+        # fact cant divorce abby
         if proposer.id == 1206615811792576614 and partner.id == 747918143745294356: 
             await ctx.send("Not now big guy~")
             return

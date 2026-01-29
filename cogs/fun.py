@@ -73,7 +73,7 @@ class Fun(commands.Cog):
         
         if user.id in [
             747918143745294356, # ludwig
-            893298676003393536, # guest
+            893298676003393536, # abby
             902296627325317150, # masternigwardofthefifth (long ass name)
             1259095685207425036, # winter (old)
             1245098829116866560, #winter (new)

@@ -50,7 +50,7 @@ bot = commands.Bot(
     owner_ids=[
         966351518020300841, # my main account
         722480600392400976, # my other account
-        747918143745294356 # guest
+        747918143745294356 # abby
     ]
 )
 
@@ -311,7 +311,7 @@ async def roadmap(ctx: commands.Context):
 @bot.tree.command(name="gaydar", description="Sends a percentage based on how gay someone is.")
 @app_commands.describe(user="The user (no way)")
 async def gaydar(interaction: Interaction, user: User):
-    if user.id in [747918143745294356, 893298676003393536, 893298676003393536, 483463418662223882]: #ludwig, guest and colours gaming
+    if user.id in [747918143745294356, 893298676003393536, 893298676003393536, 483463418662223882]: #ludwig, abby and colours gaming
         await interaction.response.send_message(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
         return
     if user.id == 1399689963284467723: #the bot
@@ -402,7 +402,7 @@ search_embed = Embed(
     description=""
 )
 
-async def fill_embeds(): #TODO: fix this
+async def fill_embeds():
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
     wdt_embed.description = ""
@@ -680,8 +680,7 @@ async def info(ctx: commands.Context):
             commit_name = data['commit']['message']
             commit_author = data['commit']['author']['name']
 
-    message += f"Commit {commit_hash}: {commit_name}\n"
-    message += f"By: {commit_author}\n"
+    message += f"Commit {commit_hash} by {commit_author}: {commit_name}\n"
 
     uptime = now - start_uptime
     days, remainder = divmod(uptime.total_seconds(), 86400)
