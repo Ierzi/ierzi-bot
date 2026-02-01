@@ -98,7 +98,7 @@ async def on_command_error(ctx: commands.Context, error):
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
-test_role = discord.Object(id=1427700970606821508) 
+test_role = 1427700970606821508
 
 @bot.event
 async def on_message(message: Message):
@@ -122,10 +122,12 @@ async def on_message(message: Message):
             await message.add_reaction("8️⃣")
             await message.add_reaction("9️⃣")
             await message.add_reaction("🔟")
-        elif test_role in message.content:
-            console.print("role pinged")
-            question = message.content.split(test_role)[-1].strip()
-            await message.create_thread(name=question) if len(question) < 97 else message.create_thread(name=f"{question[:97]}...")
+        
+        for role in message.role_mentions:
+            if role.id == test_role:
+                console.print('role pinged')
+                question = message.content.split(" ")[1:]
+                console.print(question)
 
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
