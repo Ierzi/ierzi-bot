@@ -2,7 +2,7 @@
 
 # Discord.py Improrts
 import discord
-from discord import Interaction, Embed, Message, SelectOption, User, app_commands
+from discord import Interaction, Embed, Message, SelectOption, User, app_commands, Role
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
 from discord.ui import View, Select
@@ -98,6 +98,8 @@ async def on_command_error(ctx: commands.Context, error):
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
+test_role = discord.Object(id=1427700970606821508, type=Role) # Role object for testing Role() in message content
+
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
@@ -120,6 +122,10 @@ async def on_message(message: Message):
             await message.add_reaction("8️⃣")
             await message.add_reaction("9️⃣")
             await message.add_reaction("🔟")
+        elif test_role in message.content:
+            console.print("role pinged")
+            question = message.content.split(test_role)[-1].strip()
+            await message.create_thread(name=question) if len(question) < 97 else message.create_thread(name=f"{question[:97]}...")
 
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
