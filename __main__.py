@@ -126,8 +126,9 @@ async def on_message(message: Message):
         for role in message.role_mentions:
             if role.id == test_role:
                 console.print('role pinged')
-                question = message.content.split(" ")[1:]
-                console.print(question)
+                q = message.content.split(" ")[1:]
+                question = " ".join(q)
+                await message.create_thread(name=f"{question}" if len(question) < 97 else f"{question[:97]}...")
 
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
