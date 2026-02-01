@@ -98,7 +98,7 @@ async def on_command_error(ctx: commands.Context, error):
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
-test_role = discord.Object(id=1427700970606821508, type=Role) # Role object for testing Role() in message content
+test_role = discord.Object(id=1427700970606821508) 
 
 @bot.event
 async def on_message(message: Message):
