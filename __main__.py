@@ -99,11 +99,12 @@ async def on_command_error(ctx: commands.Context, error):
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
 test_role = 1427700970606821508
+qotd_role = 1459331338745151721
 
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.channel.id in [1411714823405965342, 1425852593657348198, 783638604454821892]:
+    if message.channel.id in [1411714823405965342, 1425852593657348198, 783638604454821892, 1458720623621705790, 1467073335257993317]:
         if message.poll:
             await message.create_thread(name=message.poll.question) if len(message.poll.question) < 97 else message.create_thread(name=f"{message.poll.question[:97]}...")
         elif message.content.startswith("not a poll but "):
@@ -124,8 +125,7 @@ async def on_message(message: Message):
             await message.add_reaction("🔟")
         
         for role in message.role_mentions:
-            if role.id == test_role:
-                console.print('role pinged')
+            if role.id in [test_role, qotd_role]:
                 q = message.content.split(" ")[1:]
                 question = " ".join(q)
                 await message.create_thread(name=f"{question}" if len(question) < 97 else f"{question[:97]}...")
