@@ -2,7 +2,7 @@
 
 # Discord.py Improrts
 import discord
-from discord import Interaction, Embed, Message, SelectOption, User, app_commands, Role
+from discord import Interaction, Embed, Message, SelectOption, User, app_commands
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
 from discord.ui import View, Select
@@ -62,7 +62,7 @@ grok_cache: dict[int, str] = {} # message id - response
 @bot.event
 async def on_ready():
     # Change the presence based on the bot's number of servers
-    guild_count = len(bot.guilds)
+    guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
     await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
     await fill_embeds()
     synced = await bot.tree.sync()
@@ -81,7 +81,7 @@ async def bot_loop():
     #  Various tasks the bot runs in the background
 
     # Update bot presence
-    guild_count = len(bot.guilds)
+    guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
     await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
 
 
