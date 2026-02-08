@@ -23,6 +23,8 @@ _minutes = Optional[int]
 _seconds = Optional[int]
 _output_data = tuple[bool, _hours, _minutes, _seconds]
 
+# TODO: Add Redis for caching cooldowns
+
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
@@ -376,7 +378,8 @@ class Economy(commands.Cog):
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} successfully robbed {member.mention} and stole {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
-            fine = random.uniform(200, 600) 
+            fine_percentage = random.uniform(0.03, 0.05)
+            fine = fine_percentage * target_balance.to_float()
             await self._remove_money(user_id, fine)
             await self._add_money(member.id, fine)
             robbed_pronouns = await pronouns.get_pronoun(member.id)
@@ -803,21 +806,21 @@ class Economy(commands.Cog):
             
 
     # just other commands idk where to put
-    @commands.command(aliases=("totalbal", "totbal", "tbal"))
+    @commands.command(aliases=("tbal"))
     async def total_balance(self, ctx: commands.Context):
         """See the total balance of all users."""
         row = await db.fetchrow("SELECT SUM(balance) AS total_balance FROM economy")
         total_balance = Currency(row["total_balance"]) if row and row["total_balance"] is not None else Currency.none()
         await ctx.send(f"The total balance of all users is {total_balance:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(aliases=("totlost", "tlost"))
+    @commands.command(aliases=("tlost"))
     async def total_money_lost(self, ctx: commands.Context):
         """See the total money lost by all users."""
         row = await db.fetchrow("SELECT SUM(money_lost) AS total_money_lost FROM economy")
         total_money_lost = Currency(row["total_money_lost"]) if row and row["total_money_lost"] is not None else Currency.none()
         await ctx.send(f"The total money lost by all users is {total_money_lost:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(aliases=("total_r", "totalr"))
+    @commands.command(aliases=("totalr", "trebirths"))
     async def total_rebirths(self, ctx: commands.Context):
         """See the total number of rebirths by all users."""
         row = await db.fetchrow("SELECT SUM(rebirths) AS total_rebirths FROM economy")
@@ -922,18 +925,18 @@ class Economy(commands.Cog):
         
         wheel_multipliers = [0, 0.5, 1, 1.5, 2]
         end_multiplier = random.choice(wheel_multipliers)
-        animation_frames = random.randint(15, 20)
+        animation_frames = random.randint(11, 15)
         
         message = await ctx.send("Spinning the wheel...", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(1.5)
 
         # Trying something new (making the animation slower and slower)
-        animation_speed = 0.02
+        animation_speed = 0.5
         for _ in range(animation_frames):
             current_frame = random.choice(wheel_multipliers)
             await message.edit(content=f"**{current_frame}x**")
             await asyncio.sleep(animation_speed)
-            animation_speed += 0.02
+            animation_speed += 0.25
 
         await message.edit(content=f"**{end_multiplier}x**")
         await asyncio.sleep(2)
