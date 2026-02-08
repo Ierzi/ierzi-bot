@@ -806,14 +806,14 @@ class Economy(commands.Cog):
             
 
     # just other commands idk where to put
-    @commands.command(aliases=("tbal"))
+    @commands.command(aliases=("tbal",))
     async def total_balance(self, ctx: commands.Context):
         """See the total balance of all users."""
         row = await db.fetchrow("SELECT SUM(balance) AS total_balance FROM economy")
         total_balance = Currency(row["total_balance"]) if row and row["total_balance"] is not None else Currency.none()
         await ctx.send(f"The total balance of all users is {total_balance:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(aliases=("tlost"))
+    @commands.command(aliases=("tlost",))
     async def total_money_lost(self, ctx: commands.Context):
         """See the total money lost by all users."""
         row = await db.fetchrow("SELECT SUM(money_lost) AS total_money_lost FROM economy")
