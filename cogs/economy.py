@@ -15,11 +15,15 @@ from typing import Literal, Optional
 import random
 from rich.console import Console
 
+from cogs.utils import pronouns
+
 
 _hours = Optional[int]
 _minutes = Optional[int]
 _seconds = Optional[int]
 _output_data = tuple[bool, _hours, _minutes, _seconds]
+
+# TODO: Add Redis for caching cooldowns
 
 class Economy(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -329,13 +333,13 @@ class Economy(commands.Cog):
         await self._update_cooldown(user_id, "last_robbed_bank")
         if random.random() < success_chance:
             usual_amount_stolen = random.uniform(500, 1000) 
-            rich_amount_stolen = random.uniform(0.025 * user_balance, 0.06 * user_balance)
+            rich_amount_stolen = random.uniform(0.025 * user_balance, 0.05 * user_balance)
             amount_stolen = max(usual_amount_stolen, rich_amount_stolen)
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} robbed a bank and got away with {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
             usual_fine = random.uniform(200, 800)
-            rich_fine = random.uniform(0.025 * user_balance, 0.045 * user_balance) # to fine-tune
+            rich_fine = random.uniform(0.02 * user_balance, 0.0375 * user_balance) # to fine-tune
             fine = max(usual_fine, rich_fine)
             await self._remove_money(user_id, fine)
             await ctx.send(f"{ctx.author.mention} got caught and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
@@ -362,7 +366,7 @@ class Economy(commands.Cog):
         
         target_balance = await self._get_balance(member.id)
         target_member_rebirths_bonus = await self._calculate_rebirth_bonus(member.id, bonus_per_rebirth=0.05)
-        if target_balance.to_float() < 100:
+        if target_balance.to_float() < 100 and not target_balance.to_float() < 0:
             await ctx.send(f"{member.mention} doesn't have enough money to be robbed.", allowed_mentions=discord.AllowedMentions.none())
             return
 
@@ -374,9 +378,22 @@ class Economy(commands.Cog):
             await self._add_money(user_id, amount_stolen)
             await ctx.send(f"{ctx.author.mention} successfully robbed {member.mention} and stole {amount_stolen:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
         else:
-            fine = random.uniform(200, 600) 
+            fine_percentage = random.uniform(0.03, 0.05)
+            fine = fine_percentage * target_balance.to_float()
             await self._remove_money(user_id, fine)
-            await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and had to pay a fine of {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
+            await self._add_money(member.id, fine)
+            robbed_pronouns = await pronouns.get_pronoun(member.id)
+            await ctx.send(f"{ctx.author.mention} got caught trying to rob {member.mention} and gave {robbed_pronouns[1]} {fine:,.2f} coins...", allowed_mentions=discord.AllowedMentions.none())
+
+    # TODO
+    # @commands.command()
+    # async def robback(self, ctx: commands.Context, member: discord.Member):
+    #     """Rob someone back for the same amount of coins."""
+    #     user_id = ctx.author.id
+
+    #     if member.bot:
+    #         await ctx.send("I don't think bro robbed you :broken_heart:")
+
 
     @commands.command(name="ecolb", aliases=("lb", "leaderboard", "baltop"))
     async def eco_leaderboard(self, ctx: commands.Context, arg_a: Optional[str] = None, arg_b: Optional[str] = None):
@@ -789,21 +806,21 @@ class Economy(commands.Cog):
             
 
     # just other commands idk where to put
-    @commands.command(aliases=("totalbal", "totbal", "tbal"))
+    @commands.command(aliases=("tbal",))
     async def total_balance(self, ctx: commands.Context):
         """See the total balance of all users."""
         row = await db.fetchrow("SELECT SUM(balance) AS total_balance FROM economy")
         total_balance = Currency(row["total_balance"]) if row and row["total_balance"] is not None else Currency.none()
         await ctx.send(f"The total balance of all users is {total_balance:,.2f} coins! {self.coin_emoji}", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(aliases=("totlost", "tlost"))
+    @commands.command(aliases=("tlost",))
     async def total_money_lost(self, ctx: commands.Context):
         """See the total money lost by all users."""
         row = await db.fetchrow("SELECT SUM(money_lost) AS total_money_lost FROM economy")
         total_money_lost = Currency(row["total_money_lost"]) if row and row["total_money_lost"] is not None else Currency.none()
         await ctx.send(f"The total money lost by all users is {total_money_lost:,.2f} coins.", allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command(aliases=("total_r", "totalr"))
+    @commands.command(aliases=("totalr", "trebirths"))
     async def total_rebirths(self, ctx: commands.Context):
         """See the total number of rebirths by all users."""
         row = await db.fetchrow("SELECT SUM(rebirths) AS total_rebirths FROM economy")
@@ -908,18 +925,18 @@ class Economy(commands.Cog):
         
         wheel_multipliers = [0, 0.5, 1, 1.5, 2]
         end_multiplier = random.choice(wheel_multipliers)
-        animation_frames = random.randint(15, 20)
+        animation_frames = random.randint(11, 15)
         
         message = await ctx.send("Spinning the wheel...", allowed_mentions=discord.AllowedMentions.none())
         await asyncio.sleep(1.5)
 
         # Trying something new (making the animation slower and slower)
-        animation_speed = 0.02
+        animation_speed = 0.5
         for _ in range(animation_frames):
             current_frame = random.choice(wheel_multipliers)
             await message.edit(content=f"**{current_frame}x**")
             await asyncio.sleep(animation_speed)
-            animation_speed += 0.02
+            animation_speed += 0.25
 
         await message.edit(content=f"**{end_multiplier}x**")
         await asyncio.sleep(2)

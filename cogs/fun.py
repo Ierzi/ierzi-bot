@@ -4,12 +4,21 @@ from discord.ext import commands
 import asyncio
 import aiohttp
 from aiogoogletrans import Translator
+from dotenv import load_dotenv
+from openai import AsyncOpenAI
+import os
 from pathlib import Path
+from pydantic import BaseModel
 import random
 from rich.console import Console
 from typing import Optional
 
 console = Console()
+load_dotenv()
+
+class WhatBeatsRockResponse(BaseModel):
+    decision: bool
+    reason: str
 
 class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -17,6 +26,7 @@ class Fun(commands.Cog):
         self.console = console
         self.cat_vid_names: list[Path] = []
         self.car_vids_folder = Path(__file__).resolve().parent.parent / "car_vids"
+        self.openai_api_key = os.getenv("OPENAI_KEY")
         self.fetch_cat_vids()
 
     @commands.command()
@@ -63,7 +73,7 @@ class Fun(commands.Cog):
         
         if user.id in [
             747918143745294356, # ludwig
-            893298676003393536, # guest
+            893298676003393536, # abby
             902296627325317150, # masternigwardofthefifth (long ass name)
             1259095685207425036, # winter (old)
             1245098829116866560, #winter (new)
@@ -145,6 +155,7 @@ class Fun(commands.Cog):
         await ctx.send(result)
 
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def guessnumber(self, ctx: commands.Context, guess: int):
         """Guess the number between 0 and 10000."""
         number = random.randint(0, 10000)
@@ -256,11 +267,107 @@ class Fun(commands.Cog):
     async def ship(self, ctx: commands.Context, user1: str | discord.User, user2: str | discord.User):
         """Ship two users."""
 
-        ship_percentage = random.randint(0, 100)
-
         user1 = user1.mention if isinstance(user1, discord.User) else user1
         user2 = user2.mention if isinstance(user2, discord.User) else user2
+
+        # Hardcoded ships
+        hardcoded_ships = {
+            (980436567531335700, 976276627346559017): 100, # eddgow and roob
+            (1245098829116866560, 1220973198875693156): 100, # winter and epik
+        }
+
+        if (user1, user2) in hardcoded_ships:
+            ship_percentage = hardcoded_ships[(user1, user2)]
+        elif (user2, user1) in hardcoded_ships:
+            ship_percentage = hardcoded_ships[(user2, user1)]
+        else:
+            ship_percentage = random.randint(0, 100)
+
         emoji = "💘" if ship_percentage >= 80 else "❤️" if ship_percentage >= 33 else "💔"
 
         await ctx.send(f"{user1} X {user2}: {ship_percentage}% {emoji}", allowed_mentions=discord.AllowedMentions.none())
-        
+    
+    @commands.command(aliases=("wbr",))
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def whatbeatsrock(self, ctx: commands.Context): # TODO: maybe add a leaderboard
+        """like the game on the website"""
+        # Uses AI to answer
+        schema = {
+            "type": "object",
+            "properties": {
+                "decision": {"type": "boolean", "description": "True if the suggested item beats the previous one, false otherwise."},
+                "reason": {"type": "string", "description": "A brief explanation of why the suggested item does or does not beat the previous one."}
+            },
+            "required": ["decision", "reason"]
+        }
+
+        answers = ["rock"] # User answers
+        what_beats = "rock"
+
+        # Game loop
+        while True:
+            # Bottom line is the answers so far
+            bottom_line = " → ".join(list(reversed(answers))) if answers != ["rock"] else "Start"
+            await ctx.send(f"What beats **{what_beats}**? Type '-stop' to end the game. \n-# {bottom_line}")
+
+            def check(m: discord.Message):
+                return m.author == ctx.author and m.channel == ctx.channel
+            
+            try:
+                msg = await self.bot.wait_for("message", check=check, timeout=90)
+            except asyncio.TimeoutError:
+                await ctx.send("Game timed out.")
+                return
+            
+            if msg.content.lower() == "-stop":
+                await ctx.send("Game ended.")
+                return
+            
+            answers.append(msg.content)
+            old_item = what_beats
+            what_beats = msg.content
+
+            # No repeats
+            if what_beats in answers[:-1]:
+                await ctx.send(f"❌: You already said '{what_beats}'!\n**Game over!** \n-# Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}")
+                return
+
+            # AI decision
+            async with ctx.typing():
+                client = AsyncOpenAI(api_key=self.openai_api_key)
+                response = await client.chat.completions.create(
+                    model="gpt-5-mini",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not."
+                        },
+                        {
+                            "role": "user",
+                            "content": (
+                                f"The current item is '{old_item}'. "
+                                f"The user suggests '{what_beats}' as the next item. "
+                                "Does this item logically beat the previous one?"
+                            )
+                        }
+                    ],
+
+                    functions=[
+                        {
+                            "name": "what_beats_rock_response",
+                            "description": "Determines if the suggested item beats the previous item.",
+                            "parameters": schema
+                        }
+                    ]
+                )
+
+                raw_args = response.choices[0].message.function_call.arguments
+                data = WhatBeatsRockResponse.model_validate_json(raw_args)
+
+            if data.decision:
+                await ctx.send(f"✅: {data.reason}")
+            else:
+                await ctx.send(f"❌: {data.reason}\n**Game over!** \n-# Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}")
+                return
+
+

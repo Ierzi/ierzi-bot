@@ -9,18 +9,18 @@ from discord.ui import View, Select
 
 # Cogs
 from cogs.ai import AI
-from cogs.world_date_time import WorldDateTime#, update_wdt_tables
 from cogs.economy import Economy
 from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
 from cogs.songs import Songs
+from cogs.world_date_time import WorldDateTime
 
 # Utilities
 from cogs.utils import pronouns
 from cogs.utils.database import db
-from cogs.utils.variables import VIEW_TIMEOUT, NO_SLURS_SERVERS
+from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 
 # Other
 import aiohttp
@@ -50,7 +50,7 @@ bot = commands.Bot(
     owner_ids=[
         966351518020300841, # my main account
         722480600392400976, # my other account
-        747918143745294356 # guest
+        747918143745294356 # abby
     ]
 )
 
@@ -62,8 +62,8 @@ grok_cache: dict[int, str] = {} # message id - response
 @bot.event
 async def on_ready():
     # Change the presence based on the bot's number of servers
-    guild_count = len(bot.guilds)
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers")) # Discord bot starter pack
+    guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
     await fill_embeds()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
@@ -81,7 +81,7 @@ async def bot_loop():
     #  Various tasks the bot runs in the background
 
     # Update bot presence
-    guild_count = len(bot.guilds)
+    guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
     await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
 
 
@@ -98,12 +98,15 @@ async def on_command_error(ctx: commands.Context, error):
     else:
         console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
 
+test_role = 1427700970606821508
+qotd_role = 1459331338745151721
+
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.channel.id == 1412488425294139517: #TODO: change this to normal poll id : 1411714823405965342
+    if message.channel.id in [1411714823405965342, 1425852593657348198, 783638604454821892, 1458720623621705790, 1467073335257993317]:
         if message.poll:
-            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 100 else f"{message.poll.question[:97]}..."
+            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 97 else message.create_thread(name=f"{message.poll.question[:97]}...")
         elif message.content.startswith("not a poll but "):
             await message.create_thread(name=message.content[15:])
         elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
@@ -120,6 +123,12 @@ async def on_message(message: Message):
             await message.add_reaction("8️⃣")
             await message.add_reaction("9️⃣")
             await message.add_reaction("🔟")
+        
+        for role in message.role_mentions:
+            if role.id in [test_role, qotd_role]:
+                q = message.content.split(" ")[1:]
+                question = " ".join(q)
+                await message.create_thread(name=f"{question}" if len(question) < 97 else f"{question[:97]}...")
 
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
@@ -154,9 +163,6 @@ async def on_message(message: Message):
                 if target_id:
                    grok_cache[target_id] = emoji
 
-
-
-
     # Finally, process commands
     await bot.process_commands(message)
 
@@ -166,8 +172,6 @@ async def load_cogs():
     console.print("Loading cogs...")
     await bot.add_cog(AI(bot, console))
     console.print("AI cog loaded.")
-    await bot.add_cog(WorldDateTime(bot, console))
-    console.print("World, Date and Time cog loaded.")
     await bot.add_cog(Economy(bot, console))
     console.print("Economy cog loaded.")
     await bot.add_cog(Fun(bot, console))
@@ -182,6 +186,8 @@ async def load_cogs():
     console.print(f"Songs cog loaded in {round(end - start, 2)} seconds.")
     await bot.add_cog(Search(bot, console))
     console.print("Search cog loaded.")
+    await bot.add_cog(WorldDateTime(bot, console))
+    console.print("World, Date and Time cog loaded.")
     console.print("All cogs loaded.")
 
 
@@ -303,8 +309,7 @@ async def roadmap(ctx: commands.Context):
         "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
         "more songs commands but idk what to add", "do thing to request ideas by dming the bot", 
-        "more reactions (did i already say this?)",
-        "replace the birthday module with calendar, to implement pronouns.page calendar"
+        "more reactions (did i already say this?)", "other leaderboards idkkkkk"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
@@ -315,7 +320,7 @@ async def roadmap(ctx: commands.Context):
 @bot.tree.command(name="gaydar", description="Sends a percentage based on how gay someone is.")
 @app_commands.describe(user="The user (no way)")
 async def gaydar(interaction: Interaction, user: User):
-    if user.id in [747918143745294356, 893298676003393536, 893298676003393536]: #ludwig and guest
+    if user.id in [747918143745294356, 893298676003393536, 893298676003393536, 483463418662223882]: #ludwig, abby and colours gaming
         await interaction.response.send_message(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
         return
     if user.id == 1399689963284467723: #the bot
@@ -327,21 +332,21 @@ async def gaydar(interaction: Interaction, user: User):
     await interaction.response.send_message(f"{user.mention} is {percentage}% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
 
 # help command
-def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:
-    all_commands: list[tuple[str, str, str]] = [] # Format: Command name, cog name, command help
+def get_commands(bot: commands.Bot) -> list[tuple[str, list[str], str, str]]:
+    all_commands: list[tuple[str, list[str], str, str]] = [] # Format: Command name, aliases, cog name, command help
     for cog_name, cog in bot.cogs.items():
         for command in cog.get_commands():
             # Check if this is a group command with subcommands
             if isinstance(command, commands.Group) and command.commands:
                 # Add the group command itself
-                all_commands.append((command.name, cog_name, command.help))
+                all_commands.append((command.name, list(command.aliases), cog_name, command.help))
                 # Add all subcommands with their full name (group.subcommand)
                 for subcommand in command.commands:
                     full_name = f"{command.name} {subcommand.name}"
-                    all_commands.append((full_name, cog_name, subcommand.help))
+                    all_commands.append((full_name, list(command.aliases), cog_name, subcommand.help))
             else:
                 # Regular command
-                all_commands.append((command.name, cog_name, command.help))
+                all_commands.append((command.name, list(command.aliases), cog_name, command.help))
     
     no_cogs_commands = [cmd for cmd in bot.commands if cmd.cog is None]
     if no_cogs_commands:
@@ -349,15 +354,16 @@ def get_commands(bot: commands.Bot) -> list[tuple[str, str, str]]:
             # Check if this is a group command with subcommands (for commands not in cogs)
             if isinstance(command, commands.Group) and command.commands:
                 # Add the group command itself
-                all_commands.append((command.name, None, command.help))
+                all_commands.append((command.name, list(command.aliases), None, command.help))
                 # Add all subcommands with their full name (group.subcommand)
                 for subcommand in command.commands:
                     full_name = f"{command.name} {subcommand.name}"
-                    all_commands.append((full_name, None, subcommand.help))
+                    all_commands.append((full_name, list(command.aliases), None, subcommand.help))
             else:
                 # Regular command
-                all_commands.append((command.name, None, command.help))
+                all_commands.append((command.name, list(command.aliases), None, command.help))
 
+    console.print(all_commands)
     return all_commands
 
 home_embed = Embed(
@@ -405,7 +411,7 @@ search_embed = Embed(
     description=""
 )
 
-async def fill_embeds(): 
+async def fill_embeds():
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
     ai_embed.description = ""
     wdt_embed.description = ""
@@ -417,29 +423,33 @@ async def fill_embeds():
     search_embed.description = ""
 
     all_commands = get_commands(bot)
-    for command_name, cog_name, command_help in all_commands:
+    for command_name, command_aliases, cog_name, command_help in all_commands:
+        full = command_aliases.copy()
+        full.insert(0, command_name)
+        name = " / ".join(full)
+        console.print(name)
         match cog_name:
             case None:
                 if command_name in ["download", "export", "load", 'fsp']:
                     # Testing commands to ignore
                     continue
-                home_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                home_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "AI":
-                ai_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                ai_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Economy":
-                economy_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                economy_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Fun":
-                fun_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                fun_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Marriages":
-                marriages_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                marriages_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Reactions":
-                reactions_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                reactions_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Songs":
-                songs_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                songs_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "Search":
-                search_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                search_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
             case "WorldDateTime":
-                wdt_embed.description += f"**{command_name}** - {command_help if command_help is not None else 'No description'} \n"
+                wdt_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
 
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
@@ -455,7 +465,7 @@ async def help(ctx: commands.Context, category: str = None):
         SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
         SelectOption(label="Search", description="Search commands", emoji="🔎"),
         SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
-        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🎂"),
+        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🌍"),
     ]
     help_select = Select(
         placeholder="select category",
@@ -627,7 +637,7 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
+            if _pronouns == 'fag/got' and guild_id not in SLURS_SERVERS:
                 await ctx.send(f"{user_profile.mention}'s pronouns are a mf slur 💔")
                 return
             await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
@@ -636,8 +646,8 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id in NO_SLURS_SERVERS: #eddgows server
-                await ctx.send("Your pronouns are a slur and daddy eddgow dont allow them here")
+            if _pronouns == 'fag/got' and guild_id not in SLURS_SERVERS:
+                await ctx.send("Your pronouns are a slur and they dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")
     
@@ -679,8 +689,7 @@ async def info(ctx: commands.Context):
             commit_name = data['commit']['message']
             commit_author = data['commit']['author']['name']
 
-    message += f"Commit {commit_hash}: {commit_name}\n"
-    message += f"By: {commit_author}\n"
+    message += f"Commit {commit_hash} by {commit_author}: {commit_name}\n"
 
     uptime = now - start_uptime
     days, remainder = divmod(uptime.total_seconds(), 86400)

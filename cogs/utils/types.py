@@ -78,12 +78,6 @@ class Currency:
 
     def __pos__(self) -> 'Currency':
         return Currency(+self.value)
-
-    def __eq__(self, value):
-        if isinstance(value, Currency):
-            return self.value == value.value
-        
-        return self.value == Decimal(value)
     
     def __ne__(self, value):
         return not self.__eq__(value)
@@ -155,10 +149,10 @@ class Birthday:
         return self.to_datetime().total_seconds() / 86400
 
     def __str__(self) -> str:
-        return f"{self.day}/{self.month}" if self.year is None else f"{self.day}/{self.month}/{self.year}"
+        return f"{self.day:02d}/{self.month:02d}" if self.year is None else f"{self.day:02d}/{self.month:02d}/{self.year:04d}"
     
     def __repr__(self) -> str:
-        return f"Birthday({self.day}/{self.month})" if self.year is None else f"Birthday({self.day}/{self.month}/{self.year})"
+        return f"Birthday({self.day:02d}/{self.month:02d})" if self.year is None else f"Birthday({self.day:02d}/{self.month:02d}/{self.year:04d})"
     
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Birthday):

@@ -13,6 +13,7 @@ import aiohttp
 import asyncio
 import certifi
 from datetime import datetime, timedelta
+import os
 import random
 from rich.console import Console
 from typing import Optional, Union
@@ -38,6 +39,7 @@ class WorldDateTime(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
+        self.historical_events_api_key = os.getenv("HISTORICAL_EVENTS_KEY")
     
     # groups!!!
 
@@ -90,7 +92,6 @@ class WorldDateTime(commands.Cog):
             async with client.get(url, headers={"User-Agent": "ierzi-bot/1.0"}) as request:
                 request.raise_for_status()
                 response: dict = await request.json()
-                self.console.print(response)
 
         return response.get("events", [])
     
@@ -119,9 +120,48 @@ class WorldDateTime(commands.Cog):
             return [random.choice(event_names)] if event_names else []
         return event_names[:many]
     
+    async def _get_historical_events(self, dt: datetime, many: int, random_events: bool = False) -> list:
+        """Gets events from Historical Events API."""
+        timeout = aiohttp.ClientTimeout(total=10)
+        url = "https://api.api-ninjas.com/v1/historicalevents"
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(
+                url,
+                headers={
+                    "User-Agent": "ierzi-bot/1.0",
+                    "X-Api-Key": self.historical_events_api_key,
+                },
+                params={
+                    "day": dt.day,
+                    "month": dt.month,
+                }
+            ) as request:
+                request.raise_for_status()
+                response: list[dict[str, str]] = await request.json()
+                self.console.print(response)
+        
+        names = [str(r["event"]) for r in response if r.get("event") is not None]
+
+        if not names:
+            return []
+
+        if random_events:
+            names = random.choices(names, k=5)
+
+        return names[:many]
+        
+    
+    def _get_custom_events(self, dt: datetime) -> list:
+        custom_events: dict[str, list[str]] = {
+            "29/07": ["Creation of Ierzi Bot"],
+            "14/05": ["Creation of EpikTeam"]
+        }
+        date_str = f"{dt.day:02d}/{dt.month:02d}"
+        return custom_events.get(date_str, [])
+
     async def _get_events(self, dt: datetime) -> list:
         """Gets events from different sources."""
-        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True)
+        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True) + await self._get_historical_events(dt, 5, random_events=True) + self._get_custom_events(dt)
 
     async def _set_timezone(self, user_id: int, timezone: str):
         """Set the timezone of a user."""
@@ -137,7 +177,6 @@ class WorldDateTime(commands.Cog):
             return None
         
         return row["timezone"]
-
         
     # Commands!
     @commands.command(name="et", aliases=("events-today", "events", "event"))
