@@ -21,7 +21,7 @@ from cogs.world_date_time import WorldDateTime
 from cogs.utils import pronouns
 from cogs.utils.database import db
 from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
-from .server import app
+from cogs.utils.server import app
 
 # Other
 import aiohttp
