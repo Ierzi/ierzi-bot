@@ -14,13 +14,14 @@ from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
-from cogs.songs import Songs
+from cogs.songs import Songs, setup
 from cogs.world_date_time import WorldDateTime
 
 # Utilities
 from cogs.utils import pronouns
 from cogs.utils.database import db
 from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
+from .server import app
 
 # Other
 import aiohttp
@@ -32,6 +33,7 @@ import random
 from rich.console import Console
 from typing import Optional
 import time
+import uvicorn
 
 console = Console()
 
@@ -58,6 +60,11 @@ experimental_branch: bool = False
 
 grok_cache: dict[int, str] = {} # message id - response
 
+RAILWAY_PRODUCTION_URL = os.getenv("RAILWAY_PRODUCTION_URL")
+RAILWAY_EXPERIMENTAL_URL = os.getenv("RAILWAY_EXPERIMENTAL_URL")
+RAILWAY_PORT = os.getenv("RAILWAY_PORT")
+RAILWAY_URL = RAILWAY_PRODUCTION_URL # By default
+
 # Events
 @bot.event
 async def on_ready():
@@ -68,11 +75,17 @@ async def on_ready():
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
-    
+
     if bot.user.id == 1412488383178998044 or bot.user == "Ierzi Bot - Experimental#2987": #experimental bot id or fallback
         global experimental_branch
         console.print("Experimental branch detected.")
         experimental_branch = True
+        # Update URL
+        global RAILWAY_URL
+        RAILWAY_URL = RAILWAY_EXPERIMENTAL_URL
+        console.print(f"Using experimental URL: {RAILWAY_URL}")
+    
+    bot.railway_url = RAILWAY_URL
 
     await bot_loop.start()
 
@@ -700,15 +713,25 @@ async def info(ctx: commands.Context):
     
     await ctx.send(message)
 
-async def main():
+async def start_bot():
     await db.init_pool()
     try:
         await load_cogs()
+        await setup()
         console.print("Bot is ready.")
 
         await bot.start(token)
     finally:
         await db.close_pool()
+
+async def main():
+    config = uvicorn.Config(app, host="0.0.0.0", port=int(RAILWAY_PORT), loop="asyncio")
+    server = uvicorn.Server(config)
+
+    await asyncio.gather(
+        start_bot(),
+        server.serve()
+    )
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -1,12 +1,18 @@
+from discord import Embed, Interaction
 from discord.ext import commands
+from discord.ui import Button, View
+from .utils.database import db
 
 import aiohttp
 from async_lru import alru_cache
+import os
 import random
 import requests
 from rich.console import Console
+from urllib.parse import urlencode
 
 SongData = tuple[str, str, str] # Song title - Album - Artist
+LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 
 class Songs(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -112,3 +118,55 @@ class Songs(commands.Cog):
     async def playlistlength(self, ctx: commands.Context):
         """Gives how many songs are in my playlist."""
         await ctx.send(f"{format(len(self.songs), ',')} songs.")
+    
+    #TODO: Come back to this after adding an api route to get the session key and username
+    # Idk how to do that lmao
+    @commands.command(aliases=("llfm",))
+    async def loginlastfm(self, ctx: commands.Context):
+        if not LASTFM_API_KEY:
+            await ctx.send("stupid ass ierzi forgot to add his environment variable")
+            return
+        
+        args = {
+            "api_key": LASTFM_API_KEY,
+            "cb": self.bot.railway_url
+        }
+
+        login_link = f"http://www.last.fm/api/auth/?{urlencode(args)}"
+        self.console.print(login_link)
+
+        login_embed = Embed(
+            colour=13963271, # lastfm red
+            title="Login to Last.fm",
+            description=f"{ctx.author.mention}, to use last.fm related commands, you need to add your last.fm account. Click on the button below to log in."
+        )
+
+        login_button = Button(label="Connect Last.fm account")
+        view = View(timeout=300)
+
+        async def login_button_callback(interaction: Interaction):
+            if not interaction.user.id == ctx.author.id:
+                await interaction.response.send_message("this is not your button vro :broken_heart:", ephemeral=True)
+                return
+            
+            login_button.label = "Logging in..."
+            login_button.disabled = True
+            await interaction.response.send_message(f"{login_link}", ephemeral=True)
+        
+        login_button.callback = login_button_callback
+        view.add_item(login_button)
+        await ctx.send(embed=login_embed, view=view)
+
+    @commands.command()
+    async def checklogin(self, ctx: commands.Context):
+        """Checks if the user is logged in to last.fm"""
+        result = await db.fetchval("SELECT lastfm_username FROM users WHERE discord_id = $1", ctx.author.id)
+        self.console.print(result)
+        if result:
+            await ctx.send("yes")
+        else:
+            await ctx.send("no")
+
+async def setup():
+    await db.execute("ALTER TABLE users ADD COLLUMN lastfm_username VARCHAR(255) NULL, ADD COLLUMN session_key VARCHAR(255) NULL;")
+    

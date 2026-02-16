@@ -1,4 +1,4 @@
--- Schema v3
+-- Schema v4
 
 -- Users table
 -- now directly contains the birthday table
@@ -13,6 +13,9 @@ CREATE TABLE users (
     month SMALLINT NULL,
     year SMALLINT NULL,
     timezone VARCHAR(50) NULL
+    -- lastfm
+    lastfm_username VARCHAR(255) NULL
+    session_key VARCHAR(255) NULL
 );
 
 CREATE TABLE economy (
