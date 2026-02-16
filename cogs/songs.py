@@ -168,5 +168,5 @@ class Songs(commands.Cog):
             await ctx.send("no")
 
 async def setup():
-    await db.execute("ALTER TABLE users ADD COLLUMN lastfm_username VARCHAR(255) NULL, ADD COLLUMN session_key VARCHAR(255) NULL;")
+    await db.execute("ALTER TABLE users ADD COLUMN lastfm_username VARCHAR(255) NULL, ADD COLUMN session_key VARCHAR(255) NULL;")
     
