@@ -160,7 +160,7 @@ class Songs(commands.Cog):
     @commands.command()
     async def checklogin(self, ctx: commands.Context):
         """Checks if the user is logged in to last.fm"""
-        result = await db.fetchval("SELECT lastfm_username FROM users WHERE discord_id = $1", ctx.author.id)
+        result = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
         self.console.print(result)
         if result:
             await ctx.send("yes")
