@@ -1,7 +1,9 @@
 from discord import Embed, Interaction
 from discord.ext import commands
 from discord.ui import Button, View
+
 from .utils.database import db
+from .utils.variables import login_sessions
 
 import aiohttp
 from async_lru import alru_cache
@@ -9,6 +11,7 @@ import os
 import random
 import requests
 from rich.console import Console
+import string
 from urllib.parse import urlencode
 
 SongData = tuple[str, str, str] # Song title - Album - Artist
@@ -127,9 +130,16 @@ class Songs(commands.Cog):
             await ctx.send("stupid ass ierzi forgot to add his environment variable")
             return
         
+        state = "aaaaaaaaaaaa"
+        while state in login_sessions:
+            # Regenerate a new state
+            state = str(random.choices(string.ascii_letters + string.digits, k=12))
+            self.console.print(state)
+
         args = {
             "api_key": LASTFM_API_KEY,
-            "cb": f"{self.bot.railway_url}/"
+            "cb": f"{self.bot.railway_url}/callback/last-fm/",
+            "state": state
         }
 
         login_link = f"http://www.last.fm/api/auth/?{urlencode(args)}"

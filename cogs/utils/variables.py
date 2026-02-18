@@ -8,3 +8,5 @@ SLURS_SERVERS = [
     783638604454821889, # test server
     1458068918978482264, #zgang
 ]
+
+login_sessions = {"aaaaaaaaaaaa": -1} # {session_id: discord_id}
