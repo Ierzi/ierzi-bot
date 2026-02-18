@@ -129,7 +129,7 @@ class Songs(commands.Cog):
         
         args = {
             "api_key": LASTFM_API_KEY,
-            "cb": self.bot.railway_url
+            "cb": f"{self.bot.railway_url}/"
         }
 
         login_link = f"http://www.last.fm/api/auth/?{urlencode(args)}"

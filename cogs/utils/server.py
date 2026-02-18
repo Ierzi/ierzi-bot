@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel
 from cogs.utils.database import db
 import os
@@ -12,9 +12,7 @@ class LastFMData(BaseModel):
     session_key: str
 
 @app.post("callback/last-fm")
-async def get_lastfm_data(data: LastFMData, x_secret: str = Header(None)):
-    if x_secret != secret_key:
-        raise HTTPException(status_code=403, detail="Forbidden")
+async def get_lastfm_data(data: LastFMData):
     
     try:
         await db.execute("""
