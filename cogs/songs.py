@@ -133,7 +133,10 @@ class Songs(commands.Cog):
         state = "aaaaaaaaaaaa"
         while state in login_sessions:
             # Regenerate a new state
-            state = str(random.choices(string.ascii_letters + string.digits, k=12))
+            state = ""
+            for _ in range(12):
+                state += random.choic(string.ascii_letters + string.digits)
+                
             self.console.print(state)
 
         args = {
