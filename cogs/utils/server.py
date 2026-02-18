@@ -11,9 +11,8 @@ class LastFMData(BaseModel):
     username: str
     session_key: str
 
-@app.post("callback/last-fm")
+@app.post("/callback/last-fm")
 async def get_lastfm_data(data: LastFMData):
-    
     try:
         await db.execute("""
             INSERT INTO users (user_id, lastfm_username, session_key)
