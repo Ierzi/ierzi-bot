@@ -135,8 +135,8 @@ class Songs(commands.Cog):
             # Regenerate a new state
             state = ""
             for _ in range(12):
-                state += random.choic(string.ascii_letters + string.digits)
-                
+                state += random.choice(string.ascii_letters + string.digits)
+
             self.console.print(state)
 
         args = {
