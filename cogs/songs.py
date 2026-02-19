@@ -138,6 +138,7 @@ class Songs(commands.Cog):
             return
 
         args = {
+            "method": "auth.gettoken",
             "api_key": LASTFM_API_KEY,
             "format": "json"
         }
