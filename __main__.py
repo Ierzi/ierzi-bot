@@ -21,7 +21,6 @@ from cogs.world_date_time import WorldDateTime
 from cogs.utils import pronouns
 from cogs.utils.database import db
 from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
-from cogs.utils.server import app
 
 # Other
 import aiohttp
@@ -33,7 +32,6 @@ import random
 from rich.console import Console
 from typing import Optional
 import time
-import uvicorn
 
 console = Console()
 
@@ -722,15 +720,6 @@ async def start_bot():
     finally:
         await db.close_pool()
 
-async def main():
-    config = uvicorn.Config(app, host="0.0.0.0", port=int(RAILWAY_PORT), loop="asyncio")
-    server = uvicorn.Server(config)
-
-    await asyncio.gather(
-        start_bot(),
-        server.serve()
-    )
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(start_bot())
 

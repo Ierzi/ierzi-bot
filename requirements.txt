@@ -11,6 +11,4 @@ aiogoogletrans #gender
 moviepy
 async-lru
 tzdata
-fastapi
-uvicorn
 # nltk - not used anymore (why did it ask for sqlite3)

@@ -12,8 +12,6 @@ import os
 import random
 import requests
 from rich.console import Console
-import string
-from urllib.parse import urlencode
 import xml.etree.ElementTree as ET
 
 SongData = tuple[str, str, str] # Song title - Album - Artist
@@ -179,8 +177,9 @@ class Songs(commands.Cog):
 
             await interaction.response.send_message(f"{login_link}", ephemeral=True)
 
-            # Ping the server every 5 seconds to check if the user has authenticated, for 2 minutes
-            # 120 / 5 = 24, so 24 attempts
+            # Ping the server every 5 seconds to check if the user has authenticated
+            # 60 seconds / 5 = 12, so 12 attempts
+
             args = {
                 "method": "auth.getSession",
                 "api_key": LASTFM_API_KEY,
@@ -190,7 +189,7 @@ class Songs(commands.Cog):
             # Sign call
             args["api_sig"] = sign(args, os.getenv("LASTFM_API_SECRET"))
 
-            for _ in range(24):
+            for _ in range(12):
                 await asyncio.sleep(5)
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f"{base_url}", params=args) as response:
@@ -217,7 +216,7 @@ class Songs(commands.Cog):
 
                             login_button.label = "Logged in!"
                             self.console.print(f"{ctx.author} logged in.")
-                            await interaction.edit_original_response(view=view)
+                            await interaction.edit_original_response(content="You are logged in!", view=view)
                             return
                         else:
                             await ctx.send("Error :(")
