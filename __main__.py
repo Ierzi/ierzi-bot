@@ -376,7 +376,6 @@ def get_commands(bot: commands.Bot) -> list[tuple[str, list[str], str, str]]:
                 # Regular command
                 all_commands.append((command.name, list(command.aliases), None, command.help))
 
-    console.print(all_commands)
     return all_commands
 
 home_embed = Embed(
@@ -440,7 +439,6 @@ async def fill_embeds():
         full = command_aliases.copy()
         full.insert(0, command_name)
         name = " / ".join(full)
-        console.print(name)
         match cog_name:
             case None:
                 if command_name in ["download", "export", "load", 'fsp']:

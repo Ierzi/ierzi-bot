@@ -1,11 +1,19 @@
-from fastapi import FastAPI, Request
 from cogs.utils.database import db
+from .variables import login_sessions
+
+from fastapi import FastAPI, Request
 import os
 import aiohttp
 from urllib.parse import urlencode
 import hashlib
 import xml.etree.ElementTree as ET
 from .variables import login_sessions
+
+# TODO: Just found a way to do this without a server, when sending login link, use a button
+# When button is clicked, opens the last.fm auth page and also starts a timer pinging getSession every 5 seconds to check if the user has authenticated for 120 seconds
+# Like .fmbot does
+# TODO: Add a public key, private key thing, for security
+# TODO: Remove URLs from railway
 
 app = FastAPI()
 secret_key = os.getenv("SERVER_SECRET_KEY")

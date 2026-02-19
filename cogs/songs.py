@@ -3,19 +3,26 @@ from discord.ext import commands
 from discord.ui import Button, View
 
 from .utils.database import db
-from .utils.variables import login_sessions
 
 import aiohttp
+import asyncio
 from async_lru import alru_cache
+import hashlib
 import os
 import random
 import requests
 from rich.console import Console
 import string
 from urllib.parse import urlencode
+import xml.etree.ElementTree as ET
 
 SongData = tuple[str, str, str] # Song title - Album - Artist
 LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
+
+def sign(params: dict, api_secret: str) -> str:
+    params_for_sig = {k: v for k, v in params.items() if k != 'format'}
+    signature_string = "".join(f"{k}{str(v)}" for k, v in sorted(params_for_sig.items())) + api_secret
+    return hashlib.md5(signature_string.encode("utf-8")).hexdigest()
 
 class Songs(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -129,24 +136,27 @@ class Songs(commands.Cog):
         if not LASTFM_API_KEY:
             await ctx.send("stupid ass ierzi forgot to add his environment variable")
             return
-        
-        state = "aaaaaaaaaaaa"
-        while state in login_sessions:
-            # Regenerate a new state
-            state = ""
-            for _ in range(12):
-                state += random.choice(string.ascii_letters + string.digits)
-
-            self.console.print(state)
-        
-        state_var = {"state": state}
 
         args = {
             "api_key": LASTFM_API_KEY,
-            "cb": f"{self.bot.railway_url}/callback/last-fm/{urlencode(state_var)}",
+            "format": "json"
         }
 
-        login_link = f"http://www.last.fm/api/auth/?{urlencode(args)}"
+        base_url = "http://ws.audioscrobbler.com/2.0/"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(base_url, params=args) as response:
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    self.console.print(e)
+                    await ctx.send("error :(")
+                
+                json_response: dict = response.json()
+                token = json_response.get("token")
+
+        login_link = f"http://www.last.fm/api/auth/?api_key={LASTFM_API_KEY}&token={token}"
+
         self.console.print(login_link)
 
         login_embed = Embed(
@@ -165,7 +175,47 @@ class Songs(commands.Cog):
             
             login_button.label = "Logging in..."
             login_button.disabled = True
+
             await interaction.response.send_message(f"{login_link}", ephemeral=True)
+
+            # Ping the server every 5 seconds to check if the user has authenticated, for 2 minutes
+            # 120 / 5 = 24, so 24 attempts
+            args = {
+                "method": "auth.getSession",
+                "api_key": LASTFM_API_KEY,
+                "token": token
+            }
+            for _ in range(24):
+                await asyncio.sleep(5)
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(f"{base_url}", params=args) as response:
+                        try:
+                            response.raise_for_status()
+                        except Exception as e:
+                            self.console.print(e)
+                            continue
+                        
+                        data = await response.text()
+                        xml = ET.fromstring(data)
+                        status = xml.attrib.get("status")
+
+                        if status == "ok":
+                            sk = xml.find("session/key").text
+                            name = xml.find("session/name").text
+
+                            # Save the session key and username to the database
+                            await db.execute("""
+                                INSERT INTO users (user_id, lastfm_username, session_key)
+                                VALUES ($1, $2, $3)
+                                ON CONFLICT (user_id) DO UPDATE SET lastfm_username = EXCLUDED.lastfm_username, session_key = EXCLUDED.session_key
+                            """, ctx.author.id, name, sk)
+
+                            login_button.label = "Logged in!"
+                            self.console.print(f"{ctx.author} logged in.")
+                            await interaction.edit_original_response(view=view)
+                            return
+                        else:
+                            await ctx.send("Error :(")
         
         login_button.callback = login_button_callback
         view.add_item(login_button)
