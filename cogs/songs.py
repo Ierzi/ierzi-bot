@@ -161,7 +161,7 @@ class Songs(commands.Cog):
         self.console.print(login_link)
 
         login_embed = Embed(
-            colour=13963271, # lastfm red
+            colour=0xD51007, # lastfm red
             title="Login to Last.fm",
             description=f"{ctx.author.mention}, to use last.fm related commands, you need to add your last.fm account. Click on the button below to log in."
         )
@@ -186,6 +186,10 @@ class Songs(commands.Cog):
                 "api_key": LASTFM_API_KEY,
                 "token": token
             }
+
+            # Sign call
+            args["api_sig"] = sign(args, os.getenv("LASTFM_API_SECRET"))
+
             for _ in range(24):
                 await asyncio.sleep(5)
                 async with aiohttp.ClientSession() as session:
