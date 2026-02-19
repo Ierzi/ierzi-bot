@@ -153,7 +153,7 @@ class Songs(commands.Cog):
                     self.console.print(e)
                     await ctx.send("error :(")
                 
-                json_response: dict = response.json()
+                json_response: dict = await response.json()
                 token = json_response.get("token")
 
         login_link = f"http://www.last.fm/api/auth/?api_key={LASTFM_API_KEY}&token={token}"
