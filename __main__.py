@@ -292,6 +292,13 @@ async def profile(ctx: commands.Context, *user_ids: int):
     await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
+async def idpfp(ctx: commands.Context, id: int):
+    user = bot.get_user(id) or await bot.fetch_user(id)
+    pfp = user.avatar
+    await ctx.send(pfp)
+    await ctx.send(pfp.url)
+
+@bot.command()
 async def github(ctx: commands.Context):
     """if you wanna contribute idk"""
     global experimental_branch
