@@ -194,8 +194,9 @@ class Fun(commands.Cog):
         await ctx.send(file=discord.File(random_video.resolve()))
     
     @commands.command()
+    @commands.is_owner()
     async def pi(self, ctx: commands.Context, digits: int):
-        """Pi digits."""
+        """Pi digits. Currently owner only due to a certain happening."""
         headers = {
             "accept": "application/json"
         }
