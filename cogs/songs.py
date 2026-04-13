@@ -278,12 +278,11 @@ class Songs(commands.Cog):
 
         async with aiohttp.ClientSession() as session:
             async with session.get("http://ws.audioscrobbler.com/2.0/", params=args, timeout=30) as response:
-                # i hope timeout is in seconds lol
                 try:
                     response.raise_for_status()
                 except Exception as e:
                     self.console.print(e)
-                    await ctx.send("Error :(")
+                    await ctx.send("error :(")
                     return
                 
                 data = await response.json()
@@ -298,15 +297,42 @@ class Songs(commands.Cog):
                     total_pages = int(attr.get("totalPages", 0))
                     self.blindtest_pages[ctx.author.id] = total_pages
                 
-        tracks = [t for t in tracks if "date" in t]
-        random_track = random.choice(tracks)
+            tracks = [t for t in tracks if "date" in t]
+            random_track = random.choice(tracks)
 
-        # Test print
-        self.console.print(random_track)
-        song_name = random_track.get("name")
-        artist_name = random_track.get("artist", {}).get("#text", "")
+            song_name = random_track.get("name")
+            artist_name = random_track.get("artist", {}).get("#text", "")
+            
+            # Ask deezer for a preview
+            query = f"{song_name} {artist_name}"
+            url = f"https://api.deezer.com/search?q={query}"
+
+            async with session.get(url, timeout=30) as response:
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    self.console.print(e)
+                    await ctx.send("error :(")
+                    return
+                
+                data = await response.json()
+                results = data.get("data", [])
+                if not results:
+                    await ctx.send("error :(")
+                    self.console.print("No results from Deezer for query: {query}")
+                    return
+                
+                preview_url = results[0].get("preview")
+                if not preview_url:
+                    await ctx.send("error :(")
+                    self.console.print("No preview available for song: {song_name} by {artist_name}")
+                    return
+                
+                # test send
+                await ctx.send(f"{preview_url}")
+
+                
         
-        await ctx.send(f"{song_name} - {artist_name}")
         
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
