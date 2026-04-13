@@ -29,6 +29,7 @@ class Songs(commands.Cog):
         self.deezer_playlist_url = "https://api.deezer.com/playlist/12419865223/tracks"
         self.songs: list[SongData] = []
         self.fetch_deezer_playlist()
+        self.blindtest_pages: dict[int, int] = {} # user_id -> page number 
 
     def get_page(self, index: int):
         url = self.deezer_playlist_url if index == 0 else f"{self.deezer_playlist_url}?index={index * 25}"
@@ -225,15 +226,90 @@ class Songs(commands.Cog):
         view.add_item(login_button)
         await ctx.send(embed=login_embed, view=view)
 
+    async def _is_authenticated(self, user_id: int) -> bool:
+        result = await db.fetchval("SELECT session_key FROM users WHERE user_id = $1", user_id)
+        return result is not None
+
     @commands.command()
     async def checklogin(self, ctx: commands.Context):
         """Checks if the user is logged in to last.fm"""
-        result = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
-        self.console.print(result)
+        result = await self._is_authenticated(ctx.author.id)
         if result:
             await ctx.send("yes")
         else:
             await ctx.send("no")
+    
+    @commands.command()
+    async def logoutlastfm(self, ctx: commands.Context):
+        """Logs out the user from last.fm (deletes session key and username from database)"""
+        await db.execute("UPDATE users SET lastfm_username = NULL, session_key = NULL WHERE user_id = $1", ctx.author.id)
+        await ctx.send("Logged out.")
+    
+    @commands.command(aliases=("bt",))
+    async def blindtest(self, ctx: commands.Context):
+        """Gives a random song, and you have to guess its name."""
+        # TODO: Add this
+        # The Deezer API gives a preview of the song, which is a 30 second clip.
+        # Like .px, add a button to shuffle name song, give up, and play again
+        # Prolly implement an algorithm to accept an answer if it's close enough to the actual name
+        # Add hints? 
+
+        # 1. Check if user is authenticated
+        is_auth = await self._is_authenticated(ctx.author.id)
+        if not is_auth:
+            await ctx.send("You didn't connect your last.fm account yet! Use !loginlastfm.")
+            return
+    
+        # Get a random song from their listening history
+        username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
+        args = {
+            "method": "user.getrecenttracks",
+            "user": username,
+            "api_key": LASTFM_API_KEY,
+            "format": "json",
+            "limit": 200
+        }
+
+        if self.blindtest_pages.get(ctx.author.id) is not None:
+            # Get a random page
+            max_pages = self.blindtest_pages[ctx.author.id]
+            random_page = random.randint(0, max_pages)
+            args["page"] = random_page
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://ws.audioscrobbler.com/2.0/", params=args, timeout=30) as response:
+                # i hope timeout is in seconds lol
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    self.console.print(e)
+                    await ctx.send("Error :(")
+                    return
+                
+                data = await response.json()
+                tracks = data.get("recenttracks", {}).get("track", [])
+                if not tracks:
+                    await ctx.send("no tracks???")
+                    return
+
+                if args.get("page") is None:
+                    # Save the number of pages for later
+                    attr = data.get("recenttracks", {}).get("@attr", {})
+                    total_pages = int(attr.get("totalPages", 0))
+                    self.blindtest_pages[ctx.author.id] = total_pages
+                
+        tracks = [t for t in tracks if "date" in t]
+        random_track = random.choice(tracks)
+
+        # Test print
+        self.console.print(random_track)
+        song_name = random_track.get("name")
+        artist_name = random_track.get("artist", {}).get("#text", "")
+        
+        await ctx.send(f"{song_name} - {artist_name}")
+        
+    
+    # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
 
 async def setup():
     await db.execute("ALTER TABLE users ADD COLUMN lastfm_username VARCHAR(255) NULL, ADD COLUMN session_key VARCHAR(255) NULL;")

@@ -320,7 +320,9 @@ async def roadmap(ctx: commands.Context):
         "add more reactions", "fix !listmarriages (ts never happening)", 
         "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
         "more songs commands but idk what to add", "do thing to request ideas by dming the bot", 
-        "more reactions (did i already say this?)", "other leaderboards idkkkkk"
+        "more reactions (did i already say this?)", "other leaderboards idkkkkk",
+        "multiple pronouns (for winty)", "make wdt more simple cause yall did NOT understand it",
+        "more playlist commands i make a note about this"
         ]
     message = "Features I wanna add: \n"
     for feature in features:
