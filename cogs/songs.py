@@ -1,4 +1,4 @@
-from discord import Embed, Interaction
+from discord import Embed, File, Interaction
 from discord.ext import commands
 from discord.ui import Button, View
 
@@ -325,15 +325,28 @@ class Songs(commands.Cog):
                 preview_url = results[0].get("preview")
                 if not preview_url:
                     await ctx.send("error :(")
-                    self.console.print("No preview available for song: {song_name} by {artist_name}")
+                    self.console.print("No preview available for song {song_name} by {artist_name}")
                     return
                 
-                # test send
-                await ctx.send(f"{preview_url}")
+            # test send
+            # await ctx.send(f"{preview_url}")
 
+            # Download song
+            async with session.get(preview_url) as response:
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    self.console.print(e)
+                    await ctx.send("error :(")
+                    return
                 
-        
-        
+                song_data = await response.read()
+                # Make file name original
+                filename = f"{song_name}_{artist_name}.mp3"
+                with open(filename, "wb") as f:
+                    f.write(song_data)
+
+            await ctx.send(file=File(filename))
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
 
