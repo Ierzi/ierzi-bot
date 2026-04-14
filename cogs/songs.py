@@ -333,7 +333,7 @@ class Songs(commands.Cog):
                 # Genre
                 genre = track_info.get("toptags", {}).get("tag")[0].get("name", "") if track_info.get("toptags", {}).get("tag") else None
                 # Duration
-                duration = track_info.get("duration") // 1000 # in seconds
+                duration = int(track_info.get("duration")) // 1000 # in seconds
 
                 hints = [duration, genre, release_date, album_name, artist_name] # From hardest to easiest
 
