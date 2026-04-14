@@ -1,12 +1,14 @@
 from discord import Embed, File, Interaction
 from discord.ext import commands
 from discord.ui import Button, View
+from regex import D
 
 from .utils.database import db
 
 import aiohttp
 import asyncio
 from async_lru import alru_cache
+from difflib import SequenceMatcher
 import hashlib
 import os
 import random
@@ -245,22 +247,19 @@ class Songs(commands.Cog):
         await db.execute("UPDATE users SET lastfm_username = NULL, session_key = NULL WHERE user_id = $1", ctx.author.id)
         await ctx.send("Logged out.")
     
+    # TODO: Add wim streaks
     @commands.command(aliases=("bt",))
     async def blindtest(self, ctx: commands.Context):
         """Gives a random song, and you have to guess its name."""
-        # TODO: Add this
-        # The Deezer API gives a preview of the song, which is a 30 second clip.
-        # Like .px, add a button to shuffle name song, give up, and play again
-        # Prolly implement an algorithm to accept an answer if it's close enough to the actual name
-        # Add hints? 
+        # TODO: Prolly implement an algorithm to accept an answer if it's close enough to the actual name
 
-        # 1. Check if user is authenticated
+        # * Check if user is authenticated
         is_auth = await self._is_authenticated(ctx.author.id)
         if not is_auth:
             await ctx.send("You didn't connect your last.fm account yet! Use !loginlastfm.")
             return
     
-        # Get a random song from their listening history
+        # * Get a random song from their listening history
         username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
         args = {
             "method": "user.getrecenttracks",
@@ -302,8 +301,44 @@ class Songs(commands.Cog):
 
             song_name = random_track.get("name")
             artist_name = random_track.get("artist", {}).get("#text", "")
+            mbid = random_track.get("mbid")    
+
+            # * Get some info about the song (for hints)
+            hints_args = {
+                "method": "track.getInfo",
+                "api_key": LASTFM_API_KEY,
+                "format": "json",
+                "mbid": mbid
+            }
             
-            # Ask deezer for a preview
+            async with session.get("http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30) as response:
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    self.console.print(e)
+                    await ctx.send("error :(")
+                    return
+                
+                data = await response.json()
+                track_info = data.get("track", {})
+                if not track_info:
+                    self.console.print(f"No track info for {song_name} by {artist_name}")
+                    self.console.print("no hints")
+
+                # Album name
+                album_name = track_info.get("album", {}).get("title")
+                # Artist name
+                artist_name = track_info.get("artist", {}).get("name")
+                # Release date
+                release_date = track_info.get("wiki", {}).get("published")
+                # Genre
+                genre = track_info.get("toptags", {}).get("tag")[0].get("name", "") if track_info.get("toptags", {}).get("tag") else None
+                # Duration
+                duration = track_info.get("duration") // 1000 # in seconds
+
+                hints = [duration, genre, release_date, album_name, artist_name] # From hardest to easiest
+
+            # * Ask deezer for a preview
             query = f"{song_name} {artist_name}"
             url = f"https://api.deezer.com/search?q={query}"
 
@@ -331,7 +366,7 @@ class Songs(commands.Cog):
             # test send
             # await ctx.send(f"{preview_url}")
 
-            # Download song
+            # * Download song
             async with session.get(preview_url) as response:
                 try:
                     response.raise_for_status()
@@ -346,7 +381,121 @@ class Songs(commands.Cog):
                 with open(filename, "wb") as f:
                     f.write(song_data)
 
-            await ctx.send(file=File(filename))
+            # * Make embed (with hints)
+            given_hints = []
+            title = "Bind Test - Guess the song "
+            hints_text = "\n"
+            embed = Embed(
+                title="", # Make title appear when shuffle song name
+                description=f"{title}\n{hints}",
+                colour=0xD51007, # lastfm red
+            )
+
+            view = View(timeout=75)
+            
+            # * Button callbacks
+            async def hint_button_callback(interaction: Interaction):
+                if not hints:
+                    await interaction.response.send_message("No more hints available :(", ephemeral=True)
+                    return
+                
+                given_hints.append(hints.pop())
+                hints_text = "\n".join(f"- {hint}" for hint in given_hints)
+                embed.description = f"{title}\n{hints_text}"
+                await interaction.response.edit_message(embed=embed, view=view)
+            
+            async def shuffle_button_callback(interaction: Interaction):
+                # Shuffle the song name, but like last.fm, only shuffle the words and keep the spaces
+                name_parts = song_name.split().strip().upper()
+                shuffled_name_parts = [random.shuffle(part) for part in name_parts]
+                shuffled_name = " ".join(shuffled_name_parts)
+                embed.title = f"`{shuffled_name}`"
+                await interaction.response.edit_message(embed=embed, view=view)
+
+            async def giveup_button_callback(interaction: Interaction):
+                game_state["active"] = False
+                embed_result = Embed(
+                    title="Gave up...",
+                    description=f"The song was **{song_name}** by **{artist_name}**",
+                    colour=0xD51007,
+                )
+                view.clear_items()
+                await interaction.response.edit_message(embed=embed_result, view=view)
+
+            hint_button = Button(label="Add hint")
+            shuffle_button = Button(label="Shuffle song name")
+            giveup_button = Button(label="Give up")
+
+            hint_button.callback = hint_button_callback
+            shuffle_button.callback = shuffle_button_callback
+            giveup_button.callback = giveup_button_callback
+            
+            game_state = {"active": True, "guessed": False}
+            
+            view.add_item(hint_button)
+            view.add_item(shuffle_button)
+            view.add_item(giveup_button)
+
+            await ctx.send(file=File(filename, filename="preview.mp3"))
+            await ctx.send(embed=embed, view=view)
+            
+            # * Main game loop - 75 seconds to guess
+            def check_message(msg):
+                return msg.channel == ctx.channel
+            
+            def similarity_score(a: str, b: str) -> float:
+                """Calculate similarity between two strings (0-1)"""
+                return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+            
+            start_time = asyncio.get_event_loop().time()
+            while game_state["active"]:
+                try:
+                    # Wait for message with 75 second timeout
+                    elapsed = asyncio.get_event_loop().time() - start_time
+                    remaining = 75 - elapsed
+                    
+                    if remaining <= 0:
+                        # Time's up
+                        game_state["active"] = False
+                        embed_timeout = Embed(
+                            title="Time's Up!",
+                            description=f"The song was **{song_name}** by **{artist_name}**",
+                            colour=0xD51007,
+                        )
+                        view.clear_items()
+                        await ctx.send(embed=embed_timeout)
+                        break
+                    
+                    msg = await self.bot.wait_for("message", check=check_message, timeout=remaining)
+                    
+                    # Check if answer is correct
+                    similarity = similarity_score(msg.content, song_name)
+                    # Accept if 70% similar or exact match
+                    if similarity >= 0.7:
+                        await msg.add_reaction("✅")
+                        game_state["active"] = False
+                        game_state["guessed"] = True
+                        embed_correct = Embed(
+                            description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
+                            colour=0xD51007,
+                        )
+                        view.clear_items()
+                        await ctx.send(embed=embed_correct)
+                        break
+                    else:
+                        # Wrong answer, continue
+                        await msg.add_reaction("❌")
+                        
+                except asyncio.TimeoutError:
+                    # Time's up
+                    game_state["active"] = False
+                    embed_timeout = Embed(
+                        title="Nobody guesssed it...",
+                        description=f"The song was **{song_name}** by **{artist_name}**",
+                        colour=0xD51007,
+                    )
+                    view.clear_items()
+                    await ctx.send(embed=embed_timeout)
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
 
