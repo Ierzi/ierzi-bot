@@ -1,7 +1,6 @@
 from discord import Embed, File, Interaction
 from discord.ext import commands
 from discord.ui import Button, View
-from regex import D
 
 from .utils.database import db
 
