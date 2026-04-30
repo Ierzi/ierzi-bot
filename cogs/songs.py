@@ -405,11 +405,23 @@ class Songs(commands.Cog):
                 # Release date
                 release_date = track_info.get("wiki", {}).get("published")
                 # Genre
-                genre = track_info.get("toptags", {}).get("tag")[0].get("name", "") if track_info.get("toptags", {}).get("tag") else None
+                raw_tag = track_info.get("toptags", {}).get("tag")
+                if isinstance(raw_tag, list) and raw_tag:
+                    genre = raw_tag[0].get("name")
+                elif isinstance(raw_tag, dict):
+                    genre = raw_tag.get("name")
+                else:
+                    genre = None
                 # Duration
-                duration = int(track_info.get("duration")) // 1000 # in seconds
+                duration = None
+                raw_duration = track_info.get("duration")
+                if raw_duration is not None:
+                    try:
+                        duration = int(raw_duration) // 1000  # in seconds
+                    except (TypeError, ValueError):
+                        duration = None
 
-                hints = [duration, genre, release_date, album_name, artist_name] # From hardest to easiest
+                hints = [hint for hint in (duration, genre, release_date, album_name, artist_name) if hint is not None] # From hardest to easiest
 
             # * Ask deezer for a preview
             query = f"{song_name} {artist_name}"
@@ -481,8 +493,12 @@ class Songs(commands.Cog):
             
             async def shuffle_button_callback(interaction: Interaction):
                 # Shuffle the song name, but like last.fm, only shuffle the words and keep the spaces
-                name_parts = song_name.split().strip().upper()
-                shuffled_name_parts = [random.shuffle(part) for part in name_parts]
+                name_parts = song_name.split()
+                shuffled_name_parts = []
+                for part in name_parts:
+                    letters = list(part)
+                    random.shuffle(letters)
+                    shuffled_name_parts.append("".join(letters))
                 shuffled_name = " ".join(shuffled_name_parts)
                 embed.title = f"`{shuffled_name}`"
                 await interaction.response.edit_message(embed=embed, view=view)
