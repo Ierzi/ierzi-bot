@@ -70,7 +70,44 @@ class Songs(commands.Cog):
         
         song = random.choice(self.songs)
         title, album, artist = song
-        await ctx.send(f"**{title}** - {album} - {artist}")
+        preview = None
+
+        # Fetch a preview from Deezer
+        query = f"{title} {artist}"
+        url = f"https://api.deezer.com/search?q={query}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=10) as response:
+                if response.status != 200:
+                    await ctx.send(f"Error fetching preview: {response.status}")
+                else:
+                
+                    data = await response.json()
+                    results = data.get("data", [])
+                    if results: 
+                        preview_url = results[0].get("preview")
+                        if preview_url:
+                            async with session.get(preview_url) as response:
+                                try:
+                                    response.raise_for_status()
+                                except Exception as e:
+                                    self.console.print(e)
+                                    await ctx.send("error :(")
+                                    return 
+                                
+                                song_data = await response.read()
+                                # Make file name original
+                                preview = f"{title}_{artist}.mp3"
+                                with open(preview, "wb") as f:
+                                    f.write(song_data)
+                        else:
+                            self.console.print(f"No preview available for {title} by {artist}")
+                    else:
+                        self.console.print(f"No results from Deezer for query: {query}")
+
+        if preview:
+            await ctx.send(f"**{title}** - {album} - {artist}", file=File(preview, filename="preview.mp3"))
+        else:
+            await ctx.send(f"**{title}** - {album} - {artist}")
     
     @commands.command()
     async def getsong(self, ctx: commands.Context, index: int):
@@ -80,7 +117,44 @@ class Songs(commands.Cog):
             return
 
         title, album, artist = self.songs[index]
-        await ctx.send(f"**{title}** - {album} - {artist}")
+        preview = None
+
+        # Fetch a preview from Deezer
+        query = f"{title} {artist}"
+        url = f"https://api.deezer.com/search?q={query}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=10) as response:
+                if response.status != 200:
+                    await ctx.send(f"Error fetching preview: {response.status}")
+                else:
+                
+                    data = await response.json()
+                    results = data.get("data", [])
+                    if results: 
+                        preview_url = results[0].get("preview")
+                        if preview_url:
+                            async with session.get(preview_url) as response:
+                                try:
+                                    response.raise_for_status()
+                                except Exception as e:
+                                    self.console.print(e)
+                                    await ctx.send("error :(")
+                                    return 
+                                
+                                song_data = await response.read()
+                                # Make file name original
+                                preview = f"{title}_{artist}.mp3"
+                                with open(preview, "wb") as f:
+                                    f.write(song_data)
+                        else:
+                            self.console.print(f"No preview available for {title} by {artist}")
+                    else:
+                        self.console.print(f"No results from Deezer for query: {query}")
+
+        if preview:
+            await ctx.send(f"**{title}** - {album} - {artist}", file=File(preview, filename="preview.mp3"))
+        else:
+            await ctx.send(f"**{title}** - {album} - {artist}")
     
     @alru_cache()
     async def async_get_page(self, index: int):
@@ -443,7 +517,6 @@ class Songs(commands.Cog):
                 return msg.channel == ctx.channel
             
             def similarity_score(a: str, b: str) -> float:
-                """Calculate similarity between two strings (0-1)"""
                 return SequenceMatcher(None, a.lower(), b.lower()).ratio()
             
             start_time = asyncio.get_event_loop().time()
@@ -469,8 +542,7 @@ class Songs(commands.Cog):
                     
                     # Check if answer is correct
                     similarity = similarity_score(msg.content, song_name)
-                    # Accept if 70% similar or exact match
-                    if similarity >= 0.7:
+                    if similarity >= 0.7: # 70%
                         await msg.add_reaction("✅")
                         game_state["active"] = False
                         game_state["guessed"] = True
