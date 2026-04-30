@@ -463,11 +463,13 @@ class Songs(commands.Cog):
                 description=f"{title}\n{hints}",
                 colour=0xD51007, # lastfm red
             )
+            game_state = {"active": True, "guessed": False}
 
             view = View(timeout=75)
             
             # * Button callbacks
             async def hint_button_callback(interaction: Interaction):
+                nonlocal hints_text, given_hints
                 if not hints:
                     await interaction.response.send_message("No more hints available :(", ephemeral=True)
                     return
@@ -486,6 +488,7 @@ class Songs(commands.Cog):
                 await interaction.response.edit_message(embed=embed, view=view)
 
             async def giveup_button_callback(interaction: Interaction):
+                nonlocal game_state
                 game_state["active"] = False
                 embed_result = Embed(
                     title="Gave up...",
@@ -503,14 +506,11 @@ class Songs(commands.Cog):
             shuffle_button.callback = shuffle_button_callback
             giveup_button.callback = giveup_button_callback
             
-            game_state = {"active": True, "guessed": False}
-            
             view.add_item(hint_button)
             view.add_item(shuffle_button)
             view.add_item(giveup_button)
 
-            await ctx.send(file=File(filename, filename="preview.mp3"))
-            await ctx.send(embed=embed, view=view)
+            await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
             
             # * Main game loop - 75 seconds to guess
             def check_message(msg):
