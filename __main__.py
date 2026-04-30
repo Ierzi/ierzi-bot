@@ -700,14 +700,14 @@ async def info(ctx: commands.Context):
             commit_name = data['commit']['message']
             commit_author = data['commit']['author']['name']
 
-    message += f"Commit {commit_hash} by {commit_author}: {commit_name}\n"
+    message += f"**Commit {commit_hash}** by **{commit_author}**: {commit_name}\n"
 
     uptime = now - start_uptime
     days, remainder = divmod(uptime.total_seconds(), 86400)
     hours, remainder = divmod(remainder, 3600)
     minutes, seconds = divmod(remainder, 60)
 
-    message += f"Uptime: {days:,.0f}d {hours:.0f}h {minutes:.0f}m {seconds:.0f}s\n"
+    message += f"**Uptime:** {days:,.0f}d {hours:.0f}h {minutes:.0f}m {seconds:.0f}s\n"
     
     await ctx.send(message)
 
