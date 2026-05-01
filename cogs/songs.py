@@ -375,7 +375,8 @@ class Songs(commands.Cog):
 
             song_name = random_track.get("name")
             artist_name = random_track.get("artist", {}).get("#text", "")
-            mbid = random_track.get("mbid")    
+            mbid = random_track.get("mbid")
+            await ctx.send(mbid)
 
             # * Get some info about the song (for hints)
             hints_args = {
@@ -395,6 +396,7 @@ class Songs(commands.Cog):
                 
                 data = await response.json()
                 track_info = data.get("track", {})
+                await ctx.send(track_info)
                 if not track_info:
                     self.console.print(f"No track info for {song_name} by {artist_name}")
                     self.console.print("no hints")
