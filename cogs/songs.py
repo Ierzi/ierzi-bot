@@ -3,6 +3,7 @@ from discord.ext import commands
 from discord.ui import Button, View
 
 from .utils.database import db
+from .utils.variables import LONGER_VIEW_TIMEOUT
 
 import aiohttp
 import asyncio
@@ -439,13 +440,13 @@ class Songs(commands.Cog):
                 results = data.get("data", [])
                 if not results:
                     await ctx.send("error :(")
-                    self.console.print("No results from Deezer for query: {query}")
+                    self.console.print(f"No results from Deezer for query: {query}")
                     return
                 
                 preview_url = results[0].get("preview")
                 if not preview_url:
                     await ctx.send("error :(")
-                    self.console.print("No preview available for song {song_name} by {artist_name}")
+                    self.console.print(f"No preview available for song {song_name} by {artist_name}")
                     return
                 
             # test send
@@ -511,22 +512,37 @@ class Songs(commands.Cog):
                     description=f"The song was **{song_name}** by **{artist_name}**",
                     colour=0xD51007,
                 )
-                view.clear_items()
-                await interaction.response.edit_message(embed=embed_result, view=view)
+                for item in view.children:
+                    item.disabled = True
+
+                await interaction.response.edit_message(view=view)
+                await ctx.send(embed=embed_result)
+                return
+
+            async def play_again_callback(interaction: Interaction):
+                await interaction.response.defer()
+                await play_again_button.edit(label="Loading...", disabled=True)
+
+                if not interaction.user.id == ctx.author.id:
+                    ctx.author = interaction.user
+                
+                await self.blindtest(ctx)
 
             hint_button = Button(label="Add hint")
             shuffle_button = Button(label="Shuffle song name")
             giveup_button = Button(label="Give up")
+            play_again_button = Button(label="Play again") # Not added to view yet
 
             hint_button.callback = hint_button_callback
             shuffle_button.callback = shuffle_button_callback
             giveup_button.callback = giveup_button_callback
+            play_again_button.callback = play_again_callback
             
             view.add_item(hint_button)
             view.add_item(shuffle_button)
             view.add_item(giveup_button)
 
-            await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
+            bt_message = await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
             
             # * Main game loop - 75 seconds to guess
             def check_message(msg):
@@ -550,8 +566,14 @@ class Songs(commands.Cog):
                             description=f"The song was **{song_name}** by **{artist_name}**",
                             colour=0xD51007,
                         )
-                        view.clear_items()
-                        await ctx.send(embed=embed_timeout)
+                        for item in view.children:
+                            item.disabled = True
+
+                        timeout_view = View()
+                        timeout_view.add_item(play_again_button)
+
+                        await bt_message.edit(view=view) # Disable buttons
+                        await ctx.send(embed=embed_timeout, view=timeout_view)
                         break
                     
                     msg = await self.bot.wait_for("message", check=check_message, timeout=remaining)
@@ -566,8 +588,14 @@ class Songs(commands.Cog):
                             description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
                             colour=0xD51007,
                         )
-                        view.clear_items()
-                        await ctx.send(embed=embed_correct)
+                        for item in view.children:
+                            item.disabled = True
+                        
+                        correct_view = View()
+                        correct_view.add_item(play_again_button)
+
+                        await bt_message.edit(view=view) # Disable buttons
+                        await ctx.send(embed=embed_correct, view=correct_view)
                         break
                     else:
                         # Wrong answer, continue
@@ -575,14 +603,23 @@ class Songs(commands.Cog):
                         
                 except asyncio.TimeoutError:
                     # Time's up
-                    game_state["active"] = False
-                    embed_timeout = Embed(
-                        title="Nobody guesssed it...",
-                        description=f"The song was **{song_name}** by **{artist_name}**",
-                        colour=0xD51007,
-                    )
-                    view.clear_items()
-                    await ctx.send(embed=embed_timeout)
+                    if game_state["active"]: # Doesn't trigger if user gave up
+                        game_state["active"] = False
+                        embed_timeout = Embed(
+                            title="Nobody guesssed it...",
+                            description=f"The song was **{song_name}** by **{artist_name}**",
+                            colour=0xD51007,
+                        )
+                        for item in view.children:
+                            item.disabled = True
+
+                        timeout_view = View()
+                        timeout_view.add_item(play_again_button)
+
+                        await bt_message.edit(view=view) # Disable buttons
+                        await ctx.send(embed=embed_timeout, view=timeout_view)
+                        break # If button doesnt work its probably cause of this
+
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
 
