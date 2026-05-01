@@ -336,7 +336,7 @@ class Songs(commands.Cog):
         # * Get a random song from their listening history
         username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
         args = {
-            "method": "user.getrecenttracks",
+            "method": "user.getRecentTracks",
             "user": username,
             "api_key": LASTFM_API_KEY,
             "format": "json",
@@ -376,14 +376,17 @@ class Songs(commands.Cog):
             song_name = random_track.get("name")
             artist_name = random_track.get("artist", {}).get("#text", "")
             mbid = random_track.get("mbid")
-            await ctx.send(mbid)
+            if not mbid:
+                self.console.print(f"No mbid for {song_name} by {artist_name}")
 
             # * Get some info about the song (for hints)
             hints_args = {
                 "method": "track.getInfo",
                 "api_key": LASTFM_API_KEY,
                 "format": "json",
-                "mbid": mbid
+                "mbid": mbid if mbid else None,
+                "artist": artist_name if not mbid else None,
+                "track": song_name if not mbid else None,
             }
             
             async with session.get("http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30) as response:
