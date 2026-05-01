@@ -434,6 +434,7 @@ class Songs(commands.Cog):
             # * Ask deezer for a preview
             query = f"{song_name} {artist_name}"
             url = f"https://api.deezer.com/search?q={query}"
+            await ctx.send(url)
 
             async with session.get(url, timeout=30) as response:
                 try:
@@ -457,7 +458,7 @@ class Songs(commands.Cog):
                     return
                 
             # test send
-            # await ctx.send(f"{preview_url}")
+            await ctx.send(f"{preview_url}")
 
             # * Download song
             async with session.get(preview_url) as response:
