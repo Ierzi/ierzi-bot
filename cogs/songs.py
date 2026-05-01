@@ -384,10 +384,12 @@ class Songs(commands.Cog):
                 "method": "track.getInfo",
                 "api_key": LASTFM_API_KEY,
                 "format": "json",
-                "mbid": mbid if mbid else None,
-                "artist": artist_name if not mbid else None,
-                "track": song_name if not mbid else None,
             }
+            if mbid:
+                hints_args["mbid"] = mbid
+            else:
+                hints_args["artist"] = artist_name
+                hints_args["track"] = song_name
             
             async with session.get("http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30) as response:
                 try:
