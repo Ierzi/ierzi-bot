@@ -324,8 +324,6 @@ class Songs(commands.Cog):
     @commands.command(aliases=("bt",))
     async def blindtest(self, ctx: commands.Context):
         """Gives a random song, and you have to guess its name."""
-        # TODO: Avoid playing 2 games at the same time
-        # TODO: Add typing 
 
         # * Check if user is authenticated
         is_auth = await self._is_authenticated(ctx.author.id)
@@ -341,334 +339,339 @@ class Songs(commands.Cog):
         
         self.blindtest_games.append(channel_id)
 
-        # * Get a random song from their listening history
-        username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
-        args = {
-            "method": "user.getRecentTracks",
-            "user": username,
-            "api_key": LASTFM_API_KEY,
-            "format": "json",
-            "limit": 200
-        }
-
-        if self.blindtest_pages.get(ctx.author.id) is not None:
-            # Get a random page
-            max_pages = self.blindtest_pages[ctx.author.id]
-            random_page = random.randint(1, max_pages)
-            args["page"] = random_page
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get("http://ws.audioscrobbler.com/2.0/", params=args, timeout=30) as response:
-                try:
-                    response.raise_for_status()
-                except Exception as e:
-                    self.console.print(e)
-                    await ctx.send("error :(")
-                    return
-                
-                data = await response.json()
-                tracks = data.get("recenttracks", {}).get("track", [])
-                if not tracks:
-                    await ctx.send("no tracks???")
-                    return
-
-                if args.get("page") is None:
-                    # Save the number of pages for later
-                    attr = data.get("recenttracks", {}).get("@attr", {})
-                    total_pages = int(attr.get("totalPages", 1))
-                    self.blindtest_pages[ctx.author.id] = total_pages
-                
-            tracks = [t for t in tracks if "date" in t]
-            random_track = random.choice(tracks)
-
-            song_name = random_track.get("name")
-            artist_name = random_track.get("artist", {}).get("#text", "")
-            mbid = random_track.get("mbid")
-            if not mbid:
-                self.console.print(f"No mbid for {song_name} by {artist_name}")
-
-            # * Get some info about the song (for hints)
-            hints_args = {
-                "method": "track.getInfo",
+        async with ctx.typing():
+            # * Get a random song from their listening history
+            username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
+            args = {
+                "method": "user.getRecentTracks",
+                "user": username,
                 "api_key": LASTFM_API_KEY,
                 "format": "json",
+                "limit": 200
             }
-            if mbid:
-                hints_args["mbid"] = mbid
-            else:
-                hints_args["artist"] = artist_name
-                hints_args["track"] = song_name
-            
-            async with session.get("http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30) as response:
-                try:
-                    response.raise_for_status()
-                except Exception as e:
-                    self.console.print(e)
-                    await ctx.send("error :(")
-                    return
-                
-                data = await response.json()
-                track_info = data.get("track", {})
-                # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
-                if not track_info:
-                    self.console.print(f"No track info for {song_name} by {artist_name}")
-                    self.console.print("no hints")
 
-                # Album name
-                album_name = track_info.get("album", {}).get("title")
-                # Artist name
-                artist_name = track_info.get("artist", {}).get("name")
-                # Release date
-                release_date = track_info.get("wiki", {}).get("published")
-                # Genre
-                raw_tag = track_info.get("toptags", {}).get("tag")
-                if isinstance(raw_tag, list) and raw_tag:
-                    genre = raw_tag[0].get("name")
-                elif isinstance(raw_tag, dict):
-                    genre = raw_tag.get("name")
-                else:
-                    genre = None
-                # Duration
-                duration = None
-                raw_duration = track_info.get("duration")
-                if raw_duration is not None:
+            if self.blindtest_pages.get(ctx.author.id) is not None:
+                # Get a random page
+                max_pages = self.blindtest_pages[ctx.author.id]
+                random_page = random.randint(1, max_pages)
+                args["page"] = random_page
+
+            # * REQUESTS
+            async with aiohttp.ClientSession() as session:
+                async with session.get("http://ws.audioscrobbler.com/2.0/", params=args, timeout=30) as response:
                     try:
-                        duration = int(raw_duration) // 1000  # in seconds
-                    except (TypeError, ValueError):
-                        duration = None
+                        response.raise_for_status()
+                    except Exception as e:
+                        self.console.print(e)
+                        await ctx.send("error :(")
+                        return
+                    
+                    data = await response.json()
+                    tracks = data.get("recenttracks", {}).get("track", [])
+                    if not tracks:
+                        await ctx.send("no tracks???")
+                        return
 
-                hints = [hint for hint in (duration, genre, release_date, album_name, artist_name) if hint is not None] # From hardest to easiest
+                    if args.get("page") is None:
+                        # Save the number of pages for later
+                        attr = data.get("recenttracks", {}).get("@attr", {})
+                        total_pages = int(attr.get("totalPages", 1))
+                        self.blindtest_pages[ctx.author.id] = total_pages
+                    
+                tracks = [t for t in tracks if "date" in t]
+                random_track = random.choice(tracks)
 
-            # * Ask deezer for a preview
-            query = f"{song_name} {artist_name}"
-            self.console.print(query) # If i dont guess the song for debugging
-            url = f"https://api.deezer.com/search?q={query}"
-            # await ctx.send(url)
+                song_name = str(random_track.get("name"))
+                artist_name = str(random_track.get("artist", {}).get("#text", ""))
+                mbid = random_track.get("mbid")
+                if not mbid:
+                    self.console.print(f"No mbid for {song_name} by {artist_name}")
 
-            async with session.get(url, timeout=30) as response:
-                try:
-                    response.raise_for_status()
-                except Exception as e:
-                    self.console.print(e)
-                    await ctx.send("error :(")
-                    return
+                # * Get some info about the song (for hints)
+                hints_args = {
+                    "method": "track.getInfo",
+                    "api_key": LASTFM_API_KEY,
+                    "format": "json",
+                }
+                if mbid:
+                    hints_args["mbid"] = mbid
+                else:
+                    hints_args["artist"] = artist_name
+                    hints_args["track"] = song_name
                 
-                data = await response.json()
-                results = data.get("data", [])
-                if not results:
-                    await ctx.send("error :(")
-                    self.console.print(f"No results from Deezer for query: {query}")
-                    return
+                async with session.get("http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30) as response:
+                    try:
+                        response.raise_for_status()
+                    except Exception as e:
+                        self.console.print(e)
+                        await ctx.send("error :(")
+                        return
+                    
+                    data = await response.json()
+                    track_info = data.get("track", {})
+                    # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
+                    if not track_info:
+                        self.console.print(f"No track info for {song_name} by {artist_name}")
+                        self.console.print("no hints")
 
-                # TODO: Iter through all the search results until a song with the same artist is found 
-                # Make sure the preview matches
+                    # Album name
+                    album_name = track_info.get("album", {}).get("title")
+                    # Artist name
+                    artist_name = track_info.get("artist", {}).get("name")
+                    # Release date
+                    release_date = track_info.get("wiki", {}).get("published")
+                    # Genre
+                    raw_tag = track_info.get("toptags", {}).get("tag")
+                    if isinstance(raw_tag, list) and raw_tag:
+                        genre = raw_tag[0].get("name")
+                    elif isinstance(raw_tag, dict):
+                        genre = raw_tag.get("name")
+                    else:
+                        genre = None
+                    # Duration
+                    duration = None
+                    raw_duration = track_info.get("duration")
+                    if raw_duration is not None:
+                        try:
+                            duration = int(raw_duration) // 1000  # in seconds
+                        except (TypeError, ValueError):
+                            duration = None
 
-                for result in results:
-                    result_artist = result.get("artist", {}).get("name", "").lower()
-                    if result_artist == artist_name.lower():
-                        preview_url = result.get("preview")
-                        if preview_url:
-                            break
+                    hints = [hint for hint in (duration, genre, release_date, album_name, artist_name) if hint is not None] # From hardest to easiest
 
-                if not preview_url:
-                    await ctx.send("error :(")
-                    self.console.print(f"No preview available for song {song_name} by {artist_name}")
-                    return
-                
-            # test send
-            # await ctx.send(f"{preview_url}")
+                # * Ask deezer for a preview
+                query = f"{song_name} {artist_name}"
+                self.console.print(query) # If i dont guess the song for debugging
+                url = f"https://api.deezer.com/search?q={query}"
+                # await ctx.send(url)
 
-            # * Download song
-            async with session.get(preview_url) as response:
-                try:
-                    response.raise_for_status()
-                except Exception as e:
-                    self.console.print(e)
-                    await ctx.send("error :(")
-                    return
-                
-                song_data = await response.read()
-                # Make file name original
-                filename = f"{song_name}_{artist_name}.mp3"
-                with open(filename, "wb") as f:
-                    f.write(song_data)
+                async with session.get(url, timeout=30) as response:
+                    try:
+                        response.raise_for_status()
+                    except Exception as e:
+                        self.console.print(e)
+                        await ctx.send("error :(")
+                        return
+                    
+                    data = await response.json()
+                    results = data.get("data", [])
+                    if not results:
+                        await ctx.send("error :(")
+                        self.console.print(f"No results from Deezer for query: {query}")
+                        return
 
-            # * Make embed (with hints)
-            given_hints = []
-            title = "Bind Test - Guess the song "
-            hints_text = "\n"
-            hints_index = 0
-            embed = Embed(
-                title="", # Make title appear when shuffle song name
-                description=f"{title}\n{hints_text}",
-                colour=0xD51007, # lastfm red
-            )
-            game_state = {"active": True, "guessed": False}
+                    # TODO: Iter through all the search results until a song with the same artist is found 
+                    # Make sure the preview matches
 
-            view = View(timeout=75)
-            
-            # * Button callbacks
-            async def hint_button_callback(interaction: Interaction):
-                nonlocal hints_text, given_hints, hints_index
-                if not hints:
-                    await interaction.response.send_message("No more hints available :(", ephemeral=True)
-                    return
+                    for result in results:
+                        result_artist = result.get("artist", {}).get("name", "").lower()
+                        if result_artist == artist_name.lower():
+                            preview_url = result.get("preview")
+                            if preview_url:
+                                break
 
-                hint = hints[hints_index]
+                    if not preview_url:
+                        await ctx.send("error :(")
+                        self.console.print(f"No preview available for song {song_name} by {artist_name}")
+                        return
+                    
+                # test send
+                # await ctx.send(f"{preview_url}")
 
-                match hints_index:
-                    case 0:
-                        given_hints.append(f"Duration: {hint} seconds")
-                    case 1:
-                        given_hints.append(f"The genre of this song is {hint}")
-                    case 2:
-                        given_hints.append(f"Release date: {hint}")
-                    case 3:
-                        given_hints.append(f"The album name is {hint}")
-                    case 4:
-                        given_hints.append(f"This song was made by {hint}")
+                # * Download song
+                async with session.get(preview_url) as response:
+                    try:
+                        response.raise_for_status()
+                    except Exception as e:
+                        self.console.print(e)
+                        await ctx.send("error :(")
+                        return
+                    
+                    song_data = await response.read()
+                    # Make file name original
+                    filename = f"{song_name}_{artist_name}.mp3"
+                    with open(filename, "wb") as f:
+                        f.write(song_data)
 
-                hints_index += 1
+        # * Make embed
+        given_hints = []
+        title = "Bind Test - Guess the song "
+        hints_text = "\n"
+        hints_index = 0
+        embed = Embed(
+            title="", # Make title appear when shuffle song name
+            description=f"{title}\n{hints_text}",
+            colour=0xD51007, # lastfm red
+        )
+        game_state = {"active": True, "guessed": False}
 
-                hints_text = "\n".join(f"- {hint}" for hint in given_hints)
-                embed.description = f"{title}\n{hints_text}"
-                await interaction.response.edit_message(embed=embed, view=view)
-            
-            async def shuffle_button_callback(interaction: Interaction):
-                # Shuffle the song name, but like last.fm, only shuffle the words and keep the spaces
-                name_parts = song_name.split()
-                shuffled_name_parts = []
-                for part in name_parts:
-                    letters = list(part)
-                    random.shuffle(letters)
-                    shuffled_name_parts.append("".join(letters))
-                shuffled_name = " ".join(shuffled_name_parts)
-                embed.title = f"`{shuffled_name}`"
-                await interaction.response.edit_message(embed=embed, view=view)
-
-            async def giveup_button_callback(interaction: Interaction):
-                nonlocal game_state
-                game_state["active"] = False
-                embed_result = Embed(
-                    title="Gave up...",
-                    description=f"The song was **{song_name}** by **{artist_name}**",
-                    colour=0xD51007,
-                )
-                for item in view.children:
-                    item.disabled = True
-                
-                self.blindtest_games.remove(channel_id)
-
-                await interaction.response.edit_message(view=view)
-                await ctx.send(embed=embed_result)
+        view = View(timeout=75)
+        
+        # * Button callbacks
+        async def hint_button_callback(interaction: Interaction):
+            nonlocal hints_text, given_hints, hints_index
+            if not hints:
+                await interaction.response.send_message("No more hints available :(", ephemeral=True)
                 return
 
-            async def play_again_callback(interaction: Interaction):
-                self.console.print("Play again button pressed")
-                play_again_button.label = f"{interaction.user.name} is playing again!"
-                play_again_button.disabled = True
+            hint = hints[hints_index]
 
-                if not interaction.user.id == ctx.author.id:
-                    ctx.author = interaction.user
+            match hints_index:
+                case 0:
+                    given_hints.append(f"Duration: {hint} seconds")
+                case 1:
+                    given_hints.append(f"The genre of this song is {hint}")
+                case 2:
+                    given_hints.append(f"Release date: {hint}")
+                case 3:
+                    given_hints.append(f"The album name is {hint}")
+                case 4:
+                    given_hints.append(f"This song was made by {hint}")
+
+            hints_index += 1
+
+            hints_text = "\n".join(f"- {hint}" for hint in given_hints)
+            embed.description = f"{title}\n{hints_text}"
+            await interaction.response.edit_message(embed=embed, view=view)
+        
+        async def shuffle_button_callback(interaction: Interaction):
+            nonlocal song_name
+            # Shuffle the song name, but like last.fm, only shuffle the words and keep the spaces
+            name_parts = song_name.upper().split()
+            shuffled_name_parts = []
+
+            for part in name_parts:
+                letters = list(part)
+                random.shuffle(letters)
+                shuffled_name_parts.append("".join(letters))
+
+            shuffled_name = " ".join(shuffled_name_parts)
+            embed.title = f"**`{shuffled_name}`**"
+            await interaction.response.edit_message(embed=embed, view=view)
+
+        async def giveup_button_callback(interaction: Interaction):
+            nonlocal game_state
+            game_state["active"] = False
+            embed_result = Embed(
+                title="Gave up...",
+                description=f"The song was **{song_name}** by **{artist_name}**",
+                colour=0xD51007,
+            )
+            for item in view.children:
+                item.disabled = True
+            
+            self.blindtest_games.remove(channel_id)
+
+            await interaction.response.edit_message(view=view)
+            await ctx.send(embed=embed_result)
+            return
+
+        async def play_again_callback(interaction: Interaction):
+            self.console.print("Play again button pressed")
+            play_again_button.label = f"{interaction.user.name} is playing again!"
+            play_again_button.disabled = True
+
+            if not interaction.user.id == ctx.author.id:
+                ctx.author = interaction.user
+            
+            await self.blindtest(ctx)
+
+        hint_button = Button(label="Add hint")
+        shuffle_button = Button(label="Shuffle song name")
+        giveup_button = Button(label="Give up")
+        play_again_button = Button(label="Play again") # Not added to view yet
+
+        hint_button.callback = hint_button_callback
+        shuffle_button.callback = shuffle_button_callback
+        giveup_button.callback = giveup_button_callback
+        play_again_button.callback = play_again_callback
+        
+        view.add_item(hint_button)
+        view.add_item(shuffle_button)
+        view.add_item(giveup_button)
+
+        bt_message = await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
+        os.remove(filename)
+        
+        # * Main game loop - 75 seconds to guess
+        def check_message(msg):
+            return msg.channel == ctx.channel
+        
+        def similarity_score(a: str, b: str) -> float:
+            return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+        
+        start_time = asyncio.get_event_loop().time()
+        while game_state["active"]:
+            try:
+                # Wait for message with 75 second timeout
+                elapsed = asyncio.get_event_loop().time() - start_time
+                remaining = 75 - elapsed
                 
-                await self.blindtest(ctx)
-
-            hint_button = Button(label="Add hint")
-            shuffle_button = Button(label="Shuffle song name")
-            giveup_button = Button(label="Give up")
-            play_again_button = Button(label="Play again") # Not added to view yet
-
-            hint_button.callback = hint_button_callback
-            shuffle_button.callback = shuffle_button_callback
-            giveup_button.callback = giveup_button_callback
-            play_again_button.callback = play_again_callback
-            
-            view.add_item(hint_button)
-            view.add_item(shuffle_button)
-            view.add_item(giveup_button)
-
-            bt_message = await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
-            os.remove(filename)
-            
-            # * Main game loop - 75 seconds to guess
-            def check_message(msg):
-                return msg.channel == ctx.channel
-            
-            def similarity_score(a: str, b: str) -> float:
-                return SequenceMatcher(None, a.lower(), b.lower()).ratio()
-            
-            start_time = asyncio.get_event_loop().time()
-            while game_state["active"]:
-                try:
-                    # Wait for message with 75 second timeout
-                    elapsed = asyncio.get_event_loop().time() - start_time
-                    remaining = 75 - elapsed
-                    
-                    if remaining <= 0:
-                        # Time's up
-                        game_state["active"] = False
-                        embed_timeout = Embed(
-                            title="Time's Up!",
-                            description=f"The song was **{song_name}** by **{artist_name}**",
-                            colour=0xD51007,
-                        )
-                        for item in view.children:
-                            item.disabled = True
-
-                        timeout_view = View()
-                        timeout_view.add_item(play_again_button)
-                        self.blindtest_games.remove(channel_id)
-
-                        await bt_message.edit(view=view) # Disable buttons
-                        await ctx.send(embed=embed_timeout, view=timeout_view)
-                        break
-                    
-                    msg = await self.bot.wait_for("message", check=check_message, timeout=remaining)
-                    
-                    # Check if answer is correct
-                    similarity = similarity_score(msg.content, song_name)
-                    if similarity >= 0.7: # 70%
-                        await msg.add_reaction("✅")
-                        game_state["active"] = False
-                        game_state["guessed"] = True
-                        embed_correct = Embed(
-                            description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
-                            colour=0xD51007,
-                        )
-                        for item in view.children:
-                            item.disabled = True
-                        
-                        
-                        correct_view = View()
-                        correct_view.add_item(play_again_button)
-                        self.blindtest_games.remove(channel_id)
-
-                        await bt_message.edit(view=view) # Disable buttons
-                        await ctx.send(embed=embed_correct, view=correct_view)
-                        break
-                    else:
-                        # Wrong answer, continue
-                        await msg.add_reaction("❌")
-                        
-                except asyncio.TimeoutError:
+                if remaining <= 0:
                     # Time's up
-                    if game_state["active"]: # Doesn't trigger if user gave up
-                        game_state["active"] = False
-                        embed_timeout = Embed(
-                            title="Nobody guesssed it...",
-                            description=f"The song was **{song_name}** by **{artist_name}**",
-                            colour=0xD51007,
-                        )
-                        for item in view.children:
-                            item.disabled = True
+                    game_state["active"] = False
+                    embed_timeout = Embed(
+                        title="Time's Up!",
+                        description=f"The song was **{song_name}** by **{artist_name}**",
+                        colour=0xD51007,
+                    )
+                    for item in view.children:
+                        item.disabled = True
 
-                        timeout_view = View()
-                        timeout_view.add_item(play_again_button)
-                        self.blindtest_games.remove(channel_id)
+                    timeout_view = View()
+                    timeout_view.add_item(play_again_button)
+                    self.blindtest_games.remove(channel_id)
 
-                        await bt_message.edit(view=view) # Disable buttons
-                        await ctx.send(embed=embed_timeout, view=timeout_view)
-                        break # If button doesnt work its probably cause of this
+                    await bt_message.edit(view=view) # Disable buttons
+                    await ctx.send(embed=embed_timeout, view=timeout_view)
+                    break
+                
+                msg = await self.bot.wait_for("message", check=check_message, timeout=remaining)
+                
+                # Check if answer is correct
+                similarity = similarity_score(msg.content, song_name)
+                if similarity >= 0.7: # 70%
+                    await msg.add_reaction("✅")
+                    game_state["active"] = False
+                    game_state["guessed"] = True
+                    embed_correct = Embed(
+                        description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
+                        colour=0xD51007,
+                    )
+                    for item in view.children:
+                        item.disabled = True
+                    
+                    
+                    correct_view = View()
+                    correct_view.add_item(play_again_button)
+                    self.blindtest_games.remove(channel_id)
+
+                    await bt_message.edit(view=view) # Disable buttons
+                    await ctx.send(embed=embed_correct, view=correct_view)
+                    break
+                else:
+                    # Wrong answer, continue
+                    await msg.add_reaction("❌")
+                    
+            except asyncio.TimeoutError:
+                # Time's up
+                if game_state["active"]: # Doesn't trigger if user gave up
+                    game_state["active"] = False
+                    embed_timeout = Embed(
+                        title="Nobody guesssed it...",
+                        description=f"The song was **{song_name}** by **{artist_name}**",
+                        colour=0xD51007,
+                    )
+                    for item in view.children:
+                        item.disabled = True
+
+                    timeout_view = View()
+                    timeout_view.add_item(play_again_button)
+                    self.blindtest_games.remove(channel_id)
+
+                    await bt_message.edit(view=view) # Disable buttons
+                    await ctx.send(embed=embed_timeout, view=timeout_view)
+                    break # If button doesnt work its probably cause of this
 
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
