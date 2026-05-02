@@ -346,7 +346,7 @@ class Songs(commands.Cog):
         if self.blindtest_pages.get(ctx.author.id) is not None:
             # Get a random page
             max_pages = self.blindtest_pages[ctx.author.id]
-            random_page = random.randint(0, max_pages)
+            random_page = random.randint(1, max_pages)
             args["page"] = random_page
 
         async with aiohttp.ClientSession() as session:
@@ -367,7 +367,7 @@ class Songs(commands.Cog):
                 if args.get("page") is None:
                     # Save the number of pages for later
                     attr = data.get("recenttracks", {}).get("@attr", {})
-                    total_pages = int(attr.get("totalPages", 0))
+                    total_pages = int(attr.get("totalPages", 1))
                     self.blindtest_pages[ctx.author.id] = total_pages
                 
             tracks = [t for t in tracks if "date" in t]
@@ -401,7 +401,7 @@ class Songs(commands.Cog):
                 
                 data = await response.json()
                 track_info = data.get("track", {})
-                await ctx.send(track_info)
+                await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
                 if not track_info:
                     self.console.print(f"No track info for {song_name} by {artist_name}")
                     self.console.print("no hints")
@@ -450,8 +450,17 @@ class Songs(commands.Cog):
                     await ctx.send("error :(")
                     self.console.print(f"No results from Deezer for query: {query}")
                     return
-                
-                preview_url = results[0].get("preview")
+
+                # TODO: Iter through all the search results until a song with the same artist is found 
+                # Make sure the preview matches
+
+                for result in results:
+                    result_artist = result.get("artist", {}).get("name", "").lower()
+                    if result_artist == artist_name.lower():
+                        preview_url = result.get("preview")
+                        if preview_url:
+                            break
+
                 if not preview_url:
                     await ctx.send("error :(")
                     self.console.print(f"No preview available for song {song_name} by {artist_name}")
@@ -529,6 +538,7 @@ class Songs(commands.Cog):
 
             async def play_again_callback(interaction: Interaction):
                 await interaction.response.defer()
+                self.console.print("Play again button pressed")
                 await play_again_button.edit(label="Loading...", disabled=True)
 
                 if not interaction.user.id == ctx.author.id:
