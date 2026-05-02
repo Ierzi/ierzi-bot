@@ -5,13 +5,14 @@ import os
 from groq import AsyncGroq
 from rich.console import Console
 
+
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.groq_key = os.getenv("GROQ_KEY")
         self.serp_key = os.getenv("SERP_KEY")
         self.console = console
-    
+
     @commands.command()
     async def aiask(self, ctx: commands.Context, *, text: str):
         """Ask something to an ai."""
@@ -27,7 +28,7 @@ class AI(commands.Cog):
             model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": text}
+                {"role": "user", "content": text},
             ],
         )
 
@@ -40,7 +41,7 @@ class AI(commands.Cog):
                 if len(current_split) > 1850 and char == " ":
                     outputs.append(current_split)
                     current_split = ""
-            
+
             if current_split:
                 outputs.append(current_split)
 
@@ -49,7 +50,7 @@ class AI(commands.Cog):
                 await ctx.send(mess, allowed_mentions=discord.AllowedMentions.none())
                 await asyncio.sleep(0.2)
         message = f"{ctx.author.mention} asked: {text}\n\nAI: {output}"
-            
+
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
@@ -59,7 +60,7 @@ class AI(commands.Cog):
         if reply is None:
             await ctx.send("You didn't reply to a message.")
             return
-        
+
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
@@ -68,10 +69,13 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="openai/gpt-oss-20b",
                 messages=[
-                    {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
-                    {"role": "user", "content": f"Summarize this: {reply_content}"}
+                    {
+                        "role": "system",
+                        "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text.",
+                    },
+                    {"role": "user", "content": f"Summarize this: {reply_content}"},
                 ],
-                max_tokens=200
+                max_tokens=200,
             )
 
         summary = response.choices[0].message.content
@@ -83,9 +87,11 @@ class AI(commands.Cog):
         reply = ctx.message.reference
         if reply is None:
             # Thank you winter
-            await ctx.send("I would be more than delighted to assist you in expanding upon any concise or succinct piece of text that you may have. Please feel free to provide the brief phrase, sentence, or passage that you wish to be elaborated into a more comprehensive, detailed, and intricate explanation. Upon receiving the specific text, I shall meticulously analyze its content and context, and then proceed to craft an extended version that incorporates a richer vocabulary, complex sentence structures, and an abundance of relevant details and nuances, thereby transforming the original succinct excerpt into a thoroughly developed and intellectually engaging exposition.")
+            await ctx.send(
+                "I would be more than delighted to assist you in expanding upon any concise or succinct piece of text that you may have. Please feel free to provide the brief phrase, sentence, or passage that you wish to be elaborated into a more comprehensive, detailed, and intricate explanation. Upon receiving the specific text, I shall meticulously analyze its content and context, and then proceed to craft an extended version that incorporates a richer vocabulary, complex sentence structures, and an abundance of relevant details and nuances, thereby transforming the original succinct excerpt into a thoroughly developed and intellectually engaging exposition."
+            )
             return
-        
+
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
@@ -94,10 +100,13 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="openai/gpt-oss-20b",
                 messages=[
-                    {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
-                    {"role": "user", "content": f"Expand this: {reply_content}"}
+                    {
+                        "role": "system",
+                        "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text.",
+                    },
+                    {"role": "user", "content": f"Expand this: {reply_content}"},
                 ],
-                max_tokens=3500
+                max_tokens=3500,
             )
 
             expanded_text = response.choices[0].message.content
@@ -113,13 +122,13 @@ class AI(commands.Cog):
 
                 if current_split:
                     splits.append(current_split)
-        
+
         if splits:
-                for split in splits:
-                    await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
-                    await asyncio.sleep(0.2)
-                return
-        
+            for split in splits:
+                await ctx.send(split, allowed_mentions=discord.AllowedMentions.none())
+                await asyncio.sleep(0.2)
+            return
+
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
     # @commands.command()
@@ -139,7 +148,7 @@ class AI(commands.Cog):
 
     #     await ctx.send(file=File(output_file))
     #     os.remove(output_file)
-    
+
     @commands.command()
     async def aitwist(self, ctx: commands.Context):
         """Tries to twist your words to get a new meaning out of them."""
@@ -147,7 +156,7 @@ class AI(commands.Cog):
         if reply is None:
             await ctx.send("You didn't reply to a message.")
             return
-        
+
         reply = await ctx.channel.fetch_message(reply.message_id)
         reply_content = reply.content
 
@@ -156,14 +165,16 @@ class AI(commands.Cog):
             response = await client.chat.completions.create(
                 model="openai/gpt-oss-20b",
                 messages=[
-                    {"role": "system", "content": "Your goal is to twist the words of messages to get a new meaning out of them. You must fuck up the interpretation of said sentence to say something the original author didn't mean. Only reply with this and nothing else."},
-                    {"role": "user", "content": f"Twist this message: {reply_content}"}
+                    {
+                        "role": "system",
+                        "content": "Your goal is to twist the words of messages to get a new meaning out of them. You must fuck up the interpretation of said sentence to say something the original author didn't mean. Only reply with this and nothing else.",
+                    },
+                    {"role": "user", "content": f"Twist this message: {reply_content}"},
                 ],
             )
 
         output = response.choices[0].message.content
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
-
 
     # @commands.command()
     # async def aivid(self, ctx: commands.Context, *, text: str):
@@ -177,8 +188,11 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": "You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
-                {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
+                {
+                    "role": "system",
+                    "content": "You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not.",
+                },
+                {"role": "user", "content": f"Is this true? {fact_checked_mess}"},
             ],
         )
 
@@ -191,10 +205,10 @@ class AI(commands.Cog):
                 if len(current_split) > 1850 and char == " ":
                     outputs.append(current_split)
                     current_split = ""
-        
+
         if outputs:
             return outputs
-        
+
         return output
 
     # External commands
@@ -204,25 +218,31 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
-                {"role": "user", "content": f"Summarize this: {message}"}
+                {
+                    "role": "system",
+                    "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text.",
+                },
+                {"role": "user", "content": f"Summarize this: {message}"},
             ],
-            max_tokens=200
+            max_tokens=200,
         )
 
         summary = response.choices[0].message.content
         return summary
-    
+
     async def _tsmr(self, message: str):
         """TSMR but doesnt send the messages"""
         client = AsyncGroq(api_key=self.groq_key)
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
-                {"role": "user", "content": f"Expand this: {message}"}
+                {
+                    "role": "system",
+                    "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text.",
+                },
+                {"role": "user", "content": f"Expand this: {message}"},
             ],
-            max_tokens=3500
+            max_tokens=3500,
         )
 
         expanded_text = response.choices[0].message.content
@@ -238,9 +258,9 @@ class AI(commands.Cog):
 
             if current_split:
                 splits.append(current_split)
-        
+
         return splits if splits else expanded_text
-    
+
     async def _isthistrue(self, fact_checked_mess: str):
         """@IerziBot is this true but it doesnt type, send messsages or require context"""
         # Using Groq cause it fast
@@ -249,8 +269,11 @@ class AI(commands.Cog):
         response = await client.chat.completions.create(
             model="openai/gpt-oss-20b",
             messages=[
-                {"role": "system", "content": "You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not."},
-                {"role": "user", "content": f'Is this true? {fact_checked_mess}'}
+                {
+                    "role": "system",
+                    "content": "You're a helpful AI assistant that works in a Discord bot. Your goal is to tell if a message is true or not.",
+                },
+                {"role": "user", "content": f"Is this true? {fact_checked_mess}"},
             ],
         )
 
@@ -263,8 +286,8 @@ class AI(commands.Cog):
                 if len(current_split) > 1850 and char == " ":
                     outputs.append(current_split)
                     current_split = ""
-        
+
         if outputs:
             return outputs
-        
+
         return output

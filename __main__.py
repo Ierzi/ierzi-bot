@@ -14,7 +14,7 @@ from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
-from cogs.songs import Songs#, setup
+from cogs.songs import Songs  # , setup
 from cogs.world_date_time import WorldDateTime
 
 # Utilities
@@ -26,7 +26,7 @@ from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 import aiohttp
 import asyncio
 from datetime import datetime, timezone
-from dotenv import load_dotenv # Dotenv is useless cause im hosting on railway
+from dotenv import load_dotenv  # Dotenv is useless cause im hosting on railway
 import os
 import random
 from rich.console import Console
@@ -43,38 +43,45 @@ start_uptime = datetime.now(timezone.utc)
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(
-    command_prefix="!", 
-    intents=intents, 
-    help_command=None, 
+    command_prefix="!",
+    intents=intents,
+    help_command=None,
     case_insensitive=True,
     owner_ids=[
-        966351518020300841, # my main account
-        722480600392400976, # my other account
-        747918143745294356, # abby
-    ]
+        966351518020300841,  # my main account
+        722480600392400976,  # my other account
+        747918143745294356,  # abby
+    ],
 )
 
 experimental_branch: bool = False
 
-grok_cache: dict[int, str] = {} # message id - response
+grok_cache: dict[int, str] = {}  # message id - response
 
 RAILWAY_PRODUCTION_URL = os.getenv("RAILWAY_PRODUCTION_URL")
 RAILWAY_EXPERIMENTAL_URL = os.getenv("RAILWAY_EXPERIMENTAL_URL")
 RAILWAY_PORT = os.getenv("RAILWAY_PORT")
-RAILWAY_URL = RAILWAY_PRODUCTION_URL # By default
+RAILWAY_URL = RAILWAY_PRODUCTION_URL  # By default
+
 
 # Events
 @bot.event
 async def on_ready():
     # Change the presence based on the bot's number of servers
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
+    await bot.change_presence(
+        status=discord.Status.idle,
+        activity=CustomActivity(f"dtupid - {guild_count} servers"),
+    )
     await fill_embeds()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
     console.print(f"Logged in as {bot.user}")
 
-    if bot.user.id == 1412488383178998044 or bot.user == "Ierzi Bot - Experimental#2987": #experimental bot id or fallback
+    if (
+        bot.user.id == 1412488383178998044
+        or bot.user == "Ierzi Bot - Experimental#2987"
+    ):  # experimental bot id or fallback
         global experimental_branch
         console.print("Experimental branch detected.")
         experimental_branch = True
@@ -82,10 +89,11 @@ async def on_ready():
         global RAILWAY_URL
         RAILWAY_URL = RAILWAY_EXPERIMENTAL_URL
         console.print(f"Using experimental URL: {RAILWAY_URL}")
-    
+
     bot.railway_url = RAILWAY_URL
 
     await bot_loop.start()
+
 
 @tasks.loop(minutes=10)
 async def bot_loop():
@@ -93,7 +101,10 @@ async def bot_loop():
 
     # Update bot presence
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
+    await bot.change_presence(
+        status=discord.Status.idle,
+        activity=CustomActivity(f"dtupid - {guild_count} servers"),
+    )
 
 
 # Error handling
@@ -107,20 +118,39 @@ async def on_command_error(ctx: commands.Context, error):
     elif isinstance(error, commands.NotOwner):
         await ctx.send("no.")
     else:
-        console.print(f"Ignored error in {ctx.command}: {error}" if ctx.command else f"Ignored error: {error}")
+        console.print(
+            f"Ignored error in {ctx.command}: {error}"
+            if ctx.command
+            else f"Ignored error: {error}"
+        )
+
 
 test_role = 1427700970606821508
 qotd_role = 1459331338745151721
 
+
 @bot.event
 async def on_message(message: Message):
     # Auto create threads in the poll channel
-    if message.channel.id in [1411714823405965342, 1425852593657348198, 783638604454821892, 1458720623621705790, 1467073335257993317]:
+    if message.channel.id in [
+        1411714823405965342,
+        1425852593657348198,
+        783638604454821892,
+        1458720623621705790,
+        1467073335257993317,
+    ]:
         if message.poll:
-            await message.create_thread(name=message.poll.question) if len(message.poll.question) < 97 else message.create_thread(name=f"{message.poll.question[:97]}...")
+            await message.create_thread(name=message.poll.question) if len(
+                message.poll.question
+            ) < 97 else message.create_thread(name=f"{message.poll.question[:97]}...")
         elif message.content.startswith("not a poll but "):
             await message.create_thread(name=message.content[15:])
-        elif message.content.endswith("y/n") or message.content.endswith("yes/no") or message.content.endswith("y/n?") or message.content.endswith("yes/no?"):
+        elif (
+            message.content.endswith("y/n")
+            or message.content.endswith("yes/no")
+            or message.content.endswith("y/n?")
+            or message.content.endswith("yes/no?")
+        ):
             await message.add_reaction("✅")
             await message.add_reaction("❌")
         elif message.content.endswith("1-10"):
@@ -134,16 +164,21 @@ async def on_message(message: Message):
             await message.add_reaction("8️⃣")
             await message.add_reaction("9️⃣")
             await message.add_reaction("🔟")
-        
+
         for role in message.role_mentions:
             if role.id in [test_role, qotd_role]:
                 q = message.content.split(" ")[1:]
                 question = " ".join(q)
-                await message.create_thread(name=f"{question}" if len(question) < 97 else f"{question[:97]}...")
+                await message.create_thread(
+                    name=f"{question}" if len(question) < 97 else f"{question[:97]}..."
+                )
 
     if not message.author.id == bot.user.id:
         # @Ierzi Bot is this true
-        if f'{bot.user.mention} is this true' in message.content.lower() or f'{bot.user.mention} is ts true' in message.content.lower():
+        if (
+            f"{bot.user.mention} is this true" in message.content.lower()
+            or f"{bot.user.mention} is ts true" in message.content.lower()
+        ):
             ai = AI(bot, console)
             ctx = await bot.get_context(message)
             # get reply
@@ -155,15 +190,22 @@ async def on_message(message: Message):
             response = await ai.isthistrue(ctx, reply_content)
             if isinstance(response, list):
                 for m in response:
-                    await message.reply(m, allowed_mentions=discord.AllowedMentions.none())
+                    await message.reply(
+                        m, allowed_mentions=discord.AllowedMentions.none()
+                    )
                     await asyncio.sleep(0.2)
-                
+
                 return
-            
-            await message.reply(response, allowed_mentions=discord.AllowedMentions.none())
-    
+
+            await message.reply(
+                response, allowed_mentions=discord.AllowedMentions.none()
+            )
+
         # @Grok is this true
-        if '@grok is this true' in message.content.lower() or '@grok is ts true' in message.content.lower():
+        if (
+            "@grok is this true" in message.content.lower()
+            or "@grok is ts true" in message.content.lower()
+        ):
             target_id = message.reference.message_id if message.reference else None
 
             if target_id in grok_cache:
@@ -172,7 +214,7 @@ async def on_message(message: Message):
                 emoji = "✅" if random.choice([True, False]) else "❌"
                 await message.add_reaction(emoji)
                 if target_id:
-                   grok_cache[target_id] = emoji
+                    grok_cache[target_id] = emoji
 
     # Finally, process commands
     await bot.process_commands(message)
@@ -202,8 +244,10 @@ async def load_cogs():
     console.print("All cogs loaded.")
 
 
-#AI commands to add to the context menu
+# AI commands to add to the context menu
 ai = AI(bot, console)
+
+
 @bot.tree.context_menu(name="TLDR")
 async def tldr(interaction: Interaction, message: Message):
     await interaction.response.defer()
@@ -211,8 +255,9 @@ async def tldr(interaction: Interaction, message: Message):
     if not _tldr:
         await interaction.followup.send("error :(", ephemeral=True)
         return
-    
+
     await interaction.followup.send(_tldr)
+
 
 @bot.tree.context_menu(name="TSMR")
 async def tsmr(interaction: Interaction, message: Message):
@@ -221,14 +266,15 @@ async def tsmr(interaction: Interaction, message: Message):
     if not _tsmr:
         await interaction.followup.send("error :(", ephemeral=True)
         return
-    
+
     if isinstance(_tsmr, str):
         await interaction.followup.send(_tsmr)
         return
-    
+
     for mess in _tsmr:
         await interaction.followup.send(mess)
         await asyncio.sleep(0.2)
+
 
 @bot.tree.context_menu(name="Is this true?")
 async def isthistrue(interaction: Interaction, message: Message):
@@ -237,11 +283,11 @@ async def isthistrue(interaction: Interaction, message: Message):
     if not _isthistrue:
         await interaction.followup.send("error :(", ephemeral=True)
         return
-    
+
     if isinstance(_isthistrue, str):
         await interaction.followup.send(_isthistrue)
         return
-    
+
     for mess in _isthistrue:
         await interaction.followup.send(mess)
         await asyncio.sleep(0.2)
@@ -249,6 +295,7 @@ async def isthistrue(interaction: Interaction, message: Message):
 
 # App commands
 search = Search(bot, console)
+
 
 @bot.tree.command(name="define", description="Look up the meaning of a word.")
 @app_commands.describe(word="The word to get the definition from.")
@@ -261,7 +308,10 @@ async def define(interaction: Interaction, word: str):
 
     await interaction.followup.send(_define)
 
-@bot.tree.command(name="ud", description="Look up the meaning of a word on the Urban Dictionary.")
+
+@bot.tree.command(
+    name="ud", description="Look up the meaning of a word on the Urban Dictionary."
+)
 @app_commands.describe(word="The word to search the meaning on Urban Dictionary.")
 async def urban_dictionary(interaction: Interaction, word: str):
     await interaction.response.defer()
@@ -269,8 +319,9 @@ async def urban_dictionary(interaction: Interaction, word: str):
     if _ud is None:
         await interaction.followup.send("Word not found / Error.")
         return
-    
+
     await interaction.followup.send(_ud)
+
 
 # Other commands
 @bot.command(name="id")
@@ -279,14 +330,17 @@ async def id_user(ctx: commands.Context, user: discord.User = None):
     if not user:
         await ctx.send(ctx.author.id)
         return
-    
+
     await ctx.send(user.id)
+
 
 @bot.command()
 async def profile(ctx: commands.Context, *user_ids: int):
     """Gets the profile of user(s) by ID."""
     if not user_ids:
-        await ctx.send("Gimme user ids. \n-# if you dont know what that is, ignore this")
+        await ctx.send(
+            "Gimme user ids. \n-# if you dont know what that is, ignore this"
+        )
         return
 
     if len(user_ids) == 1:
@@ -299,130 +353,151 @@ async def profile(ctx: commands.Context, *user_ids: int):
     for uid in user_ids:
         user = bot.get_user(uid) or await bot.fetch_user(uid)
         message += f"{user.mention}, "
-    message = message[:-2] # remove the last comma
+    message = message[:-2]  # remove the last comma
 
     await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
+
 
 @bot.command()
 async def github(ctx: commands.Context):
     """if you wanna contribute idk"""
     global experimental_branch
     if experimental_branch:
-        await ctx.send("https://git.gay/Ierzi/ierzi-bot/src/branch/experimental \nhttps://github.com/Ierzi/ierzi-bot/tree/experimental")
+        await ctx.send(
+            "https://git.gay/Ierzi/ierzi-bot/src/branch/experimental \nhttps://github.com/Ierzi/ierzi-bot/tree/experimental"
+        )
         return
-    
-    await ctx.send("https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works")
 
-#TODO: all of this
+    await ctx.send(
+        "https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works"
+    )
+
+
+# TODO: all of this
 @bot.command(aliases=("todos", "todo", "todolist"))
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
-        "add more reactions", "fix !listmarriages (ts never happening)", 
-        "achievements?", "other ai models", "custom pronouns", "more reactions", "custom ai models",
-        "more songs commands but idk what to add", "do thing to request ideas by dming the bot", 
-        "more reactions (did i already say this?)", "other leaderboards idkkkkk",
-        "multiple pronouns (for winty)", "make wdt more simple cause yall did NOT understand it",
-        "more playlist commands i make a note about this"
-        ]
+        "add more reactions",
+        "fix !listmarriages (ts never happening)",
+        "achievements?",
+        "other ai models",
+        "custom pronouns",
+        "more reactions",
+        "custom ai models",
+        "more songs commands but idk what to add",
+        "do thing to request ideas by dming the bot",
+        "more reactions (did i already say this?)",
+        "other leaderboards idkkkkk",
+        "multiple pronouns (for winty)",
+        "make wdt more simple cause yall did NOT understand it",
+        "more playlist commands i make a note about this",
+    ]
     message = "Features I wanna add: \n"
     for feature in features:
         message += f"- {feature}\n"
     await ctx.send(message)
 
+
 # Slash commands
-@bot.tree.command(name="gaydar", description="Sends a percentage based on how gay someone is.")
+@bot.tree.command(
+    name="gaydar", description="Sends a percentage based on how gay someone is."
+)
 @app_commands.describe(user="The user (no way)")
 async def gaydar(interaction: Interaction, user: User):
-    if user.id in [747918143745294356, 893298676003393536, 893298676003393536, 483463418662223882]: #ludwig, abby and colours gaming
-        await interaction.response.send_message(f"{user.mention} is 100% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
+    if user.id in [
+        747918143745294356,
+        893298676003393536,
+        893298676003393536,
+        483463418662223882,
+    ]:  # ludwig, abby and colours gaming
+        await interaction.response.send_message(
+            f"{user.mention} is 100% gay! 🌈",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
         return
-    if user.id == 1399689963284467723: #the bot
+    if user.id == 1399689963284467723:  # the bot
         await interaction.response.send_message("vro", ephemeral=True)
         return
-    
+
     percentage = random.randint(0, 100)
 
-    await interaction.response.send_message(f"{user.mention} is {percentage}% gay! 🌈", allowed_mentions=discord.AllowedMentions.none())
+    await interaction.response.send_message(
+        f"{user.mention} is {percentage}% gay! 🌈",
+        allowed_mentions=discord.AllowedMentions.none(),
+    )
+
 
 # help command
 def get_commands(bot: commands.Bot) -> list[tuple[str, list[str], str, str]]:
-    all_commands: list[tuple[str, list[str], str, str]] = [] # Format: Command name, aliases, cog name, command help
+    all_commands: list[
+        tuple[str, list[str], str, str]
+    ] = []  # Format: Command name, aliases, cog name, command help
     for cog_name, cog in bot.cogs.items():
         for command in cog.get_commands():
             # Check if this is a group command with subcommands
             if isinstance(command, commands.Group) and command.commands:
                 # Add the group command itself
-                all_commands.append((command.name, list(command.aliases), cog_name, command.help))
+                all_commands.append(
+                    (command.name, list(command.aliases), cog_name, command.help)
+                )
                 # Add all subcommands with their full name (group.subcommand)
                 for subcommand in command.commands:
                     full_name = f"{command.name} {subcommand.name}"
-                    all_commands.append((full_name, list(command.aliases), cog_name, subcommand.help))
+                    all_commands.append(
+                        (full_name, list(command.aliases), cog_name, subcommand.help)
+                    )
             else:
                 # Regular command
-                all_commands.append((command.name, list(command.aliases), cog_name, command.help))
-    
+                all_commands.append(
+                    (command.name, list(command.aliases), cog_name, command.help)
+                )
+
     no_cogs_commands = [cmd for cmd in bot.commands if cmd.cog is None]
     if no_cogs_commands:
         for command in no_cogs_commands:
             # Check if this is a group command with subcommands (for commands not in cogs)
             if isinstance(command, commands.Group) and command.commands:
                 # Add the group command itself
-                all_commands.append((command.name, list(command.aliases), None, command.help))
+                all_commands.append(
+                    (command.name, list(command.aliases), None, command.help)
+                )
                 # Add all subcommands with their full name (group.subcommand)
                 for subcommand in command.commands:
                     full_name = f"{command.name} {subcommand.name}"
-                    all_commands.append((full_name, list(command.aliases), None, subcommand.help))
+                    all_commands.append(
+                        (full_name, list(command.aliases), None, subcommand.help)
+                    )
             else:
                 # Regular command
-                all_commands.append((command.name, list(command.aliases), None, command.help))
+                all_commands.append(
+                    (command.name, list(command.aliases), None, command.help)
+                )
 
     return all_commands
 
+
 home_embed = Embed(
     title="Help Menu",
-    description="Click on the buttons below to switch pages. Here are some uncategorized commands: \n\n"
+    description="Click on the buttons below to switch pages. Here are some uncategorized commands: \n\n",
 )
 
-ai_embed = Embed(
-    title="AI Commands",
-    description=""
-)
+ai_embed = Embed(title="AI Commands", description="")
 
-wdt_embed = Embed(
-    title="World, Date and Time Commands",
-    description=""
-)
+wdt_embed = Embed(title="World, Date and Time Commands", description="")
 
-economy_embed = Embed(
-    title="Economy Commands",
-    description=""
-)
+economy_embed = Embed(title="Economy Commands", description="")
 
-fun_embed = Embed(
-    title="Fun Commands",
-    description=""
-)
+fun_embed = Embed(title="Fun Commands", description="")
 
-marriages_embed = Embed(
-    title="Marriage Commands",
-    description=""
-)
+marriages_embed = Embed(title="Marriage Commands", description="")
 
-reactions_embed = Embed(
-    title="Reaction Commands",
-    description=""
-)
+reactions_embed = Embed(title="Reaction Commands", description="")
 
-songs_embed = Embed(
-    title="Songs Commands",
-    description=""
-)
+songs_embed = Embed(title="Songs Commands", description="")
 
-search_embed = Embed(
-    title="Search Commands",
-    description=""
-)
+search_embed = Embed(title="Search Commands", description="")
+
 
 async def fill_embeds():
     home_embed.description = "Use the select menu below to switch pages. Here are some uncategorized commands: \n\n"
@@ -442,7 +517,7 @@ async def fill_embeds():
         name = " / ".join(full)
         match cog_name:
             case None:
-                if command_name in ["download", "export", "load", 'fsp']:
+                if command_name in ["download", "export", "load", "fsp"]:
                     # Testing commands to ignore
                     continue
                 home_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
@@ -463,13 +538,16 @@ async def fill_embeds():
             case "WorldDateTime":
                 wdt_embed.description += f"**{name}** - {command_help if command_help is not None else 'No description'} \n"
 
+
 @bot.command(aliases=("cmds", "commands"))
 async def help(ctx: commands.Context, category: str = None):
     """Shows this message."""
-    view = View(timeout=VIEW_TIMEOUT) 
+    view = View(timeout=VIEW_TIMEOUT)
 
     help_options = [
-        SelectOption(label="Home", description="Homepage and uncategorized commands", emoji="🏠"),
+        SelectOption(
+            label="Home", description="Homepage and uncategorized commands", emoji="🏠"
+        ),
         SelectOption(label="AI", description="AI commands", emoji="🤖"),
         SelectOption(label="Economy", description="Economy commands", emoji="💵"),
         SelectOption(label="Fun", description="Fun commands", emoji="🎉"),
@@ -477,12 +555,14 @@ async def help(ctx: commands.Context, category: str = None):
         SelectOption(label="Reactions", description="Reaction commands", emoji="😋"),
         SelectOption(label="Search", description="Search commands", emoji="🔎"),
         SelectOption(label="Songs", description="Songs commands", emoji="🎵"),
-        SelectOption(label="World, Date and Time", value="wdt", description="World, Date and Time commands", emoji="🌍"),
+        SelectOption(
+            label="World, Date and Time",
+            value="wdt",
+            description="World, Date and Time commands",
+            emoji="🌍",
+        ),
     ]
-    help_select = Select(
-        placeholder="select category",
-        options=help_options
-    )
+    help_select = Select(placeholder="select category", options=help_options)
 
     async def help_select_callback(interaction: Interaction):
         selected = help_select.values[0].lower()
@@ -534,81 +614,102 @@ async def help(ctx: commands.Context, category: str = None):
             case _:
                 await ctx.send("Invalid category.")
 
+
 # Pronouns Test
 @bot.command(name="pronouns")
 async def pronouns_set(ctx: commands.Context):
     """Set your pronouns."""
     user_id = ctx.author.id
 
-    if user_id == 1206615811792576614: #fact
+    if user_id == 1206615811792576614:  # fact
         await ctx.message.add_reaction("❌")
         return
 
     set_pronouns_embed = Embed(
         title="Set your pronouns!",
         # Manual description
-        description="Choose your pronouns here. Currently supported pronouns: "
+        description="Choose your pronouns here. Currently supported pronouns: ",
     )
     set_pronouns_embed.description += ", ".join(pronouns.all_pronouns)
 
-
     current_pronouns = await pronouns.get_pronouns(user_id)
-    set_pronouns_embed.add_field(name="Current pronouns", value=f"Current pronouns: {current_pronouns}")
+    set_pronouns_embed.add_field(
+        name="Current pronouns", value=f"Current pronouns: {current_pronouns}"
+    )
 
     view = View(timeout=VIEW_TIMEOUT)
     pronouns_option = [
-        SelectOption(label='he/him'),
-        SelectOption(label='she/her'),
-        SelectOption(label='they/them/themself'),
-        SelectOption(label='they/them/themselves'),
+        SelectOption(label="he/him"),
+        SelectOption(label="she/her"),
+        SelectOption(label="they/them/themself"),
+        SelectOption(label="they/them/themselves"),
         SelectOption(label="it/its"),
         SelectOption(label="one/one's"),
-        SelectOption(label='any')
-    ] # will add more pronouns later
+        SelectOption(label="any"),
+    ]  # will add more pronouns later
     # to keep updated every time I add new pronouns
 
     pronouns_select = Select(
-        placeholder='Select your pronouns...',
-        options=pronouns_option
+        placeholder="Select your pronouns...", options=pronouns_option
     )
 
     # Big callback function
     async def pronouns_select_callback(interaction: Interaction):
         selected = pronouns_select.values[0]
         match selected:
-            case 'he/him':
-                await pronouns.set_pronouns(user_id, 'he/him')
+            case "he/him":
+                await pronouns.set_pronouns(user_id, "he/him")
                 set_pronouns_embed.set_field_at(0, value="Current pronouns: he/him")
-                await interaction.message.edit(content="Set your pronouns to he/him.", embed=set_pronouns_embed)
+                await interaction.message.edit(
+                    content="Set your pronouns to he/him.", embed=set_pronouns_embed
+                )
                 return
-            case 'she/her':
-                await pronouns.set_pronouns(user_id, 'she/her')
+            case "she/her":
+                await pronouns.set_pronouns(user_id, "she/her")
                 set_pronouns_embed.set_field_at(0, value="Current pronouns: she/her")
-                await interaction.message.edit(content="Set your pronouns to she/her.", embed=set_pronouns_embed)
+                await interaction.message.edit(
+                    content="Set your pronouns to she/her.", embed=set_pronouns_embed
+                )
                 return
-            case 'they/them/themselves':
-                await pronouns.set_pronouns(user_id, 'they/them/themselves')
-                set_pronouns_embed.set_field_at(0, value="Current pronouns: they/them/themselves")
-                await interaction.message.edit(content="Set your pronouns to they/them/themselves.", embed=set_pronouns_embed)
+            case "they/them/themselves":
+                await pronouns.set_pronouns(user_id, "they/them/themselves")
+                set_pronouns_embed.set_field_at(
+                    0, value="Current pronouns: they/them/themselves"
+                )
+                await interaction.message.edit(
+                    content="Set your pronouns to they/them/themselves.",
+                    embed=set_pronouns_embed,
+                )
                 return
-            case 'they/them/themself':
-                await pronouns.set_pronouns(user_id, 'they/them/themself')
-                set_pronouns_embed.set_field_at(0, value="Current pronouns: they/them/themself")
-                await interaction.message.edit(content="Set your pronouns to they/them/themself.", embed=set_pronouns_embed)
+            case "they/them/themself":
+                await pronouns.set_pronouns(user_id, "they/them/themself")
+                set_pronouns_embed.set_field_at(
+                    0, value="Current pronouns: they/them/themself"
+                )
+                await interaction.message.edit(
+                    content="Set your pronouns to they/them/themself.",
+                    embed=set_pronouns_embed,
+                )
                 return
-            case 'it/its':
-                await pronouns.set_pronouns(user_id, 'it/its')
+            case "it/its":
+                await pronouns.set_pronouns(user_id, "it/its")
                 set_pronouns_embed.set_field_at(0, value="Current pronouns: it/its")
-                await interaction.message.edit(content='Set your pronouns to it/its.', embed=set_pronouns_embed)
+                await interaction.message.edit(
+                    content="Set your pronouns to it/its.", embed=set_pronouns_embed
+                )
                 return
             case "one/one's":
                 await pronouns.set_pronouns(user_id, "one/one's")
                 set_pronouns_embed.set_field_at(0, value="Current pronouns: one/one's")
-                await interaction.message.edit(content="Set your pronouns to one/one's.", embed=set_pronouns_embed)
-            case 'any':
-                await pronouns.set_pronouns(user_id, 'any')
+                await interaction.message.edit(
+                    content="Set your pronouns to one/one's.", embed=set_pronouns_embed
+                )
+            case "any":
+                await pronouns.set_pronouns(user_id, "any")
                 set_pronouns_embed.set_field_at(0, value="Current pronouns: any")
-                await interaction.message.edit(content="Set your pronouns to any.", embed=set_pronouns_embed)
+                await interaction.message.edit(
+                    content="Set your pronouns to any.", embed=set_pronouns_embed
+                )
                 return
 
     pronouns_select.callback = pronouns_select_callback
@@ -621,14 +722,19 @@ async def try_pronouns(user_id: int):
     all_pronouns = await pronouns.get_pronoun(user_id, pronouns.ALL)
 
     # Sentences (thanks pronouns.page)
-    subject = f'I think {all_pronouns[0]} is very nice. ' if all_pronouns[0] != 'they' else f'I think {all_pronouns[0]} are very nice. '
-    _object = f'I met {all_pronouns[1]} recently. '
-    possessive = f'Is this {all_pronouns[2]} cat? '
-    possessive_2 = f'My favorite color is purple, {all_pronouns[3]} is yellow. '
-    reflexive = f'{all_pronouns[0].capitalize()} did it all by {all_pronouns[4]}.'
+    subject = (
+        f"I think {all_pronouns[0]} is very nice. "
+        if all_pronouns[0] != "they"
+        else f"I think {all_pronouns[0]} are very nice. "
+    )
+    _object = f"I met {all_pronouns[1]} recently. "
+    possessive = f"Is this {all_pronouns[2]} cat? "
+    possessive_2 = f"My favorite color is purple, {all_pronouns[3]} is yellow. "
+    reflexive = f"{all_pronouns[0].capitalize()} did it all by {all_pronouns[4]}."
 
     full = subject + _object + possessive + possessive_2 + reflexive
     return full
+
 
 @bot.command(name="getpronouns")
 async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = None):
@@ -638,47 +744,49 @@ async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = Non
         user_id = user.id
     else:
         user_id = ctx.author.id
-    
+
     _pronouns = await pronouns.get_pronouns(user_id, get_na=True)
     user_profile = user if user is not None else ctx.author
     user_id = user_profile.id
     guild_id = ctx.guild.id
 
     if user:
-        if _pronouns == 'na':
+        if _pronouns == "na":
             await ctx.send(f"{user_profile.mention} didn't set their pronouns.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id not in SLURS_SERVERS:
+            if _pronouns == "fag/got" and guild_id not in SLURS_SERVERS:
                 await ctx.send(f"{user_profile.mention}'s pronouns are a mf slur 💔")
                 return
             await ctx.send(f"{user_profile.mention}'s pronouns are {_pronouns}.")
     else:
-        if _pronouns == 'na':
+        if _pronouns == "na":
             await ctx.send("You didn't set your pronouns! Use !pronouns to set them.")
             return
         else:
-            if _pronouns == 'fag/got' and guild_id not in SLURS_SERVERS:
+            if _pronouns == "fag/got" and guild_id not in SLURS_SERVERS:
                 await ctx.send("Your pronouns are a slur and they dont allow them here")
                 return
             await ctx.send(f"Your current pronouns are {_pronouns}.")
-    
+
     # Test sentence with their pronouns
     test_sentence = await try_pronouns(user_id)
     await ctx.send(test_sentence)
 
-@bot.command(name='fsp')
+
+@bot.command(name="fsp")
 @commands.is_owner()
 async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronouns: str):
     """Force set someone's pronouns. Can only be used by bot owners."""
     user_id = user.id
-    
+
     if _pronouns not in pronouns.all_pronouns_hidden:
         await ctx.send("invalid pronouns")
         return
 
     await pronouns.set_pronouns(user_id, _pronouns)
     await ctx.message.add_reaction("👍")
+
 
 @bot.command(aliases=("uptime",))
 async def info(ctx: commands.Context):
@@ -689,7 +797,11 @@ async def info(ctx: commands.Context):
 
     # Get commit name and hash (first 6 characters) with a request
     async with aiohttp.ClientSession() as session:
-        async with session.get("https://api.github.com/repos/ierzi/ierzi-bot/commits/main" if not experimental_branch else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental") as response:
+        async with session.get(
+            "https://api.github.com/repos/ierzi/ierzi-bot/commits/main"
+            if not experimental_branch
+            else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental"
+        ) as response:
             try:
                 response.raise_for_status()
             except Exception as e:
@@ -697,9 +809,9 @@ async def info(ctx: commands.Context):
                 console.print(e)
                 return
             data = await response.json()
-            commit_hash = data['sha'][:6]
-            commit_name = data['commit']['message']
-            commit_author = data['commit']['author']['name']
+            commit_hash = data["sha"][:6]
+            commit_name = data["commit"]["message"]
+            commit_author = data["commit"]["author"]["name"]
 
     message += f"**Commit {commit_hash}** by **{commit_author}**: {commit_name}\n"
 
@@ -709,8 +821,9 @@ async def info(ctx: commands.Context):
     minutes, seconds = divmod(remainder, 60)
 
     message += f"**Uptime:** {days:,.0f}d {hours:.0f}h {minutes:.0f}m {seconds:.0f}s\n"
-    
+
     await ctx.send(message)
+
 
 async def start_bot():
     await db.init_pool()
@@ -723,6 +836,6 @@ async def start_bot():
     finally:
         await db.close_pool()
 
+
 if __name__ == "__main__":
     asyncio.run(start_bot())
-

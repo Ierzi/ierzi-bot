@@ -32,15 +32,16 @@ MONTHS = [
     "September",
     "October",
     "November",
-    "December"
+    "December",
 ]
+
 
 class WorldDateTime(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
         self.historical_events_api_key = os.getenv("HISTORICAL_EVENTS_KEY")
-    
+
     # groups!!!
 
     # Birthday
@@ -49,35 +50,39 @@ class WorldDateTime(commands.Cog):
         """Birthday commands."""
         if ctx.invoked_subcommand is None:
             return
-        
+
     # Timezone
-    @commands.group(name='timezone', aliases=("tz",))
+    @commands.group(name="timezone", aliases=("tz",))
     async def timezone(self, ctx: commands.Context):
         """Timezone commands."""
         if ctx.invoked_subcommand is None:
             return
-    
+
     # Helper functions
     async def _set_birthday(self, user_id: int, birthday: Birthday):
         """Set the birthday of a user."""
         await db.execute(
             "INSERT INTO users (user_id, day, month, year) VALUES ($1, $2, $3, $4) ON CONFLICT (user_id) DO UPDATE SET day = $2, month = $3, year = $4",
-            user_id, birthday.day, birthday.month, birthday.year
+            user_id,
+            birthday.day,
+            birthday.month,
+            birthday.year,
         )
-    
+
     async def _get_birthday(self, user_id: int) -> Optional[Birthday]:
         """Get the birthday of a user."""
-        row = await db.fetchrow("SELECT day, month, year FROM users WHERE user_id = $1", user_id)
+        row = await db.fetchrow(
+            "SELECT day, month, year FROM users WHERE user_id = $1", user_id
+        )
         if row is None:
             return None
-        
+
         return Birthday(row["day"], row["month"], row["year"])
 
     async def _total_birthdays(self) -> int:
         """Return total number of birthdays stored in the database."""
         count = await db.fetchval("SELECT COUNT(*) FROM users WHERE day IS NOT NULL;")
         return int(count or 0)
-
 
     async def _get_pp_events(self, dt: datetime) -> list:
         """Gets events from pronouns.page."""
@@ -88,28 +93,38 @@ class WorldDateTime(commands.Cog):
 
         timeout = aiohttp.ClientTimeout(total=10)
         ssl_context = ssl.create_default_context(cafile=certifi.where())
-        async with aiohttp.ClientSession(timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)) as client:
-            async with client.get(url, headers={"User-Agent": "ierzi-bot/1.0"}) as request:
+        async with aiohttp.ClientSession(
+            timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)
+        ) as client:
+            async with client.get(
+                url, headers={"User-Agent": "ierzi-bot/1.0"}
+            ) as request:
                 request.raise_for_status()
                 response: dict = await request.json()
 
         return response.get("events", [])
-    
-    async def _get_otd_events(self, dt: datetime, many: int, random_events: bool = False) -> list:
+
+    async def _get_otd_events(
+        self, dt: datetime, many: int, random_events: bool = False
+    ) -> list:
         """Gets events from On This Day API."""
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         timeout = aiohttp.ClientTimeout(total=10)
         url = f"https://api.ontoday.info/api/v1/events/{dt.month}/{dt.day}"
         for attempt in range(3):
             try:
-                async with aiohttp.ClientSession(timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)) as session:
-                    async with session.get(url, headers={"User-Agent": "ierzi-bot/1.0"}) as request:
+                async with aiohttp.ClientSession(
+                    timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)
+                ) as session:
+                    async with session.get(
+                        url, headers={"User-Agent": "ierzi-bot/1.0"}
+                    ) as request:
                         request.raise_for_status()
                         response: dict = await request.json()
                         self.console.print(response)
                         break
             except Exception as e:
-                self.console.print(f"OTD fetch attempt {attempt+1} failed: {e}")
+                self.console.print(f"OTD fetch attempt {attempt + 1} failed: {e}")
                 if attempt == 2:
                     self.console.print("OTD fetch failed after retries.")
                     return []
@@ -119,8 +134,10 @@ class WorldDateTime(commands.Cog):
         if random_events:
             return [random.choice(event_names)] if event_names else []
         return event_names[:many]
-    
-    async def _get_historical_events(self, dt: datetime, many: int, random_events: bool = False) -> list:
+
+    async def _get_historical_events(
+        self, dt: datetime, many: int, random_events: bool = False
+    ) -> list:
         """Gets events from Historical Events API."""
         timeout = aiohttp.ClientTimeout(total=10)
         url = "https://api.api-ninjas.com/v1/historicalevents"
@@ -134,12 +151,12 @@ class WorldDateTime(commands.Cog):
                 params={
                     "day": dt.day,
                     "month": dt.month,
-                }
+                },
             ) as request:
                 request.raise_for_status()
                 response: list[dict[str, str]] = await request.json()
                 self.console.print(response)
-        
+
         names = [str(r["event"]) for r in response if r.get("event") is not None]
 
         if not names:
@@ -149,35 +166,42 @@ class WorldDateTime(commands.Cog):
             names = random.choices(names, k=5)
 
         return names[:many]
-        
-    
+
     def _get_custom_events(self, dt: datetime) -> list:
         custom_events: dict[str, list[str]] = {
             "29/07": ["Creation of Ierzi Bot"],
-            "14/05": ["Creation of EpikTeam"]
+            "14/05": ["Creation of EpikTeam"],
         }
         date_str = f"{dt.day:02d}/{dt.month:02d}"
         return custom_events.get(date_str, [])
 
     async def _get_events(self, dt: datetime) -> list:
         """Gets events from different sources."""
-        return await self._get_pp_events(dt) + await self._get_otd_events(dt, 5, random_events=True) + await self._get_historical_events(dt, 5, random_events=True) + self._get_custom_events(dt)
+        return (
+            await self._get_pp_events(dt)
+            + await self._get_otd_events(dt, 5, random_events=True)
+            + await self._get_historical_events(dt, 5, random_events=True)
+            + self._get_custom_events(dt)
+        )
 
     async def _set_timezone(self, user_id: int, timezone: str):
         """Set the timezone of a user."""
         await db.execute(
             "INSERT INTO users (user_id, timezone) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET timezone = EXCLUDED.timezone",
-            user_id, timezone
+            user_id,
+            timezone,
         )
-    
+
     async def _get_timezone(self, user_id: int) -> Optional[str]:
         """Get the timezone of a user."""
-        row = await db.fetchrow("SELECT timezone FROM users WHERE user_id = $1", user_id)
+        row = await db.fetchrow(
+            "SELECT timezone FROM users WHERE user_id = $1", user_id
+        )
         if row is None:
             return None
-        
+
         return row["timezone"]
-        
+
     # Commands!
     @commands.command(name="et", aliases=("events-today", "events", "event"))
     async def events_today(self, ctx: commands.Context):
@@ -186,7 +210,7 @@ class WorldDateTime(commands.Cog):
         tz = await self._get_timezone(ctx.author.id)
         if not tz:
             tz = "UTC"
-        
+
         now = datetime.now(parse_offset(tz))
         try:
             events = await self._get_events(now)
@@ -196,46 +220,55 @@ class WorldDateTime(commands.Cog):
             return
 
         today_embed = Embed(
-            colour=6016762, # transgender blue
+            colour=6016762,  # transgender blue
             title=f"Today - {now.day}/{now.month}/{now.year}",
-            description="**Events today:**\n\n"
+            description="**Events today:**\n\n",
         )
 
         if not events:
             today_embed.description += "No events today."
             await ctx.send(embed=today_embed)
             return
-        
+
         for event in events:
             today_embed.description += f"- {event}\n"
-        
+
         await ctx.send(embed=today_embed)
 
     # Birthday Commands
     @birthday.command()
-    async def set(self, ctx: commands.Context, day: int, month: Union[int, str], year: Optional[int] = None):
+    async def set(
+        self,
+        ctx: commands.Context,
+        day: int,
+        month: Union[int, str],
+        year: Optional[int] = None,
+    ):
         """Set your birthday. (Day Month and optionally Year)"""
         if year is not None and year < 0:
             await ctx.send("you're so old cro")
             return
-        
+
         if isinstance(month, str):
             month = MONTHS.index(month.capitalize()) + 1
-        
+
         if day < 1 or day > 31:
             await ctx.send("Day must be between 1 and 31")
             return
-        
+
         if month < 1 or month > 12:
             await ctx.send("Month must be between 1 and 12")
             return
-        
+
         user_id = ctx.author.id
         birthday = Birthday(day, month, year)
         await self._set_birthday(user_id, birthday)
 
-        await ctx.send(f"Your birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"Your birthday has been set to {birthday}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @birthday.command()
     async def get(self, ctx: commands.Context, user: Optional[discord.User] = None):
         """Get someone's birthday."""
@@ -243,15 +276,26 @@ class WorldDateTime(commands.Cog):
 
         birthday = await self._get_birthday(user_id)
         if birthday is None:
-            await ctx.send(f"{user.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user.mention} doesn't have a birthday set.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
 
         user = user if user else ctx.author
 
-        await ctx.send(f"{user.mention}'s birthday is {birthday}.", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"{user.mention}'s birthday is {birthday}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @birthday.command()
-    async def until(self, ctx: commands.Context, user: Optional[discord.User] = None, month: Optional[Union[int, str]] = None):
+    async def until(
+        self,
+        ctx: commands.Context,
+        user: Optional[discord.User] = None,
+        month: Optional[Union[int, str]] = None,
+    ):
         """Get the time until someone's birthday."""
         user_id = user.id if user else ctx.author.id
 
@@ -259,7 +303,12 @@ class WorldDateTime(commands.Cog):
         tz = await self._get_timezone(user_id)
         tz = parse_offset(tz) if tz else parse_offset("UTC")
         if birthday is None:
-            await ctx.send(f"{user.mention} doesn't have a birthday set." if user else "You don't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user.mention} doesn't have a birthday set."
+                if user
+                else "You don't have a birthday set.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
 
         if isinstance(month, str):
@@ -267,7 +316,7 @@ class WorldDateTime(commands.Cog):
 
         today = datetime.now(tz)
         birthday_date = datetime(today.year, birthday.month, birthday.day, tzinfo=tz)
-        
+
         user = user if user else ctx.author
 
         if birthday_date < today:
@@ -276,8 +325,11 @@ class WorldDateTime(commands.Cog):
         else:
             # Birthday hasn't passed this year yet
             timestamp = to_timestamp(birthday_date, "R")
-        
-        await ctx.send(f"{user.mention}'s birthday is {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{user.mention}'s birthday is {timestamp}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @birthday.command()
     async def since(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -288,9 +340,14 @@ class WorldDateTime(commands.Cog):
         tz = await self._get_timezone(user_id)
         tz = parse_offset(tz) if tz else parse_offset("UTC")
         if birthday is None:
-            await ctx.send(f"{user.mention} doesn't have a birthday set." if user else "You don't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user.mention} doesn't have a birthday set."
+                if user
+                else "You don't have a birthday set.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
-        
+
         user = user if user else ctx.author
 
         today = datetime.now(tz)
@@ -303,10 +360,15 @@ class WorldDateTime(commands.Cog):
             # Birthday already happened this year
             timestamp = to_timestamp(birthday_date, "R")
 
-        await ctx.send(f"{user.mention}'s birthday was {timestamp}.", allowed_mentions=discord.AllowedMentions.none())
+        await ctx.send(
+            f"{user.mention}'s birthday was {timestamp}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @birthday.command()
-    async def compare(self, ctx: commands.Context, user1: discord.User, user2: discord.User):
+    async def compare(
+        self, ctx: commands.Context, user1: discord.User, user2: discord.User
+    ):
         """Compare two users' birthdays."""
         birthday1 = await self._get_birthday(user1.id)
         birthday2 = await self._get_birthday(user2.id)
@@ -316,29 +378,44 @@ class WorldDateTime(commands.Cog):
         tz2 = parse_offset(tz2) if tz2 else parse_offset("UTC")
 
         if birthday1 is None:
-            await ctx.send(f"{user1.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user1.mention} doesn't have a birthday set.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
 
         if birthday2 is None:
-            await ctx.send(f"{user2.mention} doesn't have a birthday set.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user2.mention} doesn't have a birthday set.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
-        
+
         if birthday1.day == birthday2.day and birthday1.month == birthday2.month:
-            await ctx.send(f"{user1.mention} and {user2.mention} have the same birthday!", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user1.mention} and {user2.mention} have the same birthday!",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
 
         # Create datetime objects for this year to compare
         today = datetime.now(tz)
         date1 = datetime(today.year, birthday1.month, birthday1.day, tzinfo=tz)
         date2 = datetime(today.year, birthday2.month, birthday2.day, tzinfo=tz2)
-        
+
         # Calculate days between birthdays
         if date1 < date2:
             days_diff = (date2 - date1).days
-            await ctx.send(f"{user1.mention}'s birthday is {days_diff} days before {user2.mention}'s birthday.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user1.mention}'s birthday is {days_diff} days before {user2.mention}'s birthday.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
         else:
             days_diff = (date1 - date2).days
-            await ctx.send(f"{user2.mention}'s birthday is {days_diff} days before {user1.mention}'s birthday.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{user2.mention}'s birthday is {days_diff} days before {user1.mention}'s birthday.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
     @birthday.command()
     async def today(self, ctx: commands.Context):
@@ -346,30 +423,37 @@ class WorldDateTime(commands.Cog):
         tz = await self._get_timezone(ctx.author.id)
         tz = parse_offset(tz) if tz else parse_offset("UTC")
         today = datetime.now(tz)
-        birthdays = await db.fetch("SELECT user_id, day, month FROM users WHERE month = $1 AND day = $2", today.month, today.day)
+        birthdays = await db.fetch(
+            "SELECT user_id, day, month FROM users WHERE month = $1 AND day = $2",
+            today.month,
+            today.day,
+        )
         if not birthdays:
             await ctx.send("No one's birthday today.")
             return
-        
+
         birthday_users: list[discord.User] = []
         for birthday in birthdays:
             birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
 
-        await ctx.send(f"{len(birthday_users)} person(s) have a birthday today: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"{len(birthday_users)} person(s) have a birthday today: {', '.join([user.mention for user in birthday_users])}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @birthday.command()
     async def month(self, ctx: commands.Context, month: Union[int, str]):
         """Lists all birthdays in a given month."""
         if isinstance(month, int) and (month < 1 or month > 12):
             await ctx.send("Month must be between 1 and 12")
             return
-        
+
         if isinstance(month, str):
             try:
                 month = MONTHS.index(month.capitalize()) + 1
             except Exception:
                 await ctx.send("invalid month")
-        
+
         birthdays = await db.fetch(
             "SELECT user_id, day, month FROM users WHERE month = $1 AND day IS NOT NULL",
             month,
@@ -377,12 +461,15 @@ class WorldDateTime(commands.Cog):
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
-        
+
         birthday_users: list[discord.User] = []
         for birthday in birthdays:
             birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
-        
-        await ctx.send(f"{len(birthday_users)} person(s) have a birthday in this month: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{len(birthday_users)} person(s) have a birthday in this month: {', '.join([user.mention for user in birthday_users])}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @birthday.command()
     async def thismonth(self, ctx: commands.Context):
@@ -397,12 +484,15 @@ class WorldDateTime(commands.Cog):
         if not birthdays:
             await ctx.send("No one's birthday in this month.")
             return
-        
+
         birthday_users: list[discord.User] = []
         for birthday in birthdays:
             birthday_users.append(await self.bot.fetch_user(birthday["user_id"]))
-        
-        await ctx.send(f"{len(birthday_users)} person(s) have a birthday in this month: {', '.join([user.mention for user in birthday_users])}", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{len(birthday_users)} person(s) have a birthday in this month: {', '.join([user.mention for user in birthday_users])}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @birthday.command()
     async def list(self, ctx: commands.Context, page_number: int = 1):
@@ -415,20 +505,22 @@ class WorldDateTime(commands.Cog):
             if not birthdays:
                 await ctx.send("There's a whopping 0 users on this page.")
                 return
-            
+
             birthday_users: list[tuple[discord.User, int, int]] = []
             for birthday in birthdays:
                 user = await self.bot.fetch_user(birthday["user_id"])
                 birthday_users.append((user, birthday["day"], birthday["month"]))
-            
+
             bday_embed = Embed(
                 title=f"Birthdays - Page {page_number}",
                 description="",
-                color=discord.Colour.gold()
+                color=discord.Colour.gold(),
             )
             for user, day, month in birthday_users:
-                bday_embed.description += f"{user.mention} - {MONTHS[month - 1]} {to_ordinal(day)}\n"
-        
+                bday_embed.description += (
+                    f"{user.mention} - {MONTHS[month - 1]} {to_ordinal(day)}\n"
+                )
+
         await ctx.send(embed=bday_embed)
 
     @birthday.command()
@@ -439,15 +531,25 @@ class WorldDateTime(commands.Cog):
 
     @birthday.command(aliases=("fsb",))
     @commands.is_owner()
-    async def force_set_birthday(self, ctx: commands.Context, user: discord.User, day: int, month: Union[int, str], year: Optional[int] = None):
+    async def force_set_birthday(
+        self,
+        ctx: commands.Context,
+        user: discord.User,
+        day: int,
+        month: Union[int, str],
+        year: Optional[int] = None,
+    ):
         """Force set a user's birthday. Can only be used by bot owners."""
         if isinstance(month, str):
             month = MONTHS.index(month.capitalize()) + 1
-        
+
         birthday = Birthday(day, month, year)
         await self._set_birthday(user.id, birthday)
-        await ctx.send(f"{user.mention}'s birthday has been set to {birthday}.", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"{user.mention}'s birthday has been set to {birthday}.",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     # Timezone commands
     @timezone.command(name="set")
     async def set_timezone(self, ctx: commands.Context, timezone: Optional[str] = None):
@@ -458,11 +560,15 @@ class WorldDateTime(commands.Cog):
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
         async def yes_callback(interaction: discord.Interaction):
-            await interaction.response.send_message(f"Your timezone has been set to {stored_tz}")
+            await interaction.response.send_message(
+                f"Your timezone has been set to {stored_tz}"
+            )
             await self._set_timezone(ctx.author.id, stored_tz)
 
         async def no_callback(interaction: discord.Interaction):
-            await interaction.response.send_message("Your timezone has not been changed.")
+            await interaction.response.send_message(
+                "Your timezone has not been changed."
+            )
 
         yes_button.callback = yes_callback
         no_button.callback = no_callback
@@ -490,7 +596,7 @@ class WorldDateTime(commands.Cog):
                 await ctx.send("error :(")
                 self.console.print(f"Error parsing timezone {timezone}: {e}")
                 return
-        
+
         tz_str = tz_to_str(offset)
 
         if isinstance(offset, ZoneInfo):
@@ -501,19 +607,26 @@ class WorldDateTime(commands.Cog):
             stored_tz = f"UTC{hours:+d}"
 
         dt = datetime.now(offset)
-        await ctx.send(f"Is it currently {dt.hour:02d}:{dt.minute:02d} in {tz_str}?", view=buttons_view)
+        await ctx.send(
+            f"Is it currently {dt.hour:02d}:{dt.minute:02d} in {tz_str}?",
+            view=buttons_view,
+        )
         # Everything else is handled by the buttons
-    
+
     @timezone.command(name="get")
-    async def get_timezone(self, ctx: commands.Context, user: Optional[discord.User] = None):
+    async def get_timezone(
+        self, ctx: commands.Context, user: Optional[discord.User] = None
+    ):
         """Get a user's timezone."""
         if not user:
             user = ctx.author
-        
+
         tz = await self._get_timezone(user.id)
         if not tz:
             await ctx.send(
-                f"{user.mention} doesn't have a timezone set. Use `!timezone set` to set one." if user != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
+                f"{user.mention} doesn't have a timezone set. Use `!timezone set` to set one."
+                if user != ctx.author
+                else "You don't have a timezone set. Use `!timezone set` to set one.",
                 allowed_mentions=discord.AllowedMentions.none(),
             )
             return
@@ -532,14 +645,19 @@ class WorldDateTime(commands.Cog):
         )
 
     @timezone.command()
-    async def difference(self, ctx: commands.Context, tz1: str, tz2: Optional[str] = None):
+    async def difference(
+        self, ctx: commands.Context, tz1: str, tz2: Optional[str] = None
+    ):
         """Get the difference between two timezones with its name or an user."""
         if not tz2:
             tz2 = await self._get_timezone(ctx.author.id)
             if not tz2:
-                await ctx.send("You don't have a timezone set. Use `!timezone set` to set one.", allowed_mentions=discord.AllowedMentions.none())
+                await ctx.send(
+                    "You don't have a timezone set. Use `!timezone set` to set one.",
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
                 return
-            
+
         try:
             tzinfo1 = parse_offset(tz1)
             tzinfo2 = parse_offset(tz2)
@@ -547,48 +665,54 @@ class WorldDateTime(commands.Cog):
             await ctx.send("error :(")
             self.console.print(f"Error parsing timezone {tz1 if not tz2 else tz2}: {e}")
             return
-        
+
         dt1 = datetime.now(tzinfo1)
         dt2 = datetime.now(tzinfo2)
-        
+
         diff = dt2.utcoffset() - dt1.utcoffset()
-        
+
         hours = int(diff.total_seconds() // 3600)
         direction = "ahead" if diff.total_seconds() > 0 else "behind"
-        
+
         await ctx.send(
-            f"{tz2} is {hours} hours {direction} of {tz1}." if diff.total_seconds() > 0 else f"{tz2} is {abs(hours)} hours {direction} of {tz1}.", 
-            allowed_mentions=discord.AllowedMentions.none()
+            f"{tz2} is {hours} hours {direction} of {tz1}."
+            if diff.total_seconds() > 0
+            else f"{tz2} is {abs(hours)} hours {direction} of {tz1}.",
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
     @timezone.command(name="now")
-    async def tz_now(self, ctx: commands.Context, tz: Optional[discord.Member | str] = None):
+    async def tz_now(
+        self, ctx: commands.Context, tz: Optional[discord.Member | str] = None
+    ):
         """Get the current time in a timezone with its name or an user."""
         if not tz:
             tz = ctx.author
-        
+
         if isinstance(tz, discord.Member):
             timezone = await self._get_timezone(tz.id)
             if not timezone:
                 await ctx.send(
-                    f"{tz.mention} doesn't have a timezone set. \n-# Use !timezone set to set one." if tz != ctx.author else "You don't have a timezone set. Use `!timezone set` to set one.",
-                    allowed_mentions=discord.AllowedMentions.none()
+                    f"{tz.mention} doesn't have a timezone set. \n-# Use !timezone set to set one."
+                    if tz != ctx.author
+                    else "You don't have a timezone set. Use `!timezone set` to set one.",
+                    allowed_mentions=discord.AllowedMentions.none(),
                 )
                 return
         else:
             timezone = tz
-        
+
         try:
             tzinfo = parse_offset(timezone)
         except Exception as e:
             await ctx.send("error :(")
             self.console.print(f"Error parsing timezone {timezone}: {e}")
             return
-        
+
         dt = datetime.now(tzinfo)
         await ctx.send(
             f"It is currently {dt.hour:02d}:{dt.minute:02d} in {tzinfo.key if isinstance(tzinfo, ZoneInfo) else tzinfo}.",
-            allowed_mentions=discord.AllowedMentions.none()
+            allowed_mentions=discord.AllowedMentions.none(),
         )
 
 

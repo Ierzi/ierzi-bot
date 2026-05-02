@@ -16,13 +16,17 @@ import requests
 from rich.console import Console
 import xml.etree.ElementTree as ET
 
-SongData = tuple[str, str, str] # Song title - Album - Artist
+SongData = tuple[str, str, str]  # Song title - Album - Artist
 LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 
+
 def sign(params: dict, api_secret: str) -> str:
-    params_for_sig = {k: v for k, v in params.items() if k != 'format'}
-    signature_string = "".join(f"{k}{str(v)}" for k, v in sorted(params_for_sig.items())) + api_secret
+    params_for_sig = {k: v for k, v in params.items() if k != "format"}
+    signature_string = (
+        "".join(f"{k}{str(v)}" for k, v in sorted(params_for_sig.items())) + api_secret
+    )
     return hashlib.md5(signature_string.encode("utf-8")).hexdigest()
+
 
 class Songs(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
@@ -31,21 +35,25 @@ class Songs(commands.Cog):
         self.deezer_playlist_url = "https://api.deezer.com/playlist/12419865223/tracks"
         self.songs: list[SongData] = []
         self.fetch_deezer_playlist()
-        self.blindtest_pages: dict[int, int] = {} # user_id -> page number 
+        self.blindtest_pages: dict[int, int] = {}  # user_id -> page number
         self.blindtest_games = []
 
     def get_page(self, index: int):
-        url = self.deezer_playlist_url if index == 0 else f"{self.deezer_playlist_url}?index={index * 25}"
+        url = (
+            self.deezer_playlist_url
+            if index == 0
+            else f"{self.deezer_playlist_url}?index={index * 25}"
+        )
         response = requests.get(url)
         if response.status_code != 200:
             self.console.print(f"error: {response.status_code}")
             return []
         data = response.json()
         songs = []
-        for song in data['data']:
-            title = song['title']
-            album = song['album']['title']
-            artist = song['artist']['name']
+        for song in data["data"]:
+            title = song["title"]
+            album = song["album"]["title"]
+            artist = song["artist"]["name"]
             songs.append((title, album, artist))
         return songs
 
@@ -53,7 +61,7 @@ class Songs(commands.Cog):
         response = requests.get(self.deezer_playlist_url)
         if response.status_code == 200:
             data = response.json()
-            total_songs = data['total']
+            total_songs = data["total"]
             all_songs = []
             pages = (total_songs // 25) + 1
             for page in range(pages):
@@ -69,7 +77,7 @@ class Songs(commands.Cog):
         if not self.songs:
             await ctx.send("No songs available (???)")
             return
-        
+
         song = random.choice(self.songs)
         title, album, artist = song
         preview = None
@@ -82,10 +90,9 @@ class Songs(commands.Cog):
                 if response.status != 200:
                     await ctx.send(f"Error fetching preview: {response.status}")
                 else:
-                
                     data = await response.json()
                     results = data.get("data", [])
-                    if results: 
+                    if results:
                         preview_url = results[0].get("preview")
                         if preview_url:
                             async with session.get(preview_url) as response:
@@ -94,28 +101,35 @@ class Songs(commands.Cog):
                                 except Exception as e:
                                     self.console.print(e)
                                     await ctx.send("error :(")
-                                    return 
-                                
+                                    return
+
                                 song_data = await response.read()
                                 # Make file name original
                                 preview = f"{title}_{artist}.mp3"
                                 with open(preview, "wb") as f:
                                     f.write(song_data)
                         else:
-                            self.console.print(f"No preview available for {title} by {artist}")
+                            self.console.print(
+                                f"No preview available for {title} by {artist}"
+                            )
                     else:
                         self.console.print(f"No results from Deezer for query: {query}")
 
         if preview:
-            await ctx.send(f"**{title}** - {album} - {artist}", file=File(preview, filename="preview.mp3"))
+            await ctx.send(
+                f"**{title}** - {album} - {artist}",
+                file=File(preview, filename="preview.mp3"),
+            )
         else:
             await ctx.send(f"**{title}** - {album} - {artist}")
-    
+
     @commands.command()
     async def getsong(self, ctx: commands.Context, index: int):
         """Gets a song based on an index."""
         if index > len(self.songs):
-            await ctx.send(f"I don't have that many songs :sob: (only {len(self.songs):,})")
+            await ctx.send(
+                f"I don't have that many songs :sob: (only {len(self.songs):,})"
+            )
             return
 
         title, album, artist = self.songs[index]
@@ -129,10 +143,9 @@ class Songs(commands.Cog):
                 if response.status != 200:
                     await ctx.send(f"Error fetching preview: {response.status}")
                 else:
-                
                     data = await response.json()
                     results = data.get("data", [])
-                    if results: 
+                    if results:
                         preview_url = results[0].get("preview")
                         if preview_url:
                             async with session.get(preview_url) as response:
@@ -141,38 +154,47 @@ class Songs(commands.Cog):
                                 except Exception as e:
                                     self.console.print(e)
                                     await ctx.send("error :(")
-                                    return 
-                                
+                                    return
+
                                 song_data = await response.read()
                                 # Make file name original
                                 preview = f"{title}_{artist}.mp3"
                                 with open(preview, "wb") as f:
                                     f.write(song_data)
                         else:
-                            self.console.print(f"No preview available for {title} by {artist}")
+                            self.console.print(
+                                f"No preview available for {title} by {artist}"
+                            )
                     else:
                         self.console.print(f"No results from Deezer for query: {query}")
 
         if preview:
-            await ctx.send(f"**{title}** - {album} - {artist}", file=File(preview, filename="preview.mp3"))
+            await ctx.send(
+                f"**{title}** - {album} - {artist}",
+                file=File(preview, filename="preview.mp3"),
+            )
         else:
             await ctx.send(f"**{title}** - {album} - {artist}")
-    
+
     @alru_cache()
     async def async_get_page(self, index: int):
-        url = self.deezer_playlist_url if index == 0 else f"{self.deezer_playlist_url}?index={index * 25}"
+        url = (
+            self.deezer_playlist_url
+            if index == 0
+            else f"{self.deezer_playlist_url}?index={index * 25}"
+        )
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as resp:
                 if resp.status != 200:
                     self.console.print(f"Error while fetching playlist: {resp.status}")
                     return []
-                
+
                 data = await resp.json()
                 songs = []
-                for song in data['data']:
-                    title = song['title']
-                    album = song['album']['title']
-                    artist = song['artist']['name']
+                for song in data["data"]:
+                    title = song["title"]
+                    album = song["album"]["title"]
+                    artist = song["artist"]["name"]
                     songs.append((title, album, artist))
                 return songs
 
@@ -188,23 +210,23 @@ class Songs(commands.Cog):
                 if resp.status != 200:
                     await ctx.send(f"Error {resp.status} :(")
                     return
-                
+
                 resp_json = await resp.json()
-                total_songs = resp_json['total']
+                total_songs = resp_json["total"]
                 all_songs = []
                 pages = (total_songs // 25) + 1
                 for page in range(pages):
                     songs = await self.async_get_page(page)
                     all_songs.extend(songs)
-                
+
         self.songs = all_songs
         await ctx.message.add_reaction("👍")
-    
+
     @commands.command(aliases=("pl",))
     async def playlistlength(self, ctx: commands.Context):
         """Gives how many songs are in my playlist."""
         await ctx.send(f"{format(len(self.songs), ',')} songs.")
-    
+
     @commands.command(aliases=("llfm",))
     async def loginlastfm(self, ctx: commands.Context):
         """Connect Ierzi Bot to your last.fm account."""
@@ -212,11 +234,7 @@ class Songs(commands.Cog):
             await ctx.send("stupid ass ierzi forgot to add his environment variable")
             return
 
-        args = {
-            "method": "auth.gettoken",
-            "api_key": LASTFM_API_KEY,
-            "format": "json"
-        }
+        args = {"method": "auth.gettoken", "api_key": LASTFM_API_KEY, "format": "json"}
 
         base_url = "http://ws.audioscrobbler.com/2.0/"
 
@@ -227,18 +245,20 @@ class Songs(commands.Cog):
                 except Exception as e:
                     self.console.print(e)
                     await ctx.send("error :(")
-                
+
                 json_response: dict = await response.json()
                 token = json_response.get("token")
 
-        login_link = f"http://www.last.fm/api/auth/?api_key={LASTFM_API_KEY}&token={token}"
+        login_link = (
+            f"http://www.last.fm/api/auth/?api_key={LASTFM_API_KEY}&token={token}"
+        )
 
         self.console.print(login_link)
 
         login_embed = Embed(
-            colour=0xD51007, # lastfm red
+            colour=0xD51007,  # lastfm red
             title="Login to Last.fm",
-            description=f"{ctx.author.mention}, to use last.fm related commands, you need to add your last.fm account. Click on the button below to log in."
+            description=f"{ctx.author.mention}, to use last.fm related commands, you need to add your last.fm account. Click on the button below to log in.",
         )
 
         login_button = Button(label="Connect Last.fm account")
@@ -246,9 +266,11 @@ class Songs(commands.Cog):
 
         async def login_button_callback(interaction: Interaction):
             if not interaction.user.id == ctx.author.id:
-                await interaction.response.send_message("this is not your button vro :broken_heart:", ephemeral=True)
+                await interaction.response.send_message(
+                    "this is not your button vro :broken_heart:", ephemeral=True
+                )
                 return
-            
+
             login_button.label = "Logging in..."
             login_button.disabled = True
 
@@ -260,7 +282,7 @@ class Songs(commands.Cog):
             args = {
                 "method": "auth.getSession",
                 "api_key": LASTFM_API_KEY,
-                "token": token
+                "token": token,
             }
 
             # Sign call
@@ -275,7 +297,7 @@ class Songs(commands.Cog):
                         except Exception as e:
                             self.console.print(e)
                             continue
-                        
+
                         data = await response.text()
                         xml = ET.fromstring(data)
                         status = xml.attrib.get("status")
@@ -285,25 +307,34 @@ class Songs(commands.Cog):
                             name = xml.find("session/name").text
 
                             # Save the session key and username to the database
-                            await db.execute("""
+                            await db.execute(
+                                """
                                 INSERT INTO users (user_id, lastfm_username, session_key)
                                 VALUES ($1, $2, $3)
                                 ON CONFLICT (user_id) DO UPDATE SET lastfm_username = EXCLUDED.lastfm_username, session_key = EXCLUDED.session_key
-                            """, ctx.author.id, name, sk)
+                            """,
+                                ctx.author.id,
+                                name,
+                                sk,
+                            )
 
                             login_button.label = "Logged in!"
                             self.console.print(f"{ctx.author} logged in.")
-                            await interaction.edit_original_response(content="You are logged in!", view=view)
+                            await interaction.edit_original_response(
+                                content="You are logged in!", view=view
+                            )
                             return
                         else:
                             await ctx.send("Error :(")
-        
+
         login_button.callback = login_button_callback
         view.add_item(login_button)
         await ctx.send(embed=login_embed, view=view)
 
     async def _is_authenticated(self, user_id: int) -> bool:
-        result = await db.fetchval("SELECT session_key FROM users WHERE user_id = $1", user_id)
+        result = await db.fetchval(
+            "SELECT session_key FROM users WHERE user_id = $1", user_id
+        )
         return result is not None
 
     @commands.command()
@@ -314,13 +345,16 @@ class Songs(commands.Cog):
             await ctx.send("yes")
         else:
             await ctx.send("no")
-    
+
     @commands.command()
     async def logoutlastfm(self, ctx: commands.Context):
-        """Logs you out from last.fm """
-        await db.execute("UPDATE users SET lastfm_username = NULL, session_key = NULL WHERE user_id = $1", ctx.author.id)
+        """Logs you out from last.fm"""
+        await db.execute(
+            "UPDATE users SET lastfm_username = NULL, session_key = NULL WHERE user_id = $1",
+            ctx.author.id,
+        )
         await ctx.send("Logged out.")
-    
+
     # TODO: Add win streaks
     @commands.command(aliases=("bt",))
     async def blindtest(self, ctx: commands.Context):
@@ -329,26 +363,33 @@ class Songs(commands.Cog):
         # * Check if user is authenticated
         is_auth = await self._is_authenticated(ctx.author.id)
         if not is_auth:
-            await ctx.send("You didn't connect your last.fm account yet! Use !loginlastfm.")
+            await ctx.send(
+                "You didn't connect your last.fm account yet! Use !loginlastfm."
+            )
             return
 
         # * Check if there isnt another game in this channel already
         channel_id = ctx.channel.id
         if channel_id in self.blindtest_games:
-            await ctx.message.reply("There is already a blind test game in this channel!", mention_author=False)
+            await ctx.message.reply(
+                "There is already a blind test game in this channel!",
+                mention_author=False,
+            )
             return
-        
+
         self.blindtest_games.append(channel_id)
 
         async with ctx.typing():
             # * Get a random song from their listening history
-            username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
+            username = await db.fetchval(
+                "SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id
+            )
             args = {
                 "method": "user.getRecentTracks",
                 "user": username,
                 "api_key": LASTFM_API_KEY,
                 "format": "json",
-                "limit": 200
+                "limit": 200,
             }
 
             if self.blindtest_pages.get(ctx.author.id) is not None:
@@ -359,14 +400,16 @@ class Songs(commands.Cog):
 
             # * REQUESTS
             async with aiohttp.ClientSession() as session:
-                async with session.get("http://ws.audioscrobbler.com/2.0/", params=args, timeout=30) as response:
+                async with session.get(
+                    "http://ws.audioscrobbler.com/2.0/", params=args, timeout=30
+                ) as response:
                     try:
                         response.raise_for_status()
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
                         return
-                    
+
                     data = await response.json()
                     tracks = data.get("recenttracks", {}).get("track", [])
                     if not tracks:
@@ -378,7 +421,7 @@ class Songs(commands.Cog):
                         attr = data.get("recenttracks", {}).get("@attr", {})
                         total_pages = int(attr.get("totalPages", 1))
                         self.blindtest_pages[ctx.author.id] = total_pages
-                    
+
                 tracks = [t for t in tracks if "date" in t]
                 random_track = random.choice(tracks)
 
@@ -399,20 +442,24 @@ class Songs(commands.Cog):
                 else:
                     hints_args["artist"] = artist_name
                     hints_args["track"] = song_name
-                
-                async with session.get("http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30) as response:
+
+                async with session.get(
+                    "http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30
+                ) as response:
                     try:
                         response.raise_for_status()
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
                         return
-                    
+
                     data = await response.json()
                     track_info = data.get("track", {})
                     # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
                     if not track_info:
-                        self.console.print(f"No track info for {song_name} by {artist_name}")
+                        self.console.print(
+                            f"No track info for {song_name} by {artist_name}"
+                        )
                         self.console.print("no hints")
 
                     # Album name
@@ -438,11 +485,21 @@ class Songs(commands.Cog):
                         except (TypeError, ValueError):
                             duration = None
 
-                    hints = [hint for hint in (duration, genre, release_date, album_name, artist_name) if hint is not None] # From hardest to easiest
+                    hints = [
+                        hint
+                        for hint in (
+                            duration,
+                            genre,
+                            release_date,
+                            album_name,
+                            artist_name,
+                        )
+                        if hint is not None
+                    ]  # From hardest to easiest
 
                 # * Ask deezer for a preview
                 query = f"{song_name} {artist_name}"
-                self.console.print(query) # If i dont guess the song for debugging
+                self.console.print(query)  # If i dont guess the song for debugging
                 url = f"https://api.deezer.com/search?q={query}"
                 # await ctx.send(url)
 
@@ -453,14 +510,14 @@ class Songs(commands.Cog):
                         self.console.print(e)
                         await ctx.send("error :(")
                         return
-                    
+
                     data = await response.json()
                     results = data.get("data", [])
                     if not results:
                         await ctx.send("error :(")
                         self.console.print(f"No results from Deezer for query: {query}")
                         return
-                    
+
                     for result in results:
                         result_artist = result.get("artist", {}).get("name", "").lower()
                         if result_artist == artist_name.lower():
@@ -470,9 +527,11 @@ class Songs(commands.Cog):
 
                     if not preview_url:
                         await ctx.send("error :(")
-                        self.console.print(f"No preview available for song {song_name} by {artist_name}")
+                        self.console.print(
+                            f"No preview available for song {song_name} by {artist_name}"
+                        )
                         return
-                    
+
                 # test send
                 # await ctx.send(f"{preview_url}")
 
@@ -484,7 +543,7 @@ class Songs(commands.Cog):
                         self.console.print(e)
                         await ctx.send("error :(")
                         return
-                    
+
                     song_data = await response.read()
                     # Make file name original
                     filename = f"{song_name}_{artist_name}.mp3"
@@ -497,19 +556,21 @@ class Songs(commands.Cog):
         hints_text = "\n"
         hints_index = 0
         embed = Embed(
-            title="", # Make title appear when shuffle song name
+            title="",  # Make title appear when shuffle song name
             description=f"{title}\n{hints_text}",
-            colour=0xD51007, # lastfm red
+            colour=0xD51007,  # lastfm red
         )
         game_state = {"active": True, "guessed": False}
 
         view = View(timeout=75)
-        
+
         # * Button callbacks
         async def hint_button_callback(interaction: Interaction):
             nonlocal hints_text, given_hints, hints_index
             if not hints:
-                await interaction.response.send_message("No more hints available :(", ephemeral=True)
+                await interaction.response.send_message(
+                    "No more hints available :(", ephemeral=True
+                )
                 return
 
             hint = hints[hints_index]
@@ -531,7 +592,7 @@ class Songs(commands.Cog):
             hints_text = "\n".join(f"- {hint}" for hint in given_hints)
             embed.description = f"{title}\n{hints_text}"
             await interaction.response.edit_message(embed=embed, view=view)
-        
+
         async def shuffle_button_callback(interaction: Interaction):
             nonlocal song_name
             # Shuffle the song name, but like last.fm, only shuffle the words and keep the spaces
@@ -557,7 +618,7 @@ class Songs(commands.Cog):
             )
             for item in view.children:
                 item.disabled = True
-            
+
             self.blindtest_games.remove(channel_id)
             view_gaveup = View(timeout=LONGER_VIEW_TIMEOUT)
             view_gaveup.add_item(play_again_button)
@@ -569,8 +630,11 @@ class Songs(commands.Cog):
         async def play_again_callback(interaction: Interaction):
             await interaction.response.defer()
 
-            if channel_id in self.blindtest_games: # Game is not over
-                await interaction.followup.send("There is already a game in this channel, you can't start a new one yett", ephemeral=True)
+            if channel_id in self.blindtest_games:  # Game is not over
+                await interaction.followup.send(
+                    "There is already a game in this channel, you can't start a new one yett",
+                    ephemeral=True,
+                )
                 return
 
             self.console.print("Play again button pressed")
@@ -579,91 +643,47 @@ class Songs(commands.Cog):
 
             if not interaction.user.id == ctx.author.id:
                 ctx.author = interaction.user
-            
-            await interaction.followup.edit_message(interaction.message.id, view=play_again_button.view) # Disable play again button
-            await self.blindtest(ctx)
 
+            await interaction.followup.edit_message(
+                interaction.message.id, view=play_again_button.view
+            )  # Disable play again button
+            await self.blindtest(ctx)
 
         hint_button = Button(label="Add hint")
         shuffle_button = Button(label="Shuffle song name")
         giveup_button = Button(label="Give up")
-        play_again_button = Button(label="Play again") # Not added to view yet
+        play_again_button = Button(label="Play again")  # Not added to view yet
 
         hint_button.callback = hint_button_callback
         shuffle_button.callback = shuffle_button_callback
         giveup_button.callback = giveup_button_callback
         play_again_button.callback = play_again_callback
-        
+
         view.add_item(hint_button)
         view.add_item(shuffle_button)
         view.add_item(giveup_button)
 
-        bt_message = await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
+        bt_message = await ctx.send(
+            file=File(filename, filename="preview.mp3"), embed=embed, view=view
+        )
         os.remove(filename)
-        
+
         # * Main game loop - 75 seconds to guess
         def check_message(msg: Message):
             return msg.channel == ctx.channel and not msg.author.bot
-        
+
         def similarity_score(a: str, b: str) -> float:
             return SequenceMatcher(None, a.lower(), b.lower()).ratio()
-        
+
         start_time = asyncio.get_event_loop().time()
         while game_state["active"]:
             try:
                 # Wait for message with 75 second timeout
                 elapsed = asyncio.get_event_loop().time() - start_time
                 remaining = 75 - elapsed
-                
-                if remaining <= 0: 
+
+                if remaining <= 0:
                     # Time's up
-                    game_state["active"] = False
-                    embed_timeout = Embed(
-                        title="Nobody guesssed it...", 
-                        description=f"The song was **{song_name}** by **{artist_name}**",
-                        colour=0xD51007,
-                    )
-                    for item in view.children:
-                        item.disabled = True
-
-                    timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
-                    timeout_view.add_item(play_again_button)
-                    self.blindtest_games.remove(channel_id)
-
-                    await bt_message.edit(view=view) # Disable buttons
-                    await ctx.send(embed=embed_timeout, view=timeout_view)
-                    break
-                
-                msg = await self.bot.wait_for("message", check=check_message, timeout=remaining)
-                elapsed = asyncio.get_event_loop().time() - start_time # After waiting, the elapsed time changed
-                
-                # Check if answer is correct
-                similarity = similarity_score(msg.content, song_name)
-                if similarity >= 0.7: # 70%
-                    await msg.add_reaction("✅")
-                    game_state["active"] = False
-                    game_state["guessed"] = True
-                    embed_correct = Embed(
-                        description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
-                        colour=0xD51007,
-                    )
-                    for item in view.children:
-                        item.disabled = True
-                    
-                    correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
-                    correct_view.add_item(play_again_button)
-                    self.blindtest_games.remove(channel_id)
-
-                    await bt_message.edit(view=view) # Disable buttons
-                    await ctx.send(embed=embed_correct, view=correct_view)
-                    break
-                else:
-                    # Wrong answer, continue
-                    await msg.add_reaction("❌")
-                    
-            except asyncio.TimeoutError:
-                # Time's up
-                if game_state["active"]: # Doesn't trigger if user gave up
                     game_state["active"] = False
                     embed_timeout = Embed(
                         title="Nobody guesssed it...",
@@ -677,14 +697,70 @@ class Songs(commands.Cog):
                     timeout_view.add_item(play_again_button)
                     self.blindtest_games.remove(channel_id)
 
-                    await bt_message.edit(view=view) # Disable buttons
+                    await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
                     break
-    
+
+                msg = await self.bot.wait_for(
+                    "message", check=check_message, timeout=remaining
+                )
+                elapsed = (
+                    asyncio.get_event_loop().time() - start_time
+                )  # After waiting, the elapsed time changed
+
+                # Check if answer is correct
+                similarity = similarity_score(msg.content, song_name)
+                if similarity >= 0.7:  # 70%
+                    await msg.add_reaction("✅")
+                    game_state["active"] = False
+                    game_state["guessed"] = True
+                    embed_correct = Embed(
+                        description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
+                        colour=0xD51007,
+                    )
+                    for item in view.children:
+                        item.disabled = True
+
+                    correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
+                    correct_view.add_item(play_again_button)
+                    self.blindtest_games.remove(channel_id)
+
+                    await bt_message.edit(view=view)  # Disable buttons
+                    await ctx.send(embed=embed_correct, view=correct_view)
+                    break
+                else:
+                    # Wrong answer, continue
+                    await msg.add_reaction("❌")
+
+            except asyncio.TimeoutError:
+                # Time's up
+                if game_state["active"]:  # Doesn't trigger if user gave up
+                    game_state["active"] = False
+                    embed_timeout = Embed(
+                        title="Nobody guesssed it...",
+                        description=f"The song was **{song_name}** by **{artist_name}**",
+                        colour=0xD51007,
+                    )
+                    for item in view.children:
+                        item.disabled = True
+
+                    timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
+                    timeout_view.add_item(play_again_button)
+                    self.blindtest_games.remove(channel_id)
+
+                    await bt_message.edit(view=view)  # Disable buttons
+                    await ctx.send(embed=embed_timeout, view=timeout_view)
+                    break
+
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
     @commands.command()
-    async def pixeljumbleunlimited(self, ctx: commands.Context): ... # TODO
+    async def pixeljumbleunlimited(self, ctx: commands.Context): ...  # TODO
+
 
 async def setup():
-    await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;")
-    await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL, ADD COLUMN IF NOT EXISTS pxu_winstreak INT NULL;")
+    await db.execute(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;"
+    )
+    await db.execute(
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL, ADD COLUMN IF NOT EXISTS pxu_winstreak INT NULL;"
+    )

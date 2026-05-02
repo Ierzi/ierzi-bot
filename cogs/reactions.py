@@ -21,7 +21,10 @@ class Reactions(commands.Cog):
         """Kiss someone."""
         all_pronouns = await pronouns.get_pronoun(ctx.author.id)
         if user == ctx.author:
-            await ctx.send(f"{ctx.author.mention} kisses {all_pronouns[4]}... that's a bit sad.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} kisses {all_pronouns[4]}... that's a bit sad.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             reaction = random.choice(["૮ ˶ᵔ ᵕ ᵔ˶ ა", ">/////<", "m- me? ._."])
@@ -30,29 +33,43 @@ class Reactions(commands.Cog):
         if user.bot:
             await ctx.send("ok what :broken_heart:")
             return
-        
-        await ctx.send(f"{ctx.author.mention} kisses {user.mention} ❤️", allowed_mentions=discord.AllowedMentions.none())
-    
+
+        await ctx.send(
+            f"{ctx.author.mention} kisses {user.mention} ❤️",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command()
     async def hug(self, ctx: commands.Context, user: discord.Member):
         """Hug someone."""
         all_pronouns = await pronouns.get_pronoun(ctx.author.id)
         if user == ctx.author:
-            await ctx.send(f"{ctx.author.mention} hugs {all_pronouns[4]} :sob: \n-# I'd argue that hugging a pillow is better.", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} hugs {all_pronouns[4]} :sob: \n-# I'd argue that hugging a pillow is better.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             await ctx.send("Hey I needed that hug... thank you <333")
             return
         if user.bot:
-            await ctx.send("not only are you hugging a bot, but it's not even me? :pensive:")
+            await ctx.send(
+                "not only are you hugging a bot, but it's not even me? :pensive:"
+            )
             return
-        await ctx.send(f"{ctx.author.mention} hugs {user.mention} 🤗", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"{ctx.author.mention} hugs {user.mention} 🤗",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command()
     async def cuddle(self, ctx: commands.Context, user: discord.Member):
         """Cuddle someone."""
         if user == ctx.author:
-            await ctx.send(f"{ctx.author.mention} ain't got anyone to cuddle (lonely ass)", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} ain't got anyone to cuddle (lonely ass)",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             if ctx.author.id == 966351518020300841:
@@ -63,24 +80,36 @@ class Reactions(commands.Cog):
         if user.bot:
             await ctx.send("cuddling a bot? really? :broken_heart:")
             return
-        
-        await ctx.send(f"{ctx.author.mention} cuddles {user.mention} 🥰 \n-# so cutesy", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{ctx.author.mention} cuddles {user.mention} 🥰 \n-# so cutesy",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @commands.command()
     async def tickle(self, ctx: commands.Context, user: discord.Member):
         """Tickle someone."""
         all_pronouns = await pronouns.get_pronoun(ctx.author.id)
         if user == ctx.author:
-            await ctx.send(f"{ctx.author.mention} is tickling {all_pronouns[4]}... {all_pronouns[0].capitalize()} might be cooked..", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} is tickling {all_pronouns[4]}... {all_pronouns[0].capitalize()} might be cooked..",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             await ctx.send("tickle my owner instead")
             return
         if user.bot:
-            await ctx.send(f"{ctx.author.mention} tickles {user.mention} and it doesnt react (its a bot wtf did you expect)", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} tickles {user.mention} and it doesnt react (its a bot wtf did you expect)",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
-        
-        await ctx.send(f"{ctx.author.mention} tickles {user.mention} 👉🤭", allowed_mentions=discord.AllowedMentions.none()) #lowkey cant find a better emoji than this 
+
+        await ctx.send(
+            f"{ctx.author.mention} tickles {user.mention} 👉🤭",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )  # lowkey cant find a better emoji than this
 
     @commands.command()
     async def slap(self, ctx: commands.Context, user: discord.Member):
@@ -90,19 +119,28 @@ class Reactions(commands.Cog):
             if ctx.author.id == 1153301933231181824:
                 # im not even gonna send a message this is gonna piss her off
                 return
-            await ctx.send(f"this dumbass {ctx.author.mention} is slapping {all_pronouns[4]} smh my head", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"this dumbass {ctx.author.mention} is slapping {all_pronouns[4]} smh my head",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             await ctx.send("fuck you")
             return
         if user.bot:
-            await ctx.send(f"{ctx.author.mention} **SLAPS** {user.mention}! \n-# deserved icl cause im better", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} **SLAPS** {user.mention}! \n-# deserved icl cause im better",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
-        if user.id == 1153301933231181824: # apex
+        if user.id == 1153301933231181824:  # apex
             await ctx.send("no.")
             return
-        
-        await ctx.send(f"{ctx.author.mention} **SLAPS** {user.mention}!", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{ctx.author.mention} **SLAPS** {user.mention}!",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @commands.command()
     async def kill(self, ctx: commands.Context, user: discord.Member):
@@ -112,21 +150,31 @@ class Reactions(commands.Cog):
             if user.id == 1153301933231181824:
                 for _ in range(3):
                     for _ in range(10):
-                        await ctx.send(f"**{user.mention} KILLS {all_pronouns[4]}!!!!!**")
+                        await ctx.send(
+                            f"**{user.mention} KILLS {all_pronouns[4]}!!!!!**"
+                        )
                         await asyncio.sleep(0.5)
-                        
+
                     await asyncio.sleep(3)
-                
-            await ctx.send(f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}", allowed_mentions=discord.AllowedMentions.none())
+
+            await ctx.send(
+                f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             await ctx.send("why?? :(")
             return
         if user.bot:
-            await ctx.send('why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this "joke" lmao')
+            await ctx.send(
+                'why do you wanna kill a bot :sob: wait kill.. bot? gd reference?? \n-# i only made this command for this "joke" lmao'
+            )
             return
-        
-        await ctx.send(f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{ctx.author.mention} **KILLS** {user.mention}!! \n-# that's not nice",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @commands.command()
     async def pat(self, ctx: commands.Context, user: discord.Member):
@@ -137,9 +185,12 @@ class Reactions(commands.Cog):
         if user.bot:
             await ctx.send("can you pick a real person??:sob:")
             return
-        
-        await ctx.send(f"{ctx.author.mention} pats {user.mention} 👏", allowed_mentions=discord.AllowedMentions.none())
-    
+
+        await ctx.send(
+            f"{ctx.author.mention} pats {user.mention} 👏",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command()
     async def flirt(self, ctx: commands.Context, user: discord.Member):
         """Flirt with someone."""
@@ -155,14 +206,20 @@ class Reactions(commands.Cog):
             await ctx.send("vros NOT gonna flirt back :broken_heart:")
             return
 
-        await ctx.send(f"{ctx.author.mention} flirts with {user.mention} 😘", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"{ctx.author.mention} flirts with {user.mention} 😘",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command()
     async def punch(self, ctx: commands.Context, user: discord.Member):
         """Punch someone."""
         if user == ctx.author:
             all_pronouns = pronouns.get_pronoun(ctx.author.id)
-            await ctx.send(f"{ctx.author.mention} PUNCHES {all_pronouns[4]}!", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} PUNCHES {all_pronouns[4]}!",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
 
         if user.id == self.bot.user.id:
@@ -170,27 +227,62 @@ class Reactions(commands.Cog):
             await ctx.send(file=File(what_file.resolve()))
             return
         if user.bot:
-            await ctx.send(f"{ctx.author.mention} PUNCHES {user.mention}! \n-# deserved icl cause im the best bot here")
+            await ctx.send(
+                f"{ctx.author.mention} PUNCHES {user.mention}! \n-# deserved icl cause im the best bot here"
+            )
             return
-        if user.id == 1153301933231181824: # apex
+        if user.id == 1153301933231181824:  # apex
             await ctx.message.add_reaction("❌")
             return
-        
-        await ctx.send(f"{ctx.author.mention} PUNCHES {user.mention}!! \n-# that's not nice", allowed_mentions=discord.AllowedMentions.none())
-    
+
+        await ctx.send(
+            f"{ctx.author.mention} PUNCHES {user.mention}!! \n-# that's not nice",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command()
     async def feed(self, ctx: commands.Context, user: discord.Member):
         """Feed someone."""
-        food_emoji = random.choice(["🥫", "🍲", "🍛", "🍅", "🍜", "🍔", "🥗", "🫔", "🥑", "🥪", "🥖 (baguette)", "🥩", "🌯", "🍟", "🍕", "🌭", "🥙", "🍗"]) #why is there so many food emojis
+        food_emoji = random.choice(
+            [
+                "🥫",
+                "🍲",
+                "🍛",
+                "🍅",
+                "🍜",
+                "🍔",
+                "🥗",
+                "🫔",
+                "🥑",
+                "🥪",
+                "🥖 (baguette)",
+                "🥩",
+                "🌯",
+                "🍟",
+                "🍕",
+                "🌭",
+                "🥙",
+                "🍗",
+            ]
+        )  # why is there so many food emojis
         all_pronouns = await pronouns.get_pronoun(ctx.author.id)
         if user == ctx.author:
-            await ctx.send(f"{ctx.author.mention} feeds {all_pronouns[4]} 😋{food_emoji}", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} feeds {all_pronouns[4]} 😋{food_emoji}",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
         if user.id == self.bot.user.id:
             await ctx.send("no thanks.")
             return
         if user.bot:
-            await ctx.send(f"{ctx.author.mention} feeds.. the bot? or something? idfk", allowed_mentions=discord.AllowedMentions.none())
+            await ctx.send(
+                f"{ctx.author.mention} feeds.. the bot? or something? idfk",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
             return
-        
-        await ctx.send(f"{ctx.author.mention} feeds {user.mention} 😋{food_emoji}", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{ctx.author.mention} feeds {user.mention} 😋{food_emoji}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
