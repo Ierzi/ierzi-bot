@@ -682,7 +682,9 @@ class Songs(commands.Cog):
                     break
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
+    @commands.command()
+    async def pixeljumbleunlimited(self, ctx: commands.Context): ... # TODO
 
 async def setup():
-    # await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;")
+    await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;")
     await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL, ADD COLUMN IF NOT EXISTS pxu_winstreak INT NULL;")
