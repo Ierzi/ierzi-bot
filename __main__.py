@@ -303,6 +303,31 @@ async def profile(ctx: commands.Context, *user_ids: int):
     await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
+async def webhook_avatar(ctx, webhook_id: int):
+    url = f"https://discord.com/api/webhooks/{webhook_id}"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as resp:
+            if resp.status != 200:
+                await ctx.send("error :(")
+                return
+
+            data = await resp.json()
+
+    avatar_hash = data.get("avatar")
+
+    if not avatar_hash:
+        await ctx.send("Webhook has no avatar.")
+        return
+
+    avatar_url = f"https://cdn.discordapp.com/avatars/{webhook_id}/{avatar_hash}.png"
+    embed = discord.Embed(title="Webhook Avatar")
+    embed.set_image(url=avatar_url)
+
+    await ctx.send(embed=embed)
+    await ctx.send(avatar_url)
+
+@bot.command()
 async def github(ctx: commands.Context):
     """if you wanna contribute idk"""
     global experimental_branch
