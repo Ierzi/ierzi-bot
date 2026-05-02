@@ -66,7 +66,7 @@ class AI(commands.Cog):
         async with ctx.typing():
             client = AsyncGroq(api_key=self.groq_key)
             response = await client.chat.completions.create(
-                model="llama-3.1-70b-versatile",
+                model="openai/gpt-oss-20b",
                 messages=[
                     {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                     {"role": "user", "content": f"Summarize this: {reply_content}"}
@@ -92,7 +92,7 @@ class AI(commands.Cog):
         async with ctx.typing():
             client = AsyncGroq(api_key=self.groq_key)
             response = await client.chat.completions.create(
-                model="llama-3.1-70b-versatile",
+                model="openai/gpt-oss-20b",
                 messages=[
                     {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                     {"role": "user", "content": f"Expand this: {reply_content}"}
@@ -202,7 +202,7 @@ class AI(commands.Cog):
         """TLDR but doesnt send the messages"""
         client = AsyncGroq(api_key=self.groq_key)
         response = await client.chat.completions.create(
-            model="llama-3.1-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                 {"role": "user", "content": f"Summarize this: {message}"}
@@ -217,7 +217,7 @@ class AI(commands.Cog):
         """TSMR but doesnt send the messages"""
         client = AsyncGroq(api_key=self.groq_key)
         response = await client.chat.completions.create(
-            model="llama-3.1-70b-versatile",
+            model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                 {"role": "user", "content": f"Expand this: {message}"}

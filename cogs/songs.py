@@ -334,7 +334,7 @@ class Songs(commands.Cog):
         # * Check if there isnt another game in this channel already
         channel_id = ctx.channel.id
         if channel_id in self.blindtest_games:
-            await ctx.send("There is already a blind test game in this channel.")
+            await ctx.message.reply("There is already a blind test game in this channel!", mention_author=False)
             return
         
         self.blindtest_games.append(channel_id)
@@ -570,6 +570,11 @@ class Songs(commands.Cog):
 
         async def play_again_callback(interaction: Interaction):
             await interaction.response.defer()
+
+            if channel_id in self.blindtest_games: # Game is not over
+                await interaction.followup.send("There is already a game in this channel, you can't start a new one yett", ephemeral=True)
+                return
+
             self.console.print("Play again button pressed")
             play_again_button.label = f"{interaction.user.name} is playing again!"
             play_again_button.disabled = True
@@ -577,7 +582,9 @@ class Songs(commands.Cog):
             if not interaction.user.id == ctx.author.id:
                 ctx.author = interaction.user
             
+            await interaction.followup.edit_message(interaction.message.id, view=view) # Disable play again button
             await self.blindtest(ctx)
+
 
         hint_button = Button(label="Add hint")
         shuffle_button = Button(label="Shuffle song name")

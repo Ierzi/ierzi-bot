@@ -336,7 +336,7 @@ class Fun(commands.Cog):
             async with ctx.typing():
                 client = AsyncGroq(api_key=self.groq_api_key)
                 response = await client.chat.completions.create(
-                    model="llama-3.1-70b-versatile",
+                    model="openai/gpt-oss-20b",
                     messages=[
                         {
                             "role": "system",
