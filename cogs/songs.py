@@ -1,4 +1,4 @@
-from discord import Embed, File, Interaction
+from discord import Embed, File, Interaction, Message
 from discord.ext import commands
 from discord.ui import Button, View
 
@@ -561,12 +561,15 @@ class Songs(commands.Cog):
                 item.disabled = True
             
             self.blindtest_games.remove(channel_id)
+            view_gaveup = View(timeout=LONGER_VIEW_TIMEOUT)
+            view_gaveup.add_item(play_again_button)
 
             await interaction.response.edit_message(view=view)
-            await ctx.send(embed=embed_result)
+            await ctx.send(embed=embed_result, view=view_gaveup)
             return
 
         async def play_again_callback(interaction: Interaction):
+            await interaction.response.defer()
             self.console.print("Play again button pressed")
             play_again_button.label = f"{interaction.user.name} is playing again!"
             play_again_button.disabled = True
@@ -594,8 +597,8 @@ class Songs(commands.Cog):
         os.remove(filename)
         
         # * Main game loop - 75 seconds to guess
-        def check_message(msg):
-            return msg.channel == ctx.channel
+        def check_message(msg: Message):
+            return msg.channel == ctx.channel and not msg.author.bot
         
         def similarity_score(a: str, b: str) -> float:
             return SequenceMatcher(None, a.lower(), b.lower()).ratio()
@@ -618,7 +621,7 @@ class Songs(commands.Cog):
                     for item in view.children:
                         item.disabled = True
 
-                    timeout_view = View()
+                    timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
                     self.blindtest_games.remove(channel_id)
 
@@ -627,6 +630,7 @@ class Songs(commands.Cog):
                     break
                 
                 msg = await self.bot.wait_for("message", check=check_message, timeout=remaining)
+                elapsed = asyncio.get_event_loop().time() - start_time # After waiting, the elapsed time changed
                 
                 # Check if answer is correct
                 similarity = similarity_score(msg.content, song_name)
@@ -641,8 +645,7 @@ class Songs(commands.Cog):
                     for item in view.children:
                         item.disabled = True
                     
-                    
-                    correct_view = View()
+                    correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     correct_view.add_item(play_again_button)
                     self.blindtest_games.remove(channel_id)
 
@@ -665,14 +668,13 @@ class Songs(commands.Cog):
                     for item in view.children:
                         item.disabled = True
 
-                    timeout_view = View()
+                    timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
                     self.blindtest_games.remove(channel_id)
 
                     await bt_message.edit(view=view) # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
-                    break # If button doesnt work its probably cause of this
-
+                    break
     
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
 
