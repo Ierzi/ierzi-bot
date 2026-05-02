@@ -32,6 +32,7 @@ class Songs(commands.Cog):
         self.songs: list[SongData] = []
         self.fetch_deezer_playlist()
         self.blindtest_pages: dict[int, int] = {} # user_id -> page number 
+        self.blindtest_games = []
 
     def get_page(self, index: int):
         url = self.deezer_playlist_url if index == 0 else f"{self.deezer_playlist_url}?index={index * 25}"
@@ -204,8 +205,6 @@ class Songs(commands.Cog):
         """Gives how many songs are in my playlist."""
         await ctx.send(f"{format(len(self.songs), ',')} songs.")
     
-    #TODO: Come back to this after adding an api route to get the session key and username
-    # Idk how to do that lmao
     @commands.command(aliases=("llfm",))
     async def loginlastfm(self, ctx: commands.Context):
         if not LASTFM_API_KEY:
@@ -325,14 +324,23 @@ class Songs(commands.Cog):
     @commands.command(aliases=("bt",))
     async def blindtest(self, ctx: commands.Context):
         """Gives a random song, and you have to guess its name."""
-        # TODO: Prolly implement an algorithm to accept an answer if it's close enough to the actual name
+        # TODO: Avoid playing 2 games at the same time
+        # TODO: Add typing 
 
         # * Check if user is authenticated
         is_auth = await self._is_authenticated(ctx.author.id)
         if not is_auth:
             await ctx.send("You didn't connect your last.fm account yet! Use !loginlastfm.")
             return
-    
+
+        # * Check if there isnt another game in this channel already
+        channel_id = ctx.channel.id
+        if channel_id in self.blindtest_games:
+            await ctx.send("There is already a blind test game in this channel.")
+            return
+        
+        self.blindtest_games.append(channel_id)
+
         # * Get a random song from their listening history
         username = await db.fetchval("SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id)
         args = {
@@ -401,7 +409,7 @@ class Songs(commands.Cog):
                 
                 data = await response.json()
                 track_info = data.get("track", {})
-                await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
+                # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
                 if not track_info:
                     self.console.print(f"No track info for {song_name} by {artist_name}")
                     self.console.print("no hints")
@@ -433,8 +441,9 @@ class Songs(commands.Cog):
 
             # * Ask deezer for a preview
             query = f"{song_name} {artist_name}"
+            self.console.print(query) # If i dont guess the song for debugging
             url = f"https://api.deezer.com/search?q={query}"
-            await ctx.send(url)
+            # await ctx.send(url)
 
             async with session.get(url, timeout=30) as response:
                 try:
@@ -467,7 +476,7 @@ class Songs(commands.Cog):
                     return
                 
             # test send
-            await ctx.send(f"{preview_url}")
+            # await ctx.send(f"{preview_url}")
 
             # * Download song
             async with session.get(preview_url) as response:
@@ -488,9 +497,10 @@ class Songs(commands.Cog):
             given_hints = []
             title = "Bind Test - Guess the song "
             hints_text = "\n"
+            hints_index = 0
             embed = Embed(
                 title="", # Make title appear when shuffle song name
-                description=f"{title}\n{hints}",
+                description=f"{title}\n{hints_text}",
                 colour=0xD51007, # lastfm red
             )
             game_state = {"active": True, "guessed": False}
@@ -499,12 +509,27 @@ class Songs(commands.Cog):
             
             # * Button callbacks
             async def hint_button_callback(interaction: Interaction):
-                nonlocal hints_text, given_hints
+                nonlocal hints_text, given_hints, hints_index
                 if not hints:
                     await interaction.response.send_message("No more hints available :(", ephemeral=True)
                     return
-                
-                given_hints.append(hints.pop())
+
+                hint = hints[hints_index]
+
+                match hints_index:
+                    case 0:
+                        given_hints.append(f"Duration: {hint} seconds")
+                    case 1:
+                        given_hints.append(f"The genre of this song is {hint}")
+                    case 2:
+                        given_hints.append(f"Release date: {hint}")
+                    case 3:
+                        given_hints.append(f"The album name is {hint}")
+                    case 4:
+                        given_hints.append(f"This song was made by {hint}")
+
+                hints_index += 1
+
                 hints_text = "\n".join(f"- {hint}" for hint in given_hints)
                 embed.description = f"{title}\n{hints_text}"
                 await interaction.response.edit_message(embed=embed, view=view)
@@ -531,13 +556,14 @@ class Songs(commands.Cog):
                 )
                 for item in view.children:
                     item.disabled = True
+                
+                self.blindtest_games.remove(channel_id)
 
                 await interaction.response.edit_message(view=view)
                 await ctx.send(embed=embed_result)
                 return
 
             async def play_again_callback(interaction: Interaction):
-                await interaction.response.defer()
                 self.console.print("Play again button pressed")
                 play_again_button.label = f"{interaction.user.name} is playing again!"
                 play_again_button.disabled = True
@@ -590,6 +616,7 @@ class Songs(commands.Cog):
 
                         timeout_view = View()
                         timeout_view.add_item(play_again_button)
+                        self.blindtest_games.remove(channel_id)
 
                         await bt_message.edit(view=view) # Disable buttons
                         await ctx.send(embed=embed_timeout, view=timeout_view)
@@ -612,6 +639,7 @@ class Songs(commands.Cog):
                         
                         correct_view = View()
                         correct_view.add_item(play_again_button)
+                        self.blindtest_games.remove(channel_id)
 
                         await bt_message.edit(view=view) # Disable buttons
                         await ctx.send(embed=embed_correct, view=correct_view)
@@ -634,6 +662,7 @@ class Songs(commands.Cog):
 
                         timeout_view = View()
                         timeout_view.add_item(play_again_button)
+                        self.blindtest_games.remove(channel_id)
 
                         await bt_message.edit(view=view) # Disable buttons
                         await ctx.send(embed=embed_timeout, view=timeout_view)
