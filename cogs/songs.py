@@ -495,7 +495,7 @@ class Songs(commands.Cog):
 
         # * Make embed
         given_hints = []
-        title = "Bind Test - Guess the song "
+        title = "Blind Test - Guess the song "
         hints_text = "\n"
         hints_index = 0
         embed = Embed(
