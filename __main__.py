@@ -14,7 +14,7 @@ from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
-from cogs.songs import Songs#, setup
+from cogs.songs import Songs, setup
 from cogs.world_date_time import WorldDateTime
 
 # Utilities
@@ -300,6 +300,7 @@ async def profile(ctx: commands.Context, *user_ids: int):
         user = bot.get_user(uid) or await bot.fetch_user(uid)
         message += f"{user.mention}, "
     message = message[:-2] # remove the last comma
+
     await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
 @bot.command()
@@ -715,7 +716,7 @@ async def start_bot():
     await db.init_pool()
     try:
         await load_cogs()
-        # await setup()
+        await setup()
         console.print("Bot is ready.")
 
         await bot.start(token)

@@ -207,6 +207,7 @@ class Songs(commands.Cog):
     
     @commands.command(aliases=("llfm",))
     async def loginlastfm(self, ctx: commands.Context):
+        """Connect Ierzi Bot to your last.fm account."""
         if not LASTFM_API_KEY:
             await ctx.send("stupid ass ierzi forgot to add his environment variable")
             return
@@ -254,7 +255,7 @@ class Songs(commands.Cog):
             await interaction.response.send_message(f"{login_link}", ephemeral=True)
 
             # Ping the server every 5 seconds to check if the user has authenticated
-            # 60 seconds / 5 = 12, so 12 attempts
+            # 180 seconds / 10 = 18, so 18 attempts
 
             args = {
                 "method": "auth.getSession",
@@ -265,8 +266,8 @@ class Songs(commands.Cog):
             # Sign call
             args["api_sig"] = sign(args, os.getenv("LASTFM_API_SECRET"))
 
-            for _ in range(12):
-                await asyncio.sleep(5)
+            for _ in range(36):
+                await asyncio.sleep(10)
                 async with aiohttp.ClientSession() as session:
                     async with session.get(f"{base_url}", params=args) as response:
                         try:
@@ -316,11 +317,11 @@ class Songs(commands.Cog):
     
     @commands.command()
     async def logoutlastfm(self, ctx: commands.Context):
-        """Logs out the user from last.fm (deletes session key and username from database)"""
+        """Logs you out from last.fm """
         await db.execute("UPDATE users SET lastfm_username = NULL, session_key = NULL WHERE user_id = $1", ctx.author.id)
         await ctx.send("Logged out.")
     
-    # TODO: Add wim streaks
+    # TODO: Add win streaks
     @commands.command(aliases=("bt",))
     async def blindtest(self, ctx: commands.Context):
         """Gives a random song, and you have to guess its name."""
@@ -459,10 +460,7 @@ class Songs(commands.Cog):
                         await ctx.send("error :(")
                         self.console.print(f"No results from Deezer for query: {query}")
                         return
-
-                    # TODO: Iter through all the search results until a song with the same artist is found 
-                    # Make sure the preview matches
-
+                    
                     for result in results:
                         result_artist = result.get("artist", {}).get("name", "").lower()
                         if result_artist == artist_name.lower():
@@ -582,7 +580,7 @@ class Songs(commands.Cog):
             if not interaction.user.id == ctx.author.id:
                 ctx.author = interaction.user
             
-            await interaction.followup.edit_message(interaction.message.id, view=view) # Disable play again button
+            await interaction.followup.edit_message(interaction.message.id, view=play_again_button.view) # Disable play again button
             await self.blindtest(ctx)
 
 
@@ -686,5 +684,5 @@ class Songs(commands.Cog):
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
 
 async def setup():
-    await db.execute("ALTER TABLE users ADD COLUMN lastfm_username VARCHAR(255) NULL, ADD COLUMN session_key VARCHAR(255) NULL;")
-    
+    # await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;")
+    await db.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL, ADD COLUMN IF NOT EXISTS pxu_winstreak INT NULL;")
