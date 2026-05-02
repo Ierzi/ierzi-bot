@@ -10,4 +10,3 @@ aiogoogletrans #gender
 moviepy
 async-lru
 tzdata
-# nltk - not used anymore (why did it ask for sqlite3)

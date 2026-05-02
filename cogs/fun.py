@@ -92,8 +92,6 @@ class Fun(commands.Cog):
             747918143745294356,  # ludwig
             893298676003393536,  # abby
             902296627325317150,  # masternigwardofthefifth (long ass name)
-            1259095685207425036,  # winter (old)
-            1245098829116866560,  # winter (new)
         ]:
             await ctx.send(
                 f"{user.mention} is 100% gay! 🌈",
@@ -223,6 +221,8 @@ class Fun(commands.Cog):
         """Shows a cute cat video :3"""
         random_video = random.choice(self.cat_vid_names)
         await ctx.send(file=discord.File(random_video.resolve()))
+    
+    # TODO: !atlas
 
     @commands.command()
     @commands.is_owner()
