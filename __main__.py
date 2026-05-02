@@ -50,7 +50,7 @@ bot = commands.Bot(
     owner_ids=[
         966351518020300841, # my main account
         722480600392400976, # my other account
-        747918143745294356 # abby
+        747918143745294356, # abby
     ]
 )
 
@@ -313,7 +313,7 @@ async def github(ctx: commands.Context):
     await ctx.send("https://github.com/Ierzi/ierzi-bot \nhttps://git.gay/Ierzi/ierzi-bot (wtf is git.gay :sob:) \n-# btw i have no fucking clue how contributing on github works")
 
 #TODO: all of this
-@bot.command()
+@bot.command(aliases=("todos", "todo", "todolist"))
 async def roadmap(ctx: commands.Context):
     """features i wanna add"""
     features = [
