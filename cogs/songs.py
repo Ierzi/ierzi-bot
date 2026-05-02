@@ -610,11 +610,11 @@ class Songs(commands.Cog):
                 elapsed = asyncio.get_event_loop().time() - start_time
                 remaining = 75 - elapsed
                 
-                if remaining <= 0:
+                if remaining <= 0: 
                     # Time's up
                     game_state["active"] = False
                     embed_timeout = Embed(
-                        title="Time's Up!",
+                        title="Nobody guesssed it...", 
                         description=f"The song was **{song_name}** by **{artist_name}**",
                         colour=0xD51007,
                     )
