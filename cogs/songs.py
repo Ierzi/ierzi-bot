@@ -588,6 +588,7 @@ class Songs(commands.Cog):
             view.add_item(giveup_button)
 
             bt_message = await ctx.send(file=File(filename, filename="preview.mp3"), embed=embed, view=view)
+            os.remove(filename)
             
             # * Main game loop - 75 seconds to guess
             def check_message(msg):
@@ -636,6 +637,7 @@ class Songs(commands.Cog):
                         )
                         for item in view.children:
                             item.disabled = True
+                        
                         
                         correct_view = View()
                         correct_view.add_item(play_again_button)
