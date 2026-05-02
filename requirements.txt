@@ -1,7 +1,6 @@
 discord.py
 rich
 dotenv
-openai
 asyncpg
 groq
 requests

@@ -5,7 +5,7 @@ import asyncio
 import aiohttp
 from aiogoogletrans import Translator
 from dotenv import load_dotenv
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 import os
 from pathlib import Path
 from pydantic import BaseModel
@@ -26,7 +26,7 @@ class Fun(commands.Cog):
         self.console = console
         self.cat_vid_names: list[Path] = []
         self.car_vids_folder = Path(__file__).resolve().parent.parent / "car_vids"
-        self.openai_api_key = os.getenv("OPENAI_KEY")
+        self.groq_api_key = os.getenv("GROQ_KEY")
         self.fetch_cat_vids()
 
     @commands.command()
@@ -334,35 +334,34 @@ class Fun(commands.Cog):
 
             # AI decision
             async with ctx.typing():
-                client = AsyncOpenAI(api_key=self.openai_api_key)
+                client = AsyncGroq(api_key=self.groq_api_key)
                 response = await client.chat.completions.create(
-                    model="gpt-5-mini",
+                    model="llama-3.1-70b-versatile",
                     messages=[
                         {
                             "role": "system",
-                            "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not."
+                            "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not. Respond with JSON in this format: {\"decision\": true/false, \"reason\": \"explanation\"}"
                         },
                         {
                             "role": "user",
                             "content": (
                                 f"The current item is '{old_item}'. "
                                 f"The user suggests '{what_beats}' as the next item. "
-                                "Does this item logically beat the previous one?"
+                                "Does this item logically beat the previous one? Respond with JSON."
                             )
                         }
                     ],
-
-                    functions=[
-                        {
-                            "name": "what_beats_rock_response",
-                            "description": "Determines if the suggested item beats the previous item.",
-                            "parameters": schema
-                        }
-                    ]
                 )
 
-                raw_args = response.choices[0].message.function_call.arguments
-                data = WhatBeatsRockResponse.model_validate_json(raw_args)
+                import json
+                try:
+                    result = json.loads(response.choices[0].message.content)
+                    data = WhatBeatsRockResponse(decision=result["decision"], reason=result["reason"])
+                except:
+                    # Fallback if JSON parsing fails
+                    content = response.choices[0].message.content.lower()
+                    decision = "yes" in content or "true" in content or "valid" in content
+                    data = WhatBeatsRockResponse(decision=decision, reason=response.choices[0].message.content)
 
             if data.decision:
                 await ctx.send(f"✅: {data.reason}")

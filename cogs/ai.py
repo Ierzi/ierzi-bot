@@ -1,16 +1,13 @@
 import discord
-from discord import File
 from discord.ext import commands
 import asyncio
 import os
 from groq import AsyncGroq
-from openai import AsyncOpenAI
 from rich.console import Console
 
 class AI(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
-        self.openai_key = os.getenv("OPENAI_KEY")
         self.groq_key = os.getenv("GROQ_KEY")
         self.serp_key = os.getenv("SERP_KEY")
         self.console = console
@@ -67,9 +64,9 @@ class AI(commands.Cog):
         reply_content = reply.content
 
         async with ctx.typing():
-            client = AsyncOpenAI(api_key=self.openai_key)
+            client = AsyncGroq(api_key=self.groq_key)
             response = await client.chat.completions.create(
-                model="gpt-4.1-mini-2025-04-14",
+                model="llama-3.1-70b-versatile",
                 messages=[
                     {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                     {"role": "user", "content": f"Summarize this: {reply_content}"}
@@ -93,9 +90,9 @@ class AI(commands.Cog):
         reply_content = reply.content
 
         async with ctx.typing():
-            client = AsyncOpenAI(api_key=self.openai_key)
+            client = AsyncGroq(api_key=self.groq_key)
             response = await client.chat.completions.create(
-                model="gpt-4.1-mini-2025-04-14",
+                model="llama-3.1-70b-versatile",
                 messages=[
                     {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                     {"role": "user", "content": f"Expand this: {reply_content}"}
@@ -125,23 +122,23 @@ class AI(commands.Cog):
         
         await ctx.send(expanded_text, allowed_mentions=discord.AllowedMentions.none())
 
-    @commands.command()
-    async def aitts(self, ctx: commands.Context, *, text: str):
-        """Generates audio from the input text."""
-        message_id = ctx.message.id
-        async with ctx.typing():
-            client = AsyncOpenAI(api_key=self.openai_key)
-            output_file = f"audio_{message_id}.mp3"
-            async with client.audio.speech.with_streaming_response.create(
-                model="gpt-4o-mini-tts",
-                voice="alloy",
-                input=text
-                ) as response:
-                    await response.stream_to_file(output_file)
-                    self.console.print(f"Generated audio for {message_id} in {output_file}")
+    # @commands.command()
+    # async def aitts(self, ctx: commands.Context, *, text: str):
+    #     """Generates audio from the input text."""
+    #     message_id = ctx.message.id
+    #     async with ctx.typing():
+    #         client = AsyncOpenAI(api_key=self.openai_key)
+    #         output_file = f"audio_{message_id}.mp3"
+    #         async with client.audio.speech.with_streaming_response.create(
+    #             model="gpt-4o-mini-tts",
+    #             voice="alloy",
+    #             input=text
+    #             ) as response:
+    #                 await response.stream_to_file(output_file)
+    #                 self.console.print(f"Generated audio for {message_id} in {output_file}")
 
-        await ctx.send(file=File(output_file))
-        os.remove(output_file)
+    #     await ctx.send(file=File(output_file))
+    #     os.remove(output_file)
     
     @commands.command()
     async def aitwist(self, ctx: commands.Context):
@@ -168,97 +165,9 @@ class AI(commands.Cog):
         await ctx.send(output, allowed_mentions=discord.AllowedMentions.none())
 
 
-    # # @commands.command()
-    # # async def aivid(self, ctx: commands.Context, *, text: str):
-    #     """Generate a video from a text."""
-    #     # Doing this with aiohttp
-    #     # cause yeah asyncopenai is weird
-    #     async with ctx.typing():
-    #         url = "https://api.openai.com/v1/videos"
-    #         headers = {
-    #             "Authorization": f"Bearer {self.openai_key}",
-    #         }
-
-    #         data = {
-    #             "model": "sora-2",
-    #             "prompt": text
-    #         }
-
-    #         async with aiohttp.ClientSession() as session:
-    #             async with session.post(url, headers=headers, json=data) as r:
-    #                 self.console.print(r.status)
-    #                 if r.status != 200:
-    #                     await ctx.send("Error generating video.")
-    #                     self.console.print("Error generating video.")
-    #                     self.console.print(await r.text())
-    #                     return
-                    
-    #                 response_json = await r.json()
-    #                 video_id = response_json["id"]
-    #                 self.console.print("Got video ID")
-    #                 self.console.print(f"Video ID: {video_id}")
-                
-    #             # Create an embed here to stop the bot from typing
-    #             embed = Embed(
-    #                 title=f"Video: {text}" if len(text) < 128 else f"Video: {text[:128]}...",
-    #                 description="Generating video...",
-    #                 color=discord.Color.red()
-    #             )
-
-    #             message = await ctx.send(embed=embed)
-
-    #             # Poll for status
-    #             status_url = f"{url}/{video_id}"
-    #             while True:
-    #                 await asyncio.sleep(10)
-    #                 async with session.get(status_url, headers=headers) as s:
-    #                     self.console.print("pinging...")
-    #                     if s.status != 200:
-    #                         embed.description = "Video generation failed :("
-    #                         await message.edit(embed=embed)
-    #                         self.console.print("error :(")
-    #                         self.console.print(await s.text())
-    #                         return
-
-    #                     s_json = await s.json()
-    #                     status = s_json["status"]
-    #                     self.console.print("Job status:", status)
-    #                     embed.description = f"Video generation status: {status}"
-    #                     await message.edit(embed=embed)
-    #                     if status in ("completed", "failed"):
-    #                         self.console.print("Got status")
-    #                         break
-
-    #             if status != "completed":
-    #                 self.console.print(f"Video generation didnt succeed: {s_json}")
-    #                 embed.description = "Video generation failed :("
-    #                 await message.edit(embed=embed)
-    #                 return
-                
-    #             # Get video
-    #             video_url = f"{status_url}/content"
-    #             async with session.get(video_url, headers=headers) as v:
-    #                 if v.status != 200:
-    #                     embed.description = "Video generation failed :("
-    #                     await message.edit(embed=embed)
-    #                     self.console.print("Error getting video.")
-    #                     self.console.print(v.status)
-    #                     self.console.print(await v.text())
-    #                     return
-                    
-    #                 video = await v.read()
-    #                 self.console.print("Got video")
-
-    #             async with aiofiles.open(f"{video_id}.mp4", "wb") as f:
-    #                 await f.write(video)
-                
-    #             self.console.print(f"Video saved to {video_id}.mp4")
-
-    #             embed.description = "Video generated successfully!"
-    #             await message.edit(embed=embed)
-    #             await message.reply(file=File(f"{video_id}.mp4"))
-    #             os.remove(f"{video_id}.mp4")
-
+    # @commands.command()
+    # async def aivid(self, ctx: commands.Context, *, text: str):
+    # OpenAI removed Sora lollll
 
     async def isthistrue(self, ctx: commands.Context, fact_checked_mess: str):
         # Using Groq cause it fast
@@ -291,9 +200,9 @@ class AI(commands.Cog):
     # External commands
     async def _tldr(self, message: str):
         """TLDR but doesnt send the messages"""
-        client = AsyncOpenAI(api_key=self.openai_key)
+        client = AsyncGroq(api_key=self.groq_key)
         response = await client.chat.completions.create(
-            model="gpt-4.1-mini-2025-04-14",
+            model="llama-3.1-70b-versatile",
             messages=[
                 {"role": "system", "content": f"You're a helpful assistant that summarize messages in a Discord Bot. Make it concise but keep its meaning. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the shorten text."},
                 {"role": "user", "content": f"Summarize this: {message}"}
@@ -306,9 +215,9 @@ class AI(commands.Cog):
     
     async def _tsmr(self, message: str):
         """TSMR but doesnt send the messages"""
-        client = AsyncOpenAI(api_key=self.openai_key)
+        client = AsyncGroq(api_key=self.groq_key)
         response = await client.chat.completions.create(
-            model="gpt-4.1-mini-2025-04-14",
+            model="llama-3.1-70b-versatile",
             messages=[
                 {"role": "system", "content": f"You're a helpful assistant that works in a Discord bot. Your goal is to expand short texts into a well-detailled and long explaination. Add a lot of details and complicated words. Your user ID is {self.bot.user.id} and your name is Ierzi Bot. Do not say anything else than the expanded text."},
                 {"role": "user", "content": f"Expand this: {message}"}
