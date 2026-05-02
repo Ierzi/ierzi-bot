@@ -292,14 +292,14 @@ class Fun(commands.Cog):
     async def whatbeatsrock(self, ctx: commands.Context): # TODO: maybe add a leaderboard
         """like the game on the website"""
         # Uses AI to answer
-        schema = {
-            "type": "object",
-            "properties": {
-                "decision": {"type": "boolean", "description": "True if the suggested item beats the previous one, false otherwise."},
-                "reason": {"type": "string", "description": "A brief explanation of why the suggested item does or does not beat the previous one."}
-            },
-            "required": ["decision", "reason"]
-        }
+        # schema = {
+        #     "type": "object",
+        #     "properties": {
+        #         "decision": {"type": "boolean", "description": "True if the suggested item beats the previous one, false otherwise."},
+        #         "reason": {"type": "string", "description": "A brief explanation of why the suggested item does or does not beat the previous one."}
+        #     },
+        #     "required": ["decision", "reason"]
+        # }
 
         answers = ["rock"] # User answers
         what_beats = "rock"
@@ -340,7 +340,7 @@ class Fun(commands.Cog):
                     messages=[
                         {
                             "role": "system",
-                            "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not. Respond with JSON in this format: {\"decision\": true/false, \"reason\": \"explanation\"}"
+                            "content": "You are playing a game where the user suggests items that beat the previous item. You must decide if the user's suggestion is valid or not. Respond with JSON in this format: {\"decision\": true/false, \"reason\": \"explanation\"}. Their item might not be part the classic game, but act like it is."
                         },
                         {
                             "role": "user",
@@ -357,8 +357,9 @@ class Fun(commands.Cog):
                 try:
                     result = json.loads(response.choices[0].message.content)
                     data = WhatBeatsRockResponse(decision=result["decision"], reason=result["reason"])
-                except:
+                except Exception as e:
                     # Fallback if JSON parsing fails
+                    self.console.print(e)
                     content = response.choices[0].message.content.lower()
                     decision = "yes" in content or "true" in content or "valid" in content
                     data = WhatBeatsRockResponse(decision=decision, reason=response.choices[0].message.content)
