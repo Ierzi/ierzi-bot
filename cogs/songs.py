@@ -539,7 +539,8 @@ class Songs(commands.Cog):
             async def play_again_callback(interaction: Interaction):
                 await interaction.response.defer()
                 self.console.print("Play again button pressed")
-                await play_again_button.edit(label="Loading...", disabled=True)
+                play_again_button.label = f"{interaction.user.name} is playing again!"
+                play_again_button.disabled = True
 
                 if not interaction.user.id == ctx.author.id:
                     ctx.author = interaction.user
