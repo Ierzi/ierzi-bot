@@ -8,6 +8,7 @@ from .utils.variables import LONGER_VIEW_TIMEOUT
 import aiohttp
 import asyncio
 from async_lru import alru_cache
+import cv2
 from difflib import SequenceMatcher
 import hashlib
 import os
@@ -35,8 +36,8 @@ class Songs(commands.Cog):
         self.deezer_playlist_url = "https://api.deezer.com/playlist/12419865223/tracks"
         self.songs: list[SongData] = []
         self.fetch_deezer_playlist()
-        self.blindtest_pages: dict[int, int] = {}  # user_id -> page number
-        self.blindtest_games = []
+        self.user_listening_pages: dict[int, int] = {}  # user_id -> page number
+        self.active_games = []
 
     def get_page(self, index: int):
         url = (
@@ -356,9 +357,9 @@ class Songs(commands.Cog):
         await ctx.send("Logged out.")
 
     # TODO: Add win streaks
-    @commands.command(aliases=("bt",))
-    async def blindtest(self, ctx: commands.Context):
-        """Gives a random song, and you have to guess its name."""
+    @commands.command(aliases=("blindtest", "bt", "mj"))
+    async def musicjumble(self, ctx: commands.Context):
+        """Guess the name of a random song from your listening history."""
 
         # * Check if user is authenticated
         is_auth = await self._is_authenticated(ctx.author.id)
@@ -370,14 +371,14 @@ class Songs(commands.Cog):
 
         # * Check if there isnt another game in this channel already
         channel_id = ctx.channel.id
-        if channel_id in self.blindtest_games:
+        if channel_id in self.active_games:
             await ctx.message.reply(
-                "There is already a blind test game in this channel!",
+                "There is already a game in this channel!",
                 mention_author=False,
             )
             return
 
-        self.blindtest_games.append(channel_id)
+        self.active_games.append(channel_id)
 
         async with ctx.typing():
             # * Get a random song from their listening history
@@ -392,9 +393,9 @@ class Songs(commands.Cog):
                 "limit": 200,
             }
 
-            if self.blindtest_pages.get(ctx.author.id) is not None:
+            if self.user_listening_pages.get(ctx.author.id) is not None:
                 # Get a random page
-                max_pages = self.blindtest_pages[ctx.author.id]
+                max_pages = self.user_listening_pages[ctx.author.id]
                 random_page = random.randint(1, max_pages)
                 args["page"] = random_page
 
@@ -420,7 +421,7 @@ class Songs(commands.Cog):
                         # Save the number of pages for later
                         attr = data.get("recenttracks", {}).get("@attr", {})
                         total_pages = int(attr.get("totalPages", 1))
-                        self.blindtest_pages[ctx.author.id] = total_pages
+                        self.user_listening_pages[ctx.author.id] = total_pages
 
                 tracks = [t for t in tracks if "date" in t]
                 random_track = random.choice(tracks)
@@ -485,7 +486,7 @@ class Songs(commands.Cog):
                         except (TypeError, ValueError):
                             duration = None
 
-                    hints = [
+                    hints = [ # TODO: Make this a dict to avoid stupid stuff like missing hints or whatever
                         hint
                         for hint in (
                             duration,
@@ -619,7 +620,7 @@ class Songs(commands.Cog):
             for item in view.children:
                 item.disabled = True
 
-            self.blindtest_games.remove(channel_id)
+            self.active_games.remove(channel_id)
             view_gaveup = View(timeout=LONGER_VIEW_TIMEOUT)
             view_gaveup.add_item(play_again_button)
 
@@ -630,7 +631,7 @@ class Songs(commands.Cog):
         async def play_again_callback(interaction: Interaction):
             await interaction.response.defer()
 
-            if channel_id in self.blindtest_games:  # Game is not over
+            if channel_id in self.active_games:  # There's already a game in this channel
                 await interaction.followup.send(
                     "There is already a game in this channel, you can't start a new one yett",
                     ephemeral=True,
@@ -638,7 +639,7 @@ class Songs(commands.Cog):
                 return
 
             self.console.print("Play again button pressed")
-            play_again_button.label = f"{interaction.user.name} is playing again!"
+            play_again_button.label = f"{interaction.user.display_name} is playing again!"
             play_again_button.disabled = True
 
             if not interaction.user.id == ctx.author.id:
@@ -682,6 +683,8 @@ class Songs(commands.Cog):
                 elapsed = asyncio.get_event_loop().time() - start_time
                 remaining = 75 - elapsed
 
+                # TODO: Gradually add hints
+
                 if remaining <= 0:
                     # Time's up
                     game_state["active"] = False
@@ -690,12 +693,11 @@ class Songs(commands.Cog):
                         description=f"The song was **{song_name}** by **{artist_name}**",
                         colour=0xD51007,
                     )
-                    for item in view.children:
-                        item.disabled = True
 
+                    view.clear_items()
                     timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
-                    self.blindtest_games.remove(channel_id)
+                    self.active_games.remove(channel_id)
 
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
@@ -718,12 +720,11 @@ class Songs(commands.Cog):
                         description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
                         colour=0xD51007,
                     )
-                    for item in view.children:
-                        item.disabled = True
 
+                    view.clear_items()
                     correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     correct_view.add_item(play_again_button)
-                    self.blindtest_games.remove(channel_id)
+                    self.active_games.remove(channel_id)
 
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_correct, view=correct_view)
@@ -741,26 +742,219 @@ class Songs(commands.Cog):
                         description=f"The song was **{song_name}** by **{artist_name}**",
                         colour=0xD51007,
                     )
-                    for item in view.children:
-                        item.disabled = True
 
+                    view.clear_items()
                     timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
-                    self.blindtest_games.remove(channel_id)
+                    self.active_games.remove(channel_id)
 
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
                     break
 
+
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
-    @commands.command()
-    async def pixeljumbleunlimited(self, ctx: commands.Context): ...  # TODO
+    @commands.command(aliases=("pxu", "px")) # fm.bot has a different prefix
+    async def pixeljumbleunlimited(self, ctx: commands.Context): 
+        """Like the game on fm.bot but you can play more than 30 games a day (for free)."""
+
+        # * Check if user is authenticated
+        is_auth = await self._is_authenticated(ctx.author.id)
+        if not is_auth:
+            await ctx.send(
+                "You didn't connect your last.fm account yet! Use !loginlastfm."
+            )
+            return
+
+        # * Check if there isnt another game in this channel already
+        channel_id = ctx.channel.id
+        if channel_id in self.active_games:
+            await ctx.message.reply(
+                "There is already a game in this channel!",
+                mention_author=False,
+            )
+            return
+
+        self.active_games.append(channel_id)
+
+        async with ctx.typing():
+            # * Get a random song from their listening history
+            username = await db.fetchval(
+                "SELECT lastfm_username FROM users WHERE user_id = $1", ctx.author.id
+            )
+            args = {
+                "method": "user.getRecentTracks",
+                "user": username,
+                "api_key": LASTFM_API_KEY,
+                "format": "json",
+                "limit": 200,
+            }
+
+            if self.user_listening_pages.get(ctx.author.id) is not None:
+                # Get a random page
+                max_pages = self.user_listening_pages[ctx.author.id]
+                random_page = random.randint(1, max_pages)
+                args["page"] = random_page
+
+            # * REQUESTS
+            async with aiohttp.ClientSession() as session:
+                async with session.get(
+                    "http://ws.audioscrobbler.com/2.0/", params=args, timeout=30
+                ) as response:
+                    try:
+                        response.raise_for_status()
+                    except Exception as e:
+                        self.console.print(e)
+                        await ctx.send("error :(")
+                        return
+
+                    data = await response.json()
+                    tracks = data.get("recenttracks", {}).get("track", [])
+                    if not tracks:
+                        await ctx.send("no tracks???")
+                        return
+
+                    if args.get("page") is None:
+                        # Save the number of pages for later
+                        attr = data.get("recenttracks", {}).get("@attr", {})
+                        total_pages = int(attr.get("totalPages", 1))
+                        self.user_listening_pages[ctx.author.id] = total_pages
+
+                tracks = [t for t in tracks if "date" in t]
+                random_track = random.choice(tracks)
+
+                song_name = str(random_track.get("name"))
+                artist_name = str(random_track.get("artist", {}).get("#text", ""))
+                mbid = random_track.get("mbid")
+                if not mbid:
+                    self.console.print(f"No mbid for {song_name} by {artist_name}")
+
+                # * Get some info about the song (for hints)
+                hints_args = {
+                    "method": "track.getInfo",
+                    "api_key": LASTFM_API_KEY,
+                    "format": "json",
+                }
+                if mbid:
+                    hints_args["mbid"] = mbid
+                else:
+                    hints_args["artist"] = artist_name
+                    hints_args["track"] = song_name
+
+                async with session.get(
+                    "http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30
+                ) as response:
+                    try:
+                        response.raise_for_status()
+                    except Exception as e:
+                        self.console.print(e)
+                        await ctx.send("error :(")
+                        return
+
+                    data = await response.json()
+                    track_info = data.get("track", {})
+                    # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
+                    if not track_info:
+                        self.console.print(
+                            f"No track info for {song_name} by {artist_name}"
+                        )
+                        self.console.print("no hints")
+
+                    # Album name
+                    album_name = track_info.get("album", {}).get("title")
+                    # Artist name
+                    artist_name = track_info.get("artist", {}).get("name")
+                    # Release date
+                    release_date = track_info.get("wiki", {}).get("published")
+                    # Genre
+                    raw_tag = track_info.get("toptags", {}).get("tag")
+                    if isinstance(raw_tag, list) and raw_tag:
+                        genre = raw_tag[0].get("name")
+                    elif isinstance(raw_tag, dict):
+                        genre = raw_tag.get("name")
+                    else:
+                        genre = None
+                    # Duration
+                    duration = None
+                    raw_duration = track_info.get("duration")
+                    if raw_duration is not None:
+                        try:
+                            duration = int(raw_duration) // 1000  # in seconds
+                        except (TypeError, ValueError):
+                            duration = None
+
+                    hints = [
+                        hint
+                        for hint in (
+                            duration,
+                            genre,
+                            release_date,
+                            album_name,
+                            artist_name,
+                        )
+                        if hint is not None
+                    ]  # From hardest to easiest
+
+                    # Also get the album cover art
+                    album_cover = track_info.get("album", {}).get("image", [])
+                    if isinstance(album_cover, list) and album_cover:
+                        album_cover_url = album_cover[-1].get("#text")  # Get largest image
+
+                    else: # Should'nt happen but just in case
+                        self.console.print(f"No album cover for {song_name} by {artist_name}")
+                        await ctx.send("error :(")
+                        return 
+                    
+                    # Download album cover
+                    async with session.get(album_cover_url) as response:
+                        try:
+                            response.raise_for_status()
+                        except Exception as e:
+                            self.console.print(e)
+                            await ctx.send("error :(")
+                            return
+
+                        cover_data = await response.read()
+                        cover_filename = f"{song_name}_{artist_name}_cover_1.jpg" # Non-pixelated
+                        with open(cover_filename, "wb") as f:
+                            f.write(cover_data)
+                    
+                    # Make the different pixelated versions
+                    pixel_sizes = [8, 16, 32, 64]  # From hardest to easiest
+                    pixelated_filenames = {
+                        size: f"{song_name}_{artist_name}_cover_{size}.jpg"
+                        for size in pixel_sizes
+                    }
+
+                    # Generate images
+                    for size in pixel_sizes:
+                        image = cv2.imread(cover_filename)
+                        height, width = image.shape[:2]
+                        t = cv2.resize(image, (width // size, height // size), interpolation=cv2.INTER_LINEAR)
+                        pixelated = cv2.resize(t, (width, height), interpolation=cv2.INTER_NEAREST)
+
+                        cv2.imwrite(pixelated_filenames[size], pixelated)
+                    
+                    # Test send all of them
+                    for size in pixel_sizes:
+                        await ctx.send(file=File(pixelated_filenames[size], filename=f"pixel_{size}.jpg"))
 
 
-async def setup():
+
+
+    # focusjumble / zoomjumble idk
+
+async def setup():  
+    # Username and session keys
     await db.execute(
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;"
     )
+
+    # Win streaks
     await db.execute(
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL, ADD COLUMN IF NOT EXISTS pxu_winstreak INT NULL;"
     )
+
+    # TODO
+    # Stats (number of games played, number of wins...)
+    # Maybe add a leaderboard later

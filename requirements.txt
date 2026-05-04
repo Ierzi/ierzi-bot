@@ -10,3 +10,4 @@ aiogoogletrans #gender
 moviepy
 async-lru
 tzdata
+opencv-python
