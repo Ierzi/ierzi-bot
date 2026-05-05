@@ -409,6 +409,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return
 
                     data = await response.json()
@@ -452,6 +453,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return
 
                     data = await response.json()
@@ -510,12 +512,14 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return
 
                     data = await response.json()
                     results = data.get("data", [])
                     if not results:
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         self.console.print(f"No results from Deezer for query: {query}")
                         return
 
@@ -528,6 +532,7 @@ class Songs(commands.Cog):
 
                     if not preview_url:
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         self.console.print(
                             f"No preview available for song {song_name} by {artist_name}"
                         )
@@ -543,6 +548,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return
 
                     song_data = await response.read()
@@ -806,6 +812,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return
 
                     data = await response.json()
@@ -849,6 +856,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return
 
                     data = await response.json()
@@ -903,6 +911,7 @@ class Songs(commands.Cog):
                     else: # Should'nt happen but just in case
                         self.console.print(f"No album cover for {song_name} by {artist_name}")
                         await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
                         return 
                     
                     # Download album cover
@@ -912,6 +921,7 @@ class Songs(commands.Cog):
                         except Exception as e:
                             self.console.print(e)
                             await ctx.send("error :(")
+                            self.active_games.remove(channel_id)
                             return
 
                         cover_data = await response.read()
@@ -938,8 +948,6 @@ class Songs(commands.Cog):
                     # Test send all of them
                     for size in pixel_sizes:
                         await ctx.send(file=File(pixelated_filenames[size], filename=f"pixel_{size}.jpg"))
-
-
 
 
     # focusjumble / zoomjumble idk
