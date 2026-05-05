@@ -920,7 +920,7 @@ class Songs(commands.Cog):
                             f.write(cover_data)
                     
                     # Make the different pixelated versions
-                    pixel_sizes = [8, 16, 32, 64]  # From hardest to easiest
+                    pixel_sizes = [8, 16, 32, 64, 96]  # From hardest to easiest
                     pixelated_filenames = {
                         size: f"{song_name}_{artist_name}_cover_{size}.jpg"
                         for size in pixel_sizes
