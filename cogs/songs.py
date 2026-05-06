@@ -1009,15 +1009,17 @@ class Songs(commands.Cog):
                 )
                 return
             
-            hints_index += 1
-            if hints_index % 2 == 0:
+            
+            if hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1:
                 # Unblur image
-                if pixel_size_index < len(pixel_sizes) - 1:
-                    pixel_size_index += 1
-                    await interaction.message.edit(
-                        file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
-                    )
+                hints_index += 1
+                pixel_size_index += 1
+                await interaction.message.edit(
+                    file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
+                )
+                
             else:
+                hints_index += 1
                 next_hint = hints[hint_keys[hints_index]]
                 given_hints.append(next_hint)
 
