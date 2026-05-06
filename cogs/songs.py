@@ -1096,7 +1096,7 @@ class Songs(commands.Cog):
         view.add_item(giveup_button)
 
         bt_message = await ctx.send(
-            file=File(pixelated_filenames.get(pixel_sizes[0]), filename="preview.mp3"), embed=embed, view=view
+            file=File(pixelated_filenames.get(pixel_sizes[0]), filename="preview.jpg"), embed=embed, view=view
         )
 
         # * Main game loop - 40 seconds to guess
