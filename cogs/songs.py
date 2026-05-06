@@ -58,6 +58,95 @@ class Songs(commands.Cog):
             songs.append((title, album, artist))
         return songs
 
+    def _flag_from_country(self, country: str) -> str:
+        if not country:
+            return ""
+
+        code = country.strip()
+        if len(code) == 2 and code.isalpha():
+            code = code.upper()
+            return "".join(chr(ord(letter) + 0x1F1E6 - ord("A")) for letter in code)
+
+        return country
+
+    def _format_number(self, value: int) -> str:
+        try:
+            return f"{int(value):,}"
+        except (TypeError, ValueError):
+            return str(value)
+
+    def _make_hints(self, track_info: dict,  artist_name: str) -> dict[str, str]:
+        album_name = track_info.get("album", {}).get("title")
+        release_date = track_info.get("wiki", {}).get("published")
+        raw_tag = track_info.get("toptags", {}).get("tag")
+        if isinstance(raw_tag, list) and raw_tag:
+            genre = raw_tag[0].get("name")
+        elif isinstance(raw_tag, dict):
+            genre = raw_tag.get("name")
+        else:
+            genre = None
+
+        duration = None
+        raw_duration = track_info.get("duration")
+        if raw_duration is not None:
+            try:
+                duration = int(raw_duration) // 1000
+            except (TypeError, ValueError):
+                duration = None
+
+        listeners = track_info.get("listeners")
+        playcount = track_info.get("playcount")
+        artist_country = track_info.get("artist", {}).get("country")
+        artist_flag = self._flag_from_country(artist_country) if artist_country else None
+
+        raw_hints = {
+            "duration": duration,
+            "genre": genre,
+            "artist_country": artist_flag,
+            "popularity": listeners,
+            "playcount": playcount,
+            "release_date": release_date,
+            "album_name": album_name,
+            "artist_name": artist_name,
+        }
+
+        formatted_hints = {}
+        for key, value in raw_hints.items():
+            if value is None:
+                continue
+
+            if key == "duration":
+                formatted_hints[key] = f"This track lasts {value} seconds."
+            elif key == "genre":
+                formatted_hints[key] = f"It belongs to the {value} genre."
+            elif key == "artist_country":
+                formatted_hints[key] = f"The artist is from {value}."
+            elif key == "popularity":
+                formatted_hints[key] = f"It has about {self._format_number(value)} listeners on Last.fm."
+            elif key == "playcount":
+                formatted_hints[key] = f"This track has been played {self._format_number(value)} times."
+            elif key == "release_date":
+                formatted_hints[key] = f"It was released on {value}."
+            elif key == "album_name":
+                formatted_hints[key] = f"The album is called {value}."
+            elif key == "artist_name":
+                formatted_hints[key] = f"The artist is {value}."
+            else:
+                formatted_hints[key] = str(value)
+
+        hint_order = [
+            "duration",
+            "genre",
+            "artist_country",
+            "popularity",
+            "playcount",
+            "release_date",
+            "album_name",
+            "artist_name",
+        ]
+
+        return {key: formatted_hints[key] for key in hint_order if key in formatted_hints}
+
     def fetch_deezer_playlist(self):
         response = requests.get(self.deezer_playlist_url)
         if response.status_code == 200:
@@ -465,40 +554,8 @@ class Songs(commands.Cog):
                         )
                         self.console.print("no hints")
 
-                    # Album name
-                    album_name = track_info.get("album", {}).get("title")
-                    # Artist name
-                    artist_name = track_info.get("artist", {}).get("name")
-                    # Release date
-                    release_date = track_info.get("wiki", {}).get("published")
-                    # Genre
-                    raw_tag = track_info.get("toptags", {}).get("tag")
-                    if isinstance(raw_tag, list) and raw_tag:
-                        genre = raw_tag[0].get("name")
-                    elif isinstance(raw_tag, dict):
-                        genre = raw_tag.get("name")
-                    else:
-                        genre = None
-                    # Duration
-                    duration = None
-                    raw_duration = track_info.get("duration")
-                    if raw_duration is not None:
-                        try:
-                            duration = int(raw_duration) // 1000  # in seconds
-                        except (TypeError, ValueError):
-                            duration = None
-
-                    hints = [ # TODO: Make this a dict to avoid stupid stuff like missing hints or whatever
-                        hint
-                        for hint in (
-                            duration,
-                            genre,
-                            release_date,
-                            album_name,
-                            artist_name,
-                        )
-                        if hint is not None
-                    ]  # From hardest to easiest
+                    hints = self._make_hints(track_info, artist_name)
+                    hints.pop("album_name")
 
                 # * Ask deezer for a preview
                 query = f"{song_name} {artist_name}"
@@ -580,20 +637,15 @@ class Songs(commands.Cog):
                 )
                 return
 
-            hint = hints[hints_index]
+            hint_keys = list(hints.keys())
+            if hints_index >= len(hint_keys):
+                await interaction.response.send_message(
+                    "No more hints available :(", ephemeral=True
+                )
+                return
 
-            match hints_index:
-                case 0:
-                    given_hints.append(f"Duration: {hint} seconds")
-                case 1:
-                    given_hints.append(f"The genre of this song is {hint}")
-                case 2:
-                    given_hints.append(f"Release date: {hint}")
-                case 3:
-                    given_hints.append(f"The album name is {hint}")
-                case 4:
-                    given_hints.append(f"This song was made by {hint}")
-
+            next_hint = hints[hint_keys[hints_index]]
+            given_hints.append(next_hint)
             hints_index += 1
 
             hints_text = "\n".join(f"- {hint}" for hint in given_hints)
@@ -654,7 +706,7 @@ class Songs(commands.Cog):
             await interaction.followup.edit_message(
                 interaction.message.id, view=play_again_button.view
             )  # Disable play again button
-            await self.blindtest(ctx)
+            await self.musicjumble(ctx)
 
         hint_button = Button(label="Add hint")
         shuffle_button = Button(label="Shuffle song name")
@@ -891,17 +943,7 @@ class Songs(commands.Cog):
                         except (TypeError, ValueError):
                             duration = None
 
-                    hints = [
-                        hint
-                        for hint in (
-                            duration,
-                            genre,
-                            release_date,
-                            album_name,
-                            artist_name,
-                        )
-                        if hint is not None
-                    ]  # From hardest to easiest
+                    hints = self._make_hints(track_info, artist_name)
 
                     # Also get the album cover art
                     album_cover = track_info.get("album", {}).get("image", [])
@@ -925,12 +967,12 @@ class Songs(commands.Cog):
                             return
 
                         cover_data = await response.read()
-                        cover_filename = f"{song_name}_{artist_name}_cover_1.jpg" # Non-pixelated
+                        cover_filename = f"{song_name}_{artist_name}_cover_999.jpg" # Non-pixelated
                         with open(cover_filename, "wb") as f:
                             f.write(cover_data)
                     
                     # Make the different pixelated versions
-                    pixel_sizes = [8, 16, 32, 64, 96]  # From hardest to easiest
+                    pixel_sizes = [8, 16, 32, 64, 96, 999]  # From hardest to easiest
                     pixelated_filenames = {
                         size: f"{song_name}_{artist_name}_cover_{size}.jpg"
                         for size in pixel_sizes
@@ -938,6 +980,9 @@ class Songs(commands.Cog):
 
                     # Generate images
                     for size in pixel_sizes:
+                        if size == 999: 
+                            continue
+
                         image = cv2.imread(cover_filename)
                         height, width = image.shape[:2]
                         t = cv2.resize(image, (width // size, height // size), interpolation=cv2.INTER_LINEAR)
@@ -948,6 +993,199 @@ class Songs(commands.Cog):
                     # Test send all of them
                     for size in pixel_sizes:
                         await ctx.send(file=File(pixelated_filenames[size], filename=f"pixel_{size}.jpg"))
+    
+        # * Make embed
+        given_hints = []
+        title = "Pixel Jumble Unlimited - Guess the Album"
+        hints_text = "\n"
+        hints_index = 0
+        embed = Embed(
+            title="",  # Make title appear when shuffle album name
+            description=f"{title}\n{hints_text}",
+            colour=0xD51007,  # lastfm red
+        )
+        game_state = {"active": True, "guessed": False}
+
+        view = View(timeout=75)
+
+        # * Button callbacks
+        async def hint_button_callback(interaction: Interaction):
+            nonlocal hints_text, given_hints, hints_index
+            if not hints:
+                await interaction.response.send_message(
+                    "No more hints available :(", ephemeral=True
+                )
+                return
+
+            hint_keys = list(hints.keys())
+            if hints_index >= len(hint_keys):
+                await interaction.response.send_message(
+                    "No more hints available :(", ephemeral=True
+                )
+                return
+
+            next_hint = hints[hint_keys[hints_index]]
+            given_hints.append(next_hint)
+            hints_index += 1
+
+            hints_text = "\n".join(f"- {hint}" for hint in given_hints)
+            embed.description = f"{title}\n{hints_text}"
+            await interaction.response.edit_message(embed=embed, view=view)
+
+        async def shuffle_button_callback(interaction: Interaction):
+            nonlocal album_name
+            # Shuffle the song name, but like last.fm, only shuffle the words and keep the spaces
+            name_parts = album_name.upper().split()
+            shuffled_name_parts = []
+
+            for part in name_parts:
+                letters = list(part)
+                random.shuffle(letters)
+                shuffled_name_parts.append("".join(letters))
+
+            shuffled_name = " ".join(shuffled_name_parts)
+            embed.title = f"**`{shuffled_name}`**"
+            await interaction.response.edit_message(embed=embed, view=view)
+
+        async def giveup_button_callback(interaction: Interaction):
+            nonlocal game_state
+            game_state["active"] = False
+            embed_result = Embed(
+                title="Gave up...",
+                description=f"The album was **{album_name}** ",
+                colour=0xD51007,
+            )
+            for item in view.children:
+                item.disabled = True
+
+            self.active_games.remove(channel_id)
+            view_gaveup = View(timeout=LONGER_VIEW_TIMEOUT)
+            view_gaveup.add_item(play_again_button)
+
+            await interaction.response.edit_message(view=view)
+            await ctx.send(embed=embed_result, view=view_gaveup)
+            return
+
+        async def play_again_callback(interaction: Interaction):
+            await interaction.response.defer()
+
+            if channel_id in self.active_games:  # There's already a game in this channel
+                await interaction.followup.send(
+                    "There is already a game in this channel, you can't start a new one yett",
+                    ephemeral=True,
+                )
+                return
+
+            self.console.print("Play again button pressed")
+            play_again_button.label = f"{interaction.user.display_name} is playing again!"
+            play_again_button.disabled = True
+
+            if not interaction.user.id == ctx.author.id:
+                ctx.author = interaction.user
+
+            await interaction.followup.edit_message(
+                interaction.message.id, view=play_again_button.view
+            )  # Disable play again button
+            await self.pixeljumbleunlimited(ctx)
+
+        hint_button = Button(label="Add hint")
+        shuffle_button = Button(label="Shuffle album name")
+        giveup_button = Button(label="Give up")
+        play_again_button = Button(label="Play again")  # Not added to view yet
+
+        hint_button.callback = hint_button_callback
+        shuffle_button.callback = shuffle_button_callback
+        giveup_button.callback = giveup_button_callback
+        play_again_button.callback = play_again_callback
+
+        view.add_item(hint_button)
+        view.add_item(shuffle_button)
+        view.add_item(giveup_button)
+
+        bt_message = await ctx.send(
+            file=File(pixelated_filenames.get(pixel_sizes[0]), filename="preview.mp3"), embed=embed, view=view
+        )
+
+        # * Main game loop - 40 seconds to guess
+        def check_message(msg: Message):
+            return msg.channel == ctx.channel and not msg.author.bot
+
+        def similarity_score(a: str, b: str) -> float:
+            return SequenceMatcher(None, a.lower(), b.lower()).ratio()
+
+        start_time = asyncio.get_event_loop().time()
+        while game_state["active"]:
+            try:
+                # Wait for message with 40 second timeout
+                elapsed = asyncio.get_event_loop().time() - start_time
+                remaining = 40 - elapsed
+
+                if remaining <= 0:
+                    # Time's up
+                    game_state["active"] = False
+                    embed_timeout = Embed(
+                        title="Nobody guesssed it...",
+                        description=f"The song was **{song_name}** by **{artist_name}**",
+                        colour=0xD51007,
+                    )
+
+                    view.clear_items()
+                    timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
+                    timeout_view.add_item(play_again_button)
+                    self.active_games.remove(channel_id)
+
+                    await bt_message.edit(view=view)  # Disable buttons
+                    await ctx.send(embed=embed_timeout, view=timeout_view)
+                    break
+
+                msg = await self.bot.wait_for(
+                    "message", check=check_message, timeout=remaining
+                )
+                elapsed = (
+                    asyncio.get_event_loop().time() - start_time
+                )  # After waiting, the elapsed time changed
+
+                # Check if answer is correct
+                similarity = similarity_score(msg.content, album_name)
+                if similarity >= 0.7:  # 70%
+                    await msg.add_reaction("✅")
+                    game_state["active"] = False
+                    game_state["guessed"] = True
+                    embed_correct = Embed(
+                        description=f"{msg.author.mention} guessed it! The album was **{album_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
+                        colour=0xD51007,
+                    )
+
+                    view.clear_items()
+                    correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
+                    correct_view.add_item(play_again_button)
+                    self.active_games.remove(channel_id)
+
+                    await bt_message.edit(view=view)  # Disable buttons
+                    await ctx.send(embed=embed_correct, view=correct_view)
+                    break
+                else:
+                    # Wrong answer, continue
+                    await msg.add_reaction("❌")
+
+            except asyncio.TimeoutError:
+                # Time's up
+                if game_state["active"]:  # Doesn't trigger if user gave up
+                    game_state["active"] = False
+                    embed_timeout = Embed(
+                        title="Nobody guesssed it...",
+                        description=f"The album was **{album_name}** by **{artist_name}**",
+                        colour=0xD51007,
+                    )
+
+                    view.clear_items()
+                    timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
+                    timeout_view.add_item(play_again_button)
+                    self.active_games.remove(channel_id)
+
+                    await bt_message.edit(view=view)  # Disable buttons
+                    await ctx.send(embed=embed_timeout, view=timeout_view)
+                    break
 
 
     # focusjumble / zoomjumble idk
