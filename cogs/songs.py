@@ -75,7 +75,7 @@ class Songs(commands.Cog):
         except (TypeError, ValueError):
             return str(value)
 
-    def _make_hints(self, track_info: dict,  artist_name: str) -> dict[str, str]:
+    def _make_hints(self, track_info: dict, artist_name: str) -> dict[str, str]:
         album_name = track_info.get("album", {}).get("title")
         release_date = track_info.get("wiki", {}).get("published")
         raw_tag = track_info.get("toptags", {}).get("tag")
@@ -924,26 +924,10 @@ class Songs(commands.Cog):
                     album_name = track_info.get("album", {}).get("title")
                     # Artist name
                     artist_name = track_info.get("artist", {}).get("name")
-                    # Release date
-                    release_date = track_info.get("wiki", {}).get("published")
-                    # Genre
-                    raw_tag = track_info.get("toptags", {}).get("tag")
-                    if isinstance(raw_tag, list) and raw_tag:
-                        genre = raw_tag[0].get("name")
-                    elif isinstance(raw_tag, dict):
-                        genre = raw_tag.get("name")
-                    else:
-                        genre = None
-                    # Duration
-                    duration = None
-                    raw_duration = track_info.get("duration")
-                    if raw_duration is not None:
-                        try:
-                            duration = int(raw_duration) // 1000  # in seconds
-                        except (TypeError, ValueError):
-                            duration = None
 
                     hints = self._make_hints(track_info, artist_name)
+                    hints.pop("album_name")
+                    hints.pop("duration")
 
                     # Also get the album cover art
                     album_cover = track_info.get("album", {}).get("image", [])
@@ -967,14 +951,14 @@ class Songs(commands.Cog):
                             return
 
                         cover_data = await response.read()
-                        cover_filename = f"{song_name}_{artist_name}_cover_999.jpg" # Non-pixelated
+                        cover_filename = f"{album_name}_{artist_name}_cover_999.jpg" # Non-pixelated
                         with open(cover_filename, "wb") as f:
                             f.write(cover_data)
                     
                     # Make the different pixelated versions
                     pixel_sizes = [8, 16, 32, 64, 96, 999]  # From hardest to easiest
                     pixelated_filenames = {
-                        size: f"{song_name}_{artist_name}_cover_{size}.jpg"
+                        size: f"{album_name}_{artist_name}_cover_{size}.jpg"
                         for size in pixel_sizes
                     }
 
@@ -991,8 +975,8 @@ class Songs(commands.Cog):
                         cv2.imwrite(pixelated_filenames[size], pixelated)
                     
                     # Test send all of them
-                    for size in pixel_sizes:
-                        await ctx.send(file=File(pixelated_filenames[size], filename=f"pixel_{size}.jpg"))
+                    # for size in pixel_sizes:
+                    #     await ctx.send(file=File(pixelated_filenames[size], filename=f"pixel_{size}.jpg"))
     
         # * Make embed
         given_hints = []
@@ -1005,12 +989,13 @@ class Songs(commands.Cog):
             colour=0xD51007,  # lastfm red
         )
         game_state = {"active": True, "guessed": False}
+        pixel_size_index = 0
 
         view = View(timeout=75)
 
         # * Button callbacks
         async def hint_button_callback(interaction: Interaction):
-            nonlocal hints_text, given_hints, hints_index
+            nonlocal hints_text, given_hints, hints_index, pixel_size_index
             if not hints:
                 await interaction.response.send_message(
                     "No more hints available :(", ephemeral=True
@@ -1023,14 +1008,22 @@ class Songs(commands.Cog):
                     "No more hints available :(", ephemeral=True
                 )
                 return
-
-            next_hint = hints[hint_keys[hints_index]]
-            given_hints.append(next_hint)
+            
             hints_index += 1
+            if hints_index % 2 == 0:
+                # Unblur image
+                if pixel_size_index < len(pixel_sizes) - 1:
+                    pixel_size_index += 1
+                    await interaction.message.edit(
+                        file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
+                    )
+            else:
+                next_hint = hints[hint_keys[hints_index]]
+                given_hints.append(next_hint)
 
-            hints_text = "\n".join(f"- {hint}" for hint in given_hints)
-            embed.description = f"{title}\n{hints_text}"
-            await interaction.response.edit_message(embed=embed, view=view)
+                hints_text = "\n".join(f"- {hint}" for hint in given_hints)
+                embed.description = f"{title}\n{hints_text}"
+                await interaction.response.edit_message(embed=embed, view=view)
 
         async def shuffle_button_callback(interaction: Interaction):
             nonlocal album_name
@@ -1125,7 +1118,7 @@ class Songs(commands.Cog):
                     game_state["active"] = False
                     embed_timeout = Embed(
                         title="Nobody guesssed it...",
-                        description=f"The song was **{song_name}** by **{artist_name}**",
+                        description=f"The song was **{album_name}** by **{artist_name}**",
                         colour=0xD51007,
                     )
 
