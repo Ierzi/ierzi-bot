@@ -63,7 +63,7 @@ grok_cache: dict[int, str] = {} # message id - response
 async def on_ready():
     # Change the presence based on the bot's number of servers
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"updating the bots pfp for pride month instead of working on an actual update lol - {guild_count} servers"))
     await fill_embeds()
     synced = await bot.tree.sync()
     console.print(f"Synced {len(synced)} commands.")
@@ -82,7 +82,7 @@ async def bot_loop():
 
     # Update bot presence
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
-    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"dtupid - {guild_count} servers"))
+    await bot.change_presence(status=discord.Status.idle, activity=CustomActivity(f"updating the bots pfp for pride month instead of working on an actual update lol - {guild_count} servers"))
 
 
 # Error handling
