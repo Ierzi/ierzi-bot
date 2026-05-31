@@ -391,7 +391,7 @@ async def roadmap(ctx: commands.Context):
         "other leaderboards idkkkkk",
         "multiple pronouns (for winty)",
         "make wdt more simple cause yall did NOT understand it",
-        "more playlist commands i make a note about this",
+        "more playlist commands i made a note about this",
     ]
     message = "Features I wanna add: \n"
     for feature in features:

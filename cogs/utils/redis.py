@@ -1,0 +1,59 @@
+﻿from typing import Callable
+from redis import asyncio as aioredis
+import os
+import functools
+import hashlib
+import json
+import discord
+
+redis_url = os.getenv("REDIS_URL")
+client = aioredis.from_url(redis_url, decode_responses=True) 
+
+
+def handle_args(args, kwargs):
+    for arg in args:
+        if isinstance(arg, (discord.User, discord.Member, discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.Role, discord.Emoji, discord.Guild)):
+            yield arg.id
+    
+    for key, value in sorted(kwargs.items()):
+        if isinstance(value, (discord.User, discord.Member, discord.TextChannel, discord.VoiceChannel, discord.CategoryChannel, discord.Role, discord.Emoji, discord.Guild)):
+            yield key, value.id
+        else:
+            yield key, value
+
+
+def make_cache_key(func: Callable, args, kwargs) -> str:
+    key_data = (
+        func.__module__,
+        func.__qualname__,
+        list(handle_args(args, kwargs)),
+    )
+    return "cache:" + hashlib.sha256(repr(key_data).encode()).hexdigest()
+
+
+def redis_cache(expire: int = 1800): # 30 minutes
+    def decorator(func: Callable):
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            key = make_cache_key(func, args, kwargs)
+
+            if client is None:
+                return await func(*args, **kwargs)
+
+            cached = await client.get(key)
+            if cached is not None:
+                return json.loads(cached)
+
+            result = await func(*args, **kwargs)
+            await client.setex(key, expire, json.dumps(result))
+            return result
+
+        async def invalidate(*args, **kwargs):
+            if client is None:
+                return
+            key = make_cache_key(func, args, kwargs)
+            await client.delete(key)
+
+        wrapper.invalidate = invalidate
+        return wrapper
+    return decorator

@@ -5,6 +5,7 @@ from discord.ui import View, Select
 
 from .utils.database import db
 from .utils.functions import to_timestamp
+from .utils.redis import redis_cache
 from .utils.pronouns import get_pronoun, PronounEnum
 from .utils.types import Currency
 from .utils.variables import VIEW_TIMEOUT
@@ -55,35 +56,48 @@ class Economy(commands.Cog):
         self.latest_transactions = []  # (user_id, amount, timestamp)
 
     # Helper functions
-    async def _get_balance(self, user_id: int) -> Currency:
-        """Get the balance of a user."""
+    @redis_cache(expire=60)
+    async def _fetch_balance(self, user_id: int) -> Optional[float]:
         row = await db.fetchrow(
             "SELECT balance FROM economy WHERE user_id = $1", user_id
         )
-        if row:
-            return Currency(row["balance"])
-        else:
-            return Currency.none()
+        if row and row["balance"] is not None:
+            return float(row["balance"])
+        return None
 
-    async def _get_money_lost(self, user_id: int) -> Currency:
-        """Get the total money lost by a user."""
+    async def _get_balance(self, user_id: int) -> Currency:
+        """Get the balance of a user."""
+        raw_balance = await self._fetch_balance(user_id)
+        return Currency(raw_balance) if raw_balance is not None else Currency.none()
+
+    @redis_cache(expire=60)
+    async def _fetch_money_lost(self, user_id: int) -> Optional[float]:
         row = await db.fetchrow(
             "SELECT money_lost FROM economy WHERE user_id = $1", user_id
         )
-        if row:
-            return Currency(row["money_lost"])
-        else:
-            return Currency.none()
+        if row and row["money_lost"] is not None:
+            return float(row["money_lost"])
+        return None
 
-    async def _get_rebirths(self, user_id: int) -> int:
-        """Get the number of rebirths of a user."""
+    async def _get_money_lost(self, user_id: int) -> Currency:
+        """Get the total money lost by a user."""
+        raw_money_lost = await self._fetch_money_lost(user_id)
+        return Currency(raw_money_lost) if raw_money_lost is not None else Currency.none()
+
+
+    @redis_cache(expire=60)
+    async def _fetch_rebirths(self, user_id: int) -> Optional[int]:
         row = await db.fetchrow(
             "SELECT rebirths FROM economy WHERE user_id = $1", user_id
         )
-        if row:
-            return row["rebirths"]
-        else:
-            return 0
+        if row and row["rebirths"] is not None:
+            return int(row["rebirths"])
+        return None
+
+    async def _get_rebirths(self, user_id: int) -> int:
+        """Get the number of rebirths of a user."""
+        raw_rebirths = await self._fetch_rebirths(user_id)
+        return raw_rebirths if raw_rebirths is not None else 0
 
     async def _ensure_user_exists(self, user_id: int) -> None:
         """Ensure the user exists in the database."""
@@ -106,6 +120,22 @@ class Economy(commands.Cog):
         """,
             user_id,
         )
+
+    async def _invalidate_user_cache(self, user_id: int, keys: tuple[str, ...]):
+        if "balance" in keys:
+            await self._fetch_balance.invalidate(self, user_id)
+        if "money_lost" in keys:
+            await self._fetch_money_lost.invalidate(self, user_id)
+        if "rebirths" in keys:
+            await self._fetch_rebirths.invalidate(self, user_id)
+        if "cooldowns" in keys:
+            for cooldown_type in (
+                "last_worked",
+                "last_daily",
+                "last_robbed_bank",
+                "last_robbed_user",
+            ):
+                await self._fetch_cooldown.invalidate(self, user_id, cooldown_type)
 
     async def _add_new_transaction(self, user_id: int, amount: float) -> None:
         """Add a new transaction to the latest transactions list."""
@@ -135,6 +165,7 @@ class Economy(commands.Cog):
         self.console.print(
             f"Added {amount} to user {user_id}. New balance: {new_balance}"
         )
+        await self._invalidate_user_cache(user_id, ("balance",))
         await self._add_new_transaction(user_id, amount)
 
     async def _remove_money(self, user_id: int, amount: float):
@@ -157,6 +188,7 @@ class Economy(commands.Cog):
         self.console.print(
             f"Removed {amount} from user {user_id}. New balance: {new_balance}"
         )
+        await self._invalidate_user_cache(user_id, ("balance", "money_lost"))
         await self._add_new_transaction(user_id, -amount)
 
     async def _add_rebirths(self, user_id: int, rebirths: int = 1):
@@ -172,6 +204,7 @@ class Economy(commands.Cog):
             rebirths,
         )
         self.console.print(f"Added {rebirths} rebirths to user {user_id}.")
+        await self._invalidate_user_cache(user_id, ("rebirths",))
 
     async def _set_balance(self, user_id: int, amount: float):
         """Set the balance of a user."""
@@ -187,6 +220,7 @@ class Economy(commands.Cog):
             float_amount,
         )
         self.console.print(f"Set balance of user {user_id} to {amount}.")
+        await self._invalidate_user_cache(user_id, ("balance",))
 
     async def _set_money_lost(self, user_id: int, amount: float):
         """Set the money_lost of a user."""
@@ -202,6 +236,7 @@ class Economy(commands.Cog):
             float_amount,
         )
         self.console.print(f"Set money_lost of user {user_id} to {amount}.")
+        await self._invalidate_user_cache(user_id, ("money_lost",))
 
     async def _set_rebirths(self, user_id: int, rebirths: int):
         """Set the number of rebirths of a user."""
@@ -216,6 +251,51 @@ class Economy(commands.Cog):
             rebirths,
         )
         self.console.print(f"Set rebirths of user {user_id} to {rebirths}.")
+        await self._invalidate_user_cache(user_id, ("rebirths",))
+
+    @redis_cache(expire=5)
+    async def _fetch_cooldown(
+        self,
+        user_id: int,
+        cooldown_type: Literal[
+            "last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"
+        ],
+    ) -> Optional[str]:
+        row = await db.fetchrow(
+            f"SELECT {cooldown_type} FROM economy WHERE user_id = $1", user_id
+        )
+        if row is None or row[cooldown_type] is None:
+            return None
+        return row[cooldown_type].isoformat()
+
+    @redis_cache(expire=15)
+    async def _fetch_leaderboard(self, category: str, per_page: int, offset: int):
+        if category in ("balance", "bal"):
+            query = "SELECT user_id, balance FROM economy ORDER BY balance DESC LIMIT $1 OFFSET $2"
+            column = "balance"
+        elif category in ("lost", "money_lost", "ml"):
+            query = "SELECT user_id, money_lost FROM economy ORDER BY money_lost DESC LIMIT $1 OFFSET $2"
+            column = "money_lost"
+        else:
+            query = "SELECT user_id, rebirths FROM economy ORDER BY rebirths DESC LIMIT $1 OFFSET $2"
+            column = "rebirths"
+
+        rows = await db.fetch(query, per_page, offset)
+        if not rows:
+            return []
+
+        results = []
+        for row in rows:
+            value = row[column]
+            if value is None:
+                continue
+            if column == "rebirths":
+                numeric_value = int(value)
+            else:
+                numeric_value = float(value)
+            results.append({"user_id": row["user_id"], column: numeric_value})
+
+        return results
 
     async def _cooldown(
         self,
@@ -226,13 +306,11 @@ class Economy(commands.Cog):
         cooldown: timedelta,
     ) -> _output_data:
         """Check if a user is on cooldown for a specific action."""
-        row = await db.fetchrow(
-            f"SELECT {cooldown_type} FROM economy WHERE user_id = $1", user_id
-        )
-        if row is None or row[cooldown_type] is None:
+        last_used_iso = await self._fetch_cooldown(user_id, cooldown_type)
+        if last_used_iso is None:
             return (True, None, None, None)
 
-        last_used: datetime = row[cooldown_type]
+        last_used: datetime = datetime.fromisoformat(last_used_iso)
         now = datetime.now(tz=timezone.utc)
 
         if now - last_used >= cooldown:
@@ -262,6 +340,7 @@ class Economy(commands.Cog):
             user_id,
             now,
         )
+        await self._fetch_cooldown.invalidate(self, user_id, cooldown_type)
 
     async def _calculate_rebirth_cost(self, user_id: int) -> float:
         """Calculate the rebirth cost for a user."""
@@ -551,15 +630,7 @@ class Economy(commands.Cog):
 
         async def get_balance_leaderboard() -> Optional[Embed]:
             nonlocal offset
-            rows = await db.fetch(
-                """
-                SELECT user_id, balance FROM economy 
-                ORDER BY balance DESC 
-                LIMIT $1 OFFSET $2
-            """,
-                per_page,
-                offset,
-            )
+            rows = await self._fetch_leaderboard("balance", per_page, offset)
 
             if not rows:
                 return
@@ -587,15 +658,7 @@ class Economy(commands.Cog):
 
         async def get_money_lost_leaderboard() -> Optional[Embed]:
             nonlocal offset
-            rows = await db.fetch(
-                """
-                SELECT user_id, money_lost FROM economy 
-                ORDER BY money_lost DESC 
-                LIMIT $1 OFFSET $2
-            """,
-                per_page,
-                offset,
-            )
+            rows = await self._fetch_leaderboard("money_lost", per_page, offset)
 
             if not rows:
                 return
@@ -623,15 +686,7 @@ class Economy(commands.Cog):
 
         async def get_rebirths_leaderboard() -> Optional[Embed]:
             nonlocal offset
-            rows = await db.fetch(
-                """
-                SELECT user_id, rebirths FROM economy 
-                ORDER BY rebirths DESC 
-                LIMIT $1 OFFSET $2
-            """,
-                per_page,
-                offset,
-            )
+            rows = await self._fetch_leaderboard("rebirths", per_page, offset)
 
             if not rows:
                 return
@@ -1496,6 +1551,7 @@ class Economy(commands.Cog):
             user_id,
         )
 
+        await self._invalidate_user_cache(user_id, ("balance", "money_lost", "rebirths", "cooldowns"))
         await self._add_rebirths(user_id)
         bonus_multiplier = await self._calculate_rebirth_bonus(user_id)
         await ctx.send(
@@ -1607,6 +1663,7 @@ class Economy(commands.Cog):
         """Reset the economy data of a user. Can only be used by bot owners."""
 
         await db.execute("DELETE FROM economy WHERE user_id = $1", user.id)
+        await self._invalidate_user_cache(user.id, ("balance", "money_lost", "rebirths", "cooldowns"))
         await ctx.send(
             f"Reset the economy data of {user.mention}.",
             allowed_mentions=discord.AllowedMentions.none(),
@@ -1657,6 +1714,8 @@ class Economy(commands.Cog):
         )
 
         await db.execute("DELETE FROM economy WHERE user_id = $1", user1_id)
+        await self._invalidate_user_cache(user1_id, ("balance", "money_lost", "rebirths", "cooldowns"))
+        await self._invalidate_user_cache(user2_id, ("balance", "money_lost", "rebirths", "cooldowns"))
 
         await ctx.send(
             f"Transferred all economy data from {user1.mention} to {user2.mention}.",
