@@ -6,12 +6,17 @@ import hashlib
 import json
 import discord
 from rich.console import Console
+from dotenv import load_dotenv
 
 console = Console()
 
+load_dotenv()
+
 redis_url = os.getenv("REDIS_URL")
+console.print(f"Connecting to Redis at {redis_url}")
 client = aioredis.from_url(redis_url, decode_responses=True) 
 
+console.print(client.ping() and "Connected to Redis successfully!" or "Failed to connect to Redis.")
 
 def handle_args(args, kwargs):
     for arg in args:
