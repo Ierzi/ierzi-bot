@@ -5,6 +5,9 @@ import functools
 import hashlib
 import json
 import discord
+from rich.console import Console
+
+console = Console()
 
 redis_url = os.getenv("REDIS_URL")
 client = aioredis.from_url(redis_url, decode_responses=True) 
@@ -45,6 +48,7 @@ def redis_cache(expire: int = 1800): # 30 minutes
                 return json.loads(cached)
 
             result = await func(*args, **kwargs)
+            console.print(f"Caching result for {func.__qualname__} with key {key}")
             await client.setex(key, expire, json.dumps(result))
             return result
 
@@ -52,6 +56,7 @@ def redis_cache(expire: int = 1800): # 30 minutes
             if client is None:
                 return
             key = make_cache_key(func, args, kwargs)
+            console.print(f"Invalidating cache for {func.__qualname__} with key {key}")
             await client.delete(key)
 
         wrapper.invalidate = invalidate
