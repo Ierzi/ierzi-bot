@@ -51,10 +51,11 @@ class Marriages(commands.Cog):
     @redis_cache(expire=20)
     async def _fetch_marriages(self):
         marriages = await db.fetch("SELECT user1_id, user2_id FROM marriages")
-        return [(row["user1_id"], row["user2_id"]) for row in marriages]
+        return [[row["user1_id"], row["user2_id"]] for row in marriages]
 
     async def get_marriages(self):
-        return await self._fetch_marriages()
+        marriages = await self._fetch_marriages()
+        return [tuple(pair) for pair in marriages]
 
     @commands.command()
     async def marry(self, ctx: commands.Context, partner: discord.Member):
