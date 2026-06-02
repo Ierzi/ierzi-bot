@@ -287,9 +287,17 @@ class Marriages(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def forcemarry(
-        self, ctx: commands.Context, user1: discord.Member, user2: discord.Member
+        self, 
+        ctx: commands.Context,
+        user1: discord.Member | int, 
+        user2: discord.Member | int
     ):
         """Can only be used by bot owners. Force marry 2 people."""
+        if isinstance(user1, int):
+            user1 = self.bot.get_user(user1) or await self.bot.fetch_user(user1)
+        if isinstance(user2, int):
+            user2 = self.bot.get_user(user2) or await self.bot.fetch_user(user2)
+
         marriages = await self.get_marriages()
         if (user1.id, user2.id) in marriages or (user2.id, user1.id) in marriages:
             await ctx.send("does he know?")
@@ -313,9 +321,17 @@ class Marriages(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def forcedivorce(
-        self, ctx: commands.Context, user1: discord.Member, user2: discord.Member
+        self, 
+        ctx: commands.Context, 
+        user1: discord.Member | int, 
+        user2: discord.Member | int
     ):
         """Can only be used by bot owners. Force divorce 2 people."""
+        if isinstance(user1, int):
+            user1 = self.bot.get_user(user1) or await self.bot.fetch_user(user1)
+        if isinstance(user2, int):
+            user2 = self.bot.get_user(user2) or await self.bot.fetch_user(user2)
+
         marriages = await self.get_marriages()
         if (user1.id, user2.id) not in marriages and (
             user2.id,
