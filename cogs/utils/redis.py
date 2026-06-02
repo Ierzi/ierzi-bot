@@ -13,10 +13,11 @@ console = Console()
 load_dotenv()
 
 redis_url = os.getenv("REDIS_URL")
-console.print(f"Connecting to Redis at {redis_url}")
-client = aioredis.from_url(redis_url, decode_responses=True) 
+console.print(f"Redis URL is {redis_url or 'not configured'}")
+client = aioredis.from_url(redis_url, decode_responses=True) if redis_url else None
 
-console.print(client.ping() and "Connected to Redis successfully!" or "Failed to connect to Redis.")
+if client is None:
+    console.print("Redis is disabled because REDIS_URL is not set.")
 
 def handle_args(args, kwargs):
     for arg in args:
