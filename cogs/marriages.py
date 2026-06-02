@@ -48,7 +48,7 @@ class Marriages(commands.Cog):
         )
         await self._fetch_marriages.invalidate(self)
 
-    @redis_cache(expire=20)
+    @redis_cache(expire=60)
     async def _fetch_marriages(self):
         marriages = await db.fetch("SELECT user1_id, user2_id FROM marriages")
         return [[row["user1_id"], row["user2_id"]] for row in marriages]
@@ -351,3 +351,5 @@ class Marriages(commands.Cog):
         self.console.print(
             f"Forced divorce between {user1.name} and {user2.name} has been recorded."
         )
+
+# TODO: Cache fetching user ids
