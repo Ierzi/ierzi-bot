@@ -742,6 +742,9 @@ class Songs(commands.Cog):
                 remaining = 75 - elapsed
 
                 # TODO: Gradually add hints
+                
+                if not game_state["active"]:
+                    pass
 
                 if remaining <= 0:
                     # Time's up

@@ -16,7 +16,7 @@ class Marriages(commands.Cog):
         self.bot = bot
         self.console = console
 
-    async def add_marriage_list(self, marriage_pair: tuple[int]):
+    async def add_marriage_list(self, marriage_pair: tuple[int, int]):
         # Ensure both users exist in the users table first
         for user_id in marriage_pair:
             await db.execute(
@@ -35,7 +35,7 @@ class Marriages(commands.Cog):
         )
         await self._fetch_marriages.invalidate(self)
 
-    async def remove_marriage_list(self, marriage_pair: tuple[int]):
+    async def remove_marriage_list(self, marriage_pair: tuple[int, int]):
         await db.execute(
             "DELETE FROM marriages WHERE user1_id = $1 AND user2_id = $2",
             marriage_pair[0],
