@@ -743,9 +743,6 @@ class Songs(commands.Cog):
 
                 # TODO: Gradually add hints
                 
-                if not game_state["active"]:
-                    pass
-
                 if remaining <= 0:
                     # Time's up
                     game_state["active"] = False
@@ -767,6 +764,10 @@ class Songs(commands.Cog):
                 msg = await self.bot.wait_for(
                     "message", check=check_message, timeout=remaining
                 )
+
+                if not game_state["active"]:
+                    break
+
                 elapsed = (
                     asyncio.get_event_loop().time() - start_time
                 )  # After waiting, the elapsed time changed
