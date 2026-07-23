@@ -1026,8 +1026,8 @@ class Songs(commands.Cog):
                     # Unblur image
                     hints_index += 1
                     pixel_size_index += 1
-                    await interaction.message.edit(
-                        file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
+                    await interaction.response.edit_message(
+                        attachments=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
                     )
 
                 else:
