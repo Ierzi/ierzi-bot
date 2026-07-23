@@ -1,21 +1,21 @@
-from discord import Embed, File, Interaction, Message
-from discord.ext import commands
-from discord.ui import Button, View
-
-from .utils.database import db
-from .utils.variables import LONGER_VIEW_TIMEOUT
-
-import aiohttp
 import asyncio
-from async_lru import alru_cache
-import cv2
-from difflib import SequenceMatcher
 import hashlib
 import os
 import random
-import requests
-from rich.console import Console
 import xml.etree.ElementTree as ET
+from difflib import SequenceMatcher
+
+import aiohttp
+import cv2
+import requests
+from async_lru import alru_cache
+from discord import Embed, File, Interaction, Message
+from discord.ext import commands
+from discord.ui import Button, View
+from rich.console import Console
+
+from .utils.database import db
+from .utils.variables import LONGER_VIEW_TIMEOUT
 
 SongData = tuple[str, str, str]  # Song title - Album - Artist
 LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
@@ -97,7 +97,9 @@ class Songs(commands.Cog):
         listeners = item_info.get("listeners")
         playcount = item_info.get("playcount")
         artist_country = item_info.get("artist", {}).get("country")
-        artist_flag = self._flag_from_country(artist_country) if artist_country else None
+        artist_flag = (
+            self._flag_from_country(artist_country) if artist_country else None
+        )
 
         raw_hints = {
             "duration": duration,
@@ -116,15 +118,21 @@ class Songs(commands.Cog):
                 continue
 
             if key == "duration":
-                formatted_hints[key] = f"This track lasts {value} seconds." # Only applies to tracks, not albums
+                formatted_hints[key] = (
+                    f"This track lasts {value} seconds."  # Only applies to tracks, not albums
+                )
             elif key == "genre":
                 formatted_hints[key] = f"It belongs to the {value} genre."
             elif key == "artist_country":
                 formatted_hints[key] = f"The artist is from {value}."
             elif key == "popularity":
-                formatted_hints[key] = f"It has about {self._format_number(value)} listeners on Last.fm."
+                formatted_hints[key] = (
+                    f"It has about {self._format_number(value)} listeners on Last.fm."
+                )
             elif key == "playcount":
-                formatted_hints[key] = f"It has been played {self._format_number(value)} times." # Applies to both
+                formatted_hints[key] = (
+                    f"It has been played {self._format_number(value)} times."  # Applies to both
+                )
             elif key == "release_date":
                 formatted_hints[key] = f"It was released on {value}."
             elif key == "album_name":
@@ -145,7 +153,9 @@ class Songs(commands.Cog):
             "artist_name",
         ]
 
-        return {key: formatted_hints[key] for key in hint_order if key in formatted_hints}
+        return {
+            key: formatted_hints[key] for key in hint_order if key in formatted_hints
+        }
 
     def fetch_deezer_playlist(self):
         response = requests.get(self.deezer_playlist_url)
@@ -689,7 +699,9 @@ class Songs(commands.Cog):
         async def play_again_callback(interaction: Interaction):
             await interaction.response.defer()
 
-            if channel_id in self.active_games:  # There's already a game in this channel
+            if (
+                channel_id in self.active_games
+            ):  # There's already a game in this channel
                 await interaction.followup.send(
                     "There is already a game in this channel, you can't start a new one yett",
                     ephemeral=True,
@@ -697,7 +709,9 @@ class Songs(commands.Cog):
                 return
 
             self.console.print("Play again button pressed")
-            play_again_button.label = f"{interaction.user.display_name} is playing again!"
+            play_again_button.label = (
+                f"{interaction.user.display_name} is playing again!"
+            )
             play_again_button.disabled = True
 
             if not interaction.user.id == ctx.author.id:
@@ -814,9 +828,8 @@ class Songs(commands.Cog):
                     await ctx.send(embed=embed_timeout, view=timeout_view)
                     break
 
-
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
-    @commands.command(aliases=("pxu", "px")) # fm.bot has a different prefix
+    @commands.command(aliases=("pxu", "px"))  # fm.bot has a different prefix
     async def pixeljumbleunlimited(self, ctx: commands.Context):
         """Like the game on fm.bot but you can play more than 30 games a day (for free)."""
 
@@ -943,10 +956,14 @@ class Songs(commands.Cog):
                     # Also get the album cover art
                     album_cover = track_info.get("album", {}).get("image", [])
                     if isinstance(album_cover, list) and album_cover:
-                        album_cover_url = album_cover[-1].get("#text")  # Get largest image
+                        album_cover_url = album_cover[-1].get(
+                            "#text"
+                        )  # Get largest image
 
-                    else: # Should'nt happen but just in case
-                        self.console.print(f"No album cover for {song_name} by {artist_name}")
+                    else:  # Should'nt happen but just in case
+                        self.console.print(
+                            f"No album cover for {song_name} by {artist_name}"
+                        )
                         await ctx.send("error :(")
                         self.active_games.remove(channel_id)
                         return
@@ -962,7 +979,9 @@ class Songs(commands.Cog):
                             return
 
                         cover_data = await response.read()
-                        cover_filename = f"{album_name}_{artist_name}_cover_999.jpg" # Non-pixelated
+                        cover_filename = (
+                            f"{album_name}_{artist_name}_cover_999.jpg"  # Non-pixelated
+                        )
                         with open(cover_filename, "wb") as f:
                             f.write(cover_data)
 
@@ -980,8 +999,14 @@ class Songs(commands.Cog):
 
                         image = cv2.imread(cover_filename)
                         height, width = image.shape[:2]
-                        t = cv2.resize(image, (width // size, height // size), interpolation=cv2.INTER_LINEAR)
-                        pixelated = cv2.resize(t, (width, height), interpolation=cv2.INTER_NEAREST)
+                        t = cv2.resize(
+                            image,
+                            (width // size, height // size),
+                            interpolation=cv2.INTER_LINEAR,
+                        )
+                        pixelated = cv2.resize(
+                            t, (width, height), interpolation=cv2.INTER_NEAREST
+                        )
 
                         cv2.imwrite(pixelated_filenames[size], pixelated)
 
@@ -1000,7 +1025,7 @@ class Songs(commands.Cog):
             colour=0xD51007,  # lastfm red
         )
         game_state = {"active": True, "guessed": False}
-        pixel_size_index = 0
+        pixel_size_index = 1  # Skip 999
 
         view = View(timeout=75)
 
@@ -1015,19 +1040,28 @@ class Songs(commands.Cog):
                     return
 
                 hint_keys = list(hints.keys())
-                if hints_index >= len(hint_keys):
+                if hints_index >= (len(hint_keys) + len(pixel_sizes) - 1): # If number hints used > text hints + pixel sizes
                     await interaction.response.send_message(
                         "No more hints available :(", ephemeral=True
                     )
                     return
 
-
-                if hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1:
+                if (
+                    hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1 # Every 2 hints, unblur image
+                    or hints_index > len(hint_keys) # All text hints used, unblur image
+                ):
                     # Unblur image
                     hints_index += 1
                     pixel_size_index += 1
                     await interaction.response.edit_message(
-                        attachments=[File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg")], embed=embed, view=view
+                        attachments=[
+                            File(
+                                pixelated_filenames.get(pixel_sizes[pixel_size_index]),
+                                filename="preview.jpg",
+                            )
+                        ],
+                        embed=embed,
+                        view=view,
                     )
 
                 else:
@@ -1042,7 +1076,6 @@ class Songs(commands.Cog):
             except Exception as e:
                 self.console.print(e)
                 await interaction.response.send_message("error :(", ephemeral=True)
-
 
         async def shuffle_button_callback(interaction: Interaction):
             nonlocal album_name
@@ -1081,7 +1114,9 @@ class Songs(commands.Cog):
         async def play_again_callback(interaction: Interaction):
             await interaction.response.defer()
 
-            if channel_id in self.active_games:  # There's already a game in this channel
+            if (
+                channel_id in self.active_games
+            ):  # There's already a game in this channel
                 await interaction.followup.send(
                     "There is already a game in this channel, you can't start a new one yett",
                     ephemeral=True,
@@ -1089,7 +1124,9 @@ class Songs(commands.Cog):
                 return
 
             self.console.print("Play again button pressed")
-            play_again_button.label = f"{interaction.user.display_name} is playing again!"
+            play_again_button.label = (
+                f"{interaction.user.display_name} is playing again!"
+            )
             play_again_button.disabled = True
 
             if not interaction.user.id == ctx.author.id:
@@ -1115,7 +1152,9 @@ class Songs(commands.Cog):
         view.add_item(giveup_button)
 
         bt_message = await ctx.send(
-            file=File(pixelated_filenames.get(pixel_sizes[0]), filename="preview.jpg"), embed=embed, view=view
+            file=File(pixelated_filenames.get(pixel_sizes[0]), filename="preview.jpg"),
+            embed=embed,
+            view=view,
         )
 
         # * Main game loop - 40 seconds to guess
@@ -1203,8 +1242,8 @@ class Songs(commands.Cog):
                     await ctx.send(embed=embed_timeout, view=timeout_view)
                     break
 
-
     # focusjumble / zoomjumble idk
+
 
 async def setup():
     # Username and session keys
