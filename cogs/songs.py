@@ -1027,7 +1027,7 @@ class Songs(commands.Cog):
                     hints_index += 1
                     pixel_size_index += 1
                     await interaction.response.edit_message(
-                        attachments=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
+                        attachments=[File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg")], embed=embed, view=view
                     )
 
                 else:
@@ -1153,6 +1153,10 @@ class Songs(commands.Cog):
                 msg = await self.bot.wait_for(
                     "message", check=check_message, timeout=remaining
                 )
+
+                if not game_state["active"]:
+                    continue
+
                 elapsed = (
                     asyncio.get_event_loop().time() - start_time
                 )  # After waiting, the elapsed time changed
