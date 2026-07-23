@@ -742,7 +742,7 @@ class Songs(commands.Cog):
                 remaining = 75 - elapsed
 
                 # TODO: Gradually add hints
-                
+
                 if remaining <= 0:
                     # Time's up
                     game_state["active"] = False
@@ -817,7 +817,7 @@ class Songs(commands.Cog):
 
     # Maybe add pixel jumble but unlimited? ion wanna pay for .fmbot supporter
     @commands.command(aliases=("pxu", "px")) # fm.bot has a different prefix
-    async def pixeljumbleunlimited(self, ctx: commands.Context): 
+    async def pixeljumbleunlimited(self, ctx: commands.Context):
         """Like the game on fm.bot but you can play more than 30 games a day (for free)."""
 
         # * Check if user is authenticated
@@ -930,8 +930,15 @@ class Songs(commands.Cog):
                     artist_name = track_info.get("artist", {}).get("name")
 
                     hints = self._make_hints(track_info, artist_name)
-                    hints.pop("album_name")
-                    hints.pop("duration")
+                    try:
+                        hints.pop("album_name")
+                    except KeyError:
+                        pass
+
+                    try:
+                        hints.pop("duration")
+                    except KeyError:
+                        pass
 
                     # Also get the album cover art
                     album_cover = track_info.get("album", {}).get("image", [])
@@ -942,8 +949,8 @@ class Songs(commands.Cog):
                         self.console.print(f"No album cover for {song_name} by {artist_name}")
                         await ctx.send("error :(")
                         self.active_games.remove(channel_id)
-                        return 
-                    
+                        return
+
                     # Download album cover
                     async with session.get(album_cover_url) as response:
                         try:
@@ -958,7 +965,7 @@ class Songs(commands.Cog):
                         cover_filename = f"{album_name}_{artist_name}_cover_999.jpg" # Non-pixelated
                         with open(cover_filename, "wb") as f:
                             f.write(cover_data)
-                    
+
                     # Make the different pixelated versions
                     pixel_sizes = [8, 16, 32, 64, 96, 999]  # From hardest to easiest
                     pixelated_filenames = {
@@ -968,7 +975,7 @@ class Songs(commands.Cog):
 
                     # Generate images
                     for size in pixel_sizes:
-                        if size == 999: 
+                        if size == 999:
                             continue
 
                         image = cv2.imread(cover_filename)
@@ -977,11 +984,11 @@ class Songs(commands.Cog):
                         pixelated = cv2.resize(t, (width, height), interpolation=cv2.INTER_NEAREST)
 
                         cv2.imwrite(pixelated_filenames[size], pixelated)
-                    
+
                     # Test send all of them
                     # for size in pixel_sizes:
                     #     await ctx.send(file=File(pixelated_filenames[size], filename=f"pixel_{size}.jpg"))
-    
+
         # * Make embed
         given_hints = []
         title = "Pixel Jumble Unlimited - Guess the Album"
@@ -1012,8 +1019,8 @@ class Songs(commands.Cog):
                     "No more hints available :(", ephemeral=True
                 )
                 return
-            
-            
+
+
             if hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1:
                 # Unblur image
                 hints_index += 1
@@ -1021,7 +1028,7 @@ class Songs(commands.Cog):
                 await interaction.message.edit(
                     file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
                 )
-                
+
             else:
                 hints_index += 1
                 next_hint = hints[hint_keys[hints_index]]
@@ -1189,7 +1196,7 @@ class Songs(commands.Cog):
 
     # focusjumble / zoomjumble idk
 
-async def setup():  
+async def setup():
     # Username and session keys
     await db.execute(
         "ALTER TABLE users ADD COLUMN IF NOT EXISTS lastfm_username VARCHAR(255) NULL, ADD COLUMN IF NOT EXISTS session_key VARCHAR(255) NULL;"
