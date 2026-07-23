@@ -12,6 +12,7 @@ from .utils.types import Birthday
 import aiohttp
 import asyncio
 import certifi
+from currency_converter import CurrencyConverter, SINGLE_DAY_ECB_URL
 from datetime import datetime, timedelta
 import os
 import random
@@ -41,6 +42,7 @@ class WorldDateTime(commands.Cog):
         self.bot = bot
         self.console = console
         self.historical_events_api_key = os.getenv("HISTORICAL_EVENTS_KEY")
+        self.currency_converter = CurrencyConverter(SINGLE_DAY_ECB_URL, decimal=True)
 
     # groups!!!
 
@@ -714,6 +716,12 @@ class WorldDateTime(commands.Cog):
             f"It is currently {dt.hour:02d}:{dt.minute:02d} in {tzinfo.key if isinstance(tzinfo, ZoneInfo) else tzinfo}.",
             allowed_mentions=discord.AllowedMentions.none(),
         )
+
+    @commands.command()
+    async def currencies(self, ctx: commands.Context):
+        # List cuurencies
+        currencies = self.currency_converter.currencies
+        await ctx.send(f"{', '.join(currencies)}")
 
 
 async def update_wdt_tables():

@@ -12,3 +12,4 @@ async-lru
 tzdata
 opencv-python-headless
 redis
+currencyconverter
