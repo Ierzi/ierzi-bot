@@ -720,13 +720,36 @@ class WorldDateTime(commands.Cog):
     @commands.command()
     async def currencies(self, ctx: commands.Context):
         """Lists all available currencies."""
-        currencies = self.currency_converter.currencies
-        await ctx.send(f"{', '.join(currencies)}")
+        currencies = self.currency_converter.currencies if self.currency_converter.currencies else []
+        await ctx.send(f"{', '.join(currencies)}" if currencies else "No currencies :( ???")
 
     @commands.command(aliases=("ce",))
-    async def currency_exchange(self, ctx: commands.Context, from_currency: str, to_currency: str, amount: float):
+    async def currencyexchange(self, ctx: commands.Context, from_currency: Optional[str], to_currency: Optional[str], amount: Optional[float]):
         """Converts an amount from one currency to another."""
-        result = self.currency_converter.convert(from_currency, to_currency, amount)
+        if from_currency is None or to_currency is None:
+            await ctx.send("!currencyexchange [from_currency] [to_currency] [amount]")
+            return
+
+        from_currency = from_currency.upper()
+        to_currency = to_currency.upper()
+
+        if not self.currency_converter.currencies:
+            await ctx.send("No currencies available??? dude im a shit coder if you see this message")
+            return
+
+        if from_currency not in self.currency_converter.currencies:
+            await ctx.send(f"{from_currency} not supported or invalid.")
+            return
+
+        if to_currency not in self.currency_converter.currencies:
+            await ctx.send(f"{to_currency} not supported or invalid.")
+            return
+
+        if amount is None:
+            await ctx.send("you forgot the amount bro :broken_heart:")
+            return
+
+        result = self.currency_converter.convert(amount, from_currency, to_currency)
         await ctx.send(f"{amount} {from_currency} is equal to {result} {to_currency}.")
 
 
