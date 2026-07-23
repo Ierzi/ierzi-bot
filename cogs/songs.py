@@ -75,10 +75,10 @@ class Songs(commands.Cog):
         except (TypeError, ValueError):
             return str(value)
 
-    def _make_hints(self, track_info: dict, artist_name: str) -> dict[str, str]:
-        album_name = track_info.get("album", {}).get("title")
-        release_date = track_info.get("wiki", {}).get("published")
-        raw_tag = track_info.get("toptags", {}).get("tag")
+    def _make_hints(self, item_info: dict, artist_name: str) -> dict[str, str]:
+        album_name = item_info.get("album", {}).get("title")
+        release_date = item_info.get("wiki", {}).get("published")
+        raw_tag = item_info.get("toptags", {}).get("tag")
         if isinstance(raw_tag, list) and raw_tag:
             genre = raw_tag[0].get("name")
         elif isinstance(raw_tag, dict):
@@ -87,16 +87,16 @@ class Songs(commands.Cog):
             genre = None
 
         duration = None
-        raw_duration = track_info.get("duration")
+        raw_duration = item_info.get("duration")
         if raw_duration is not None:
             try:
                 duration = int(raw_duration) // 1000
             except (TypeError, ValueError):
                 duration = None
 
-        listeners = track_info.get("listeners")
-        playcount = track_info.get("playcount")
-        artist_country = track_info.get("artist", {}).get("country")
+        listeners = item_info.get("listeners")
+        playcount = item_info.get("playcount")
+        artist_country = item_info.get("artist", {}).get("country")
         artist_flag = self._flag_from_country(artist_country) if artist_country else None
 
         raw_hints = {
@@ -116,7 +116,7 @@ class Songs(commands.Cog):
                 continue
 
             if key == "duration":
-                formatted_hints[key] = f"This track lasts {value} seconds."
+                formatted_hints[key] = f"This track lasts {value} seconds." # Only applies to tracks, not albums
             elif key == "genre":
                 formatted_hints[key] = f"It belongs to the {value} genre."
             elif key == "artist_country":
@@ -124,7 +124,7 @@ class Songs(commands.Cog):
             elif key == "popularity":
                 formatted_hints[key] = f"It has about {self._format_number(value)} listeners on Last.fm."
             elif key == "playcount":
-                formatted_hints[key] = f"This track has been played {self._format_number(value)} times."
+                formatted_hints[key] = f"It has been played {self._format_number(value)} times." # Applies to both
             elif key == "release_date":
                 formatted_hints[key] = f"It was released on {value}."
             elif key == "album_name":
@@ -967,7 +967,7 @@ class Songs(commands.Cog):
                             f.write(cover_data)
 
                     # Make the different pixelated versions
-                    pixel_sizes = [8, 16, 32, 64, 96, 999]  # From hardest to easiest
+                    pixel_sizes = [999, 96, 64, 32, 16, 8]  # From easiest to hardest
                     pixelated_filenames = {
                         size: f"{album_name}_{artist_name}_cover_{size}.jpg"
                         for size in pixel_sizes
