@@ -1007,36 +1007,42 @@ class Songs(commands.Cog):
         # * Button callbacks
         async def hint_button_callback(interaction: Interaction):
             nonlocal hints_text, given_hints, hints_index, pixel_size_index
-            if not hints:
-                await interaction.response.send_message(
-                    "No more hints available :(", ephemeral=True
-                )
-                return
+            try:
+                if not hints:
+                    await interaction.response.send_message(
+                        "No more hints available :(", ephemeral=True
+                    )
+                    return
 
-            hint_keys = list(hints.keys())
-            if hints_index >= len(hint_keys):
-                await interaction.response.send_message(
-                    "No more hints available :(", ephemeral=True
-                )
-                return
+                hint_keys = list(hints.keys())
+                if hints_index >= len(hint_keys):
+                    await interaction.response.send_message(
+                        "No more hints available :(", ephemeral=True
+                    )
+                    return
 
 
-            if hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1:
-                # Unblur image
-                hints_index += 1
-                pixel_size_index += 1
-                await interaction.message.edit(
-                    file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
-                )
+                if hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1:
+                    # Unblur image
+                    hints_index += 1
+                    pixel_size_index += 1
+                    await interaction.message.edit(
+                        file=File(pixelated_filenames.get(pixel_sizes[pixel_size_index]), filename="preview.jpg"), embed=embed, view=view
+                    )
 
-            else:
-                hints_index += 1
-                next_hint = hints[hint_keys[hints_index]]
-                given_hints.append(next_hint)
+                else:
+                    hints_index += 1
+                    next_hint = hints[hint_keys[hints_index]]
+                    given_hints.append(next_hint)
 
-                hints_text = "\n".join(f"- {hint}" for hint in given_hints)
-                embed.description = f"{title}\n{hints_text}"
-                await interaction.response.edit_message(embed=embed, view=view)
+                    hints_text = "\n".join(f"- {hint}" for hint in given_hints)
+                    embed.description = f"{title}\n{hints_text}"
+                    await interaction.response.edit_message(embed=embed, view=view)
+
+            except Exception as e:
+                self.console.print(e)
+                await interaction.response.send_message("error :(", ephemeral=True)
+
 
         async def shuffle_button_callback(interaction: Interaction):
             nonlocal album_name
