@@ -719,9 +719,15 @@ class WorldDateTime(commands.Cog):
 
     @commands.command()
     async def currencies(self, ctx: commands.Context):
-        # List cuurencies
+        """Lists all available currencies."""
         currencies = self.currency_converter.currencies
         await ctx.send(f"{', '.join(currencies)}")
+
+    @commands.command(aliases=("ce",))
+    async def currency_exchange(self, ctx: commands.Context, from_currency: str, to_currency: str, amount: float):
+        """Converts an amount from one currency to another."""
+        result = self.currency_converter.convert(from_currency, to_currency, amount)
+        await ctx.send(f"{amount} {from_currency} is equal to {result} {to_currency}.")
 
 
 async def update_wdt_tables():
