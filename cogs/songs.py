@@ -1,21 +1,21 @@
-import asyncio
-import hashlib
-import os
-import random
-import xml.etree.ElementTree as ET
-from difflib import SequenceMatcher
-
-import aiohttp
-import cv2
-import requests
-from async_lru import alru_cache
 from discord import Embed, File, Interaction, Message
 from discord.ext import commands
 from discord.ui import Button, View
-from rich.console import Console
 
 from .utils.database import db
 from .utils.variables import LONGER_VIEW_TIMEOUT
+
+import aiohttp
+import asyncio
+from async_lru import alru_cache
+import cv2
+from difflib import SequenceMatcher
+import hashlib
+import os
+import random
+import requests
+from rich.console import Console
+import xml.etree.ElementTree as ET
 
 SongData = tuple[str, str, str]  # Song title - Album - Artist
 LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
@@ -75,10 +75,10 @@ class Songs(commands.Cog):
         except (TypeError, ValueError):
             return str(value)
 
-    def _make_hints(self, item_info: dict, artist_name: str) -> dict[str, str]:
-        album_name = item_info.get("album", {}).get("title")
-        release_date = item_info.get("wiki", {}).get("published")
-        raw_tag = item_info.get("toptags", {}).get("tag")
+    def _make_hints(self, track_info: dict, artist_name: str) -> dict[str, str]:
+        album_name = track_info.get("album", {}).get("title")
+        release_date = track_info.get("wiki", {}).get("published")
+        raw_tag = track_info.get("toptags", {}).get("tag")
         if isinstance(raw_tag, list) and raw_tag:
             genre = raw_tag[0].get("name")
         elif isinstance(raw_tag, dict):
@@ -87,16 +87,16 @@ class Songs(commands.Cog):
             genre = None
 
         duration = None
-        raw_duration = item_info.get("duration")
+        raw_duration = track_info.get("duration")
         if raw_duration is not None:
             try:
                 duration = int(raw_duration) // 1000
             except (TypeError, ValueError):
                 duration = None
 
-        listeners = item_info.get("listeners")
-        playcount = item_info.get("playcount")
-        artist_country = item_info.get("artist", {}).get("country")
+        listeners = track_info.get("listeners")
+        playcount = track_info.get("playcount")
+        artist_country = track_info.get("artist", {}).get("country")
         artist_flag = (
             self._flag_from_country(artist_country) if artist_country else None
         )
@@ -131,7 +131,7 @@ class Songs(commands.Cog):
                 )
             elif key == "playcount":
                 formatted_hints[key] = (
-                    f"It has been played {self._format_number(value)} times."  # Applies to both
+                    f"It has been played {self._format_number(value)} times on last.fm."  # Applies to both
                 )
             elif key == "release_date":
                 formatted_hints[key] = f"It was released on {value}."
@@ -986,7 +986,7 @@ class Songs(commands.Cog):
                             f.write(cover_data)
 
                     # Make the different pixelated versions
-                    pixel_sizes = [999, 96, 64, 32, 16, 8]  # From easiest to hardest
+                    pixel_sizes = [999, 128, 96, 64, 32, 16]  # From easiest to hardest
                     pixelated_filenames = {
                         size: f"{album_name}_{artist_name}_cover_{size}.jpg"
                         for size in pixel_sizes
@@ -1003,7 +1003,7 @@ class Songs(commands.Cog):
                             image,
                             (width // size, height // size),
                             interpolation=cv2.INTER_LINEAR,
-                        )
+                        ) # ty: ignore
                         pixelated = cv2.resize(
                             t, (width, height), interpolation=cv2.INTER_NEAREST
                         )
@@ -1048,7 +1048,8 @@ class Songs(commands.Cog):
 
                 if (
                     hints_index % 2 == 0 and pixel_size_index < len(pixel_sizes) - 1 # Every 2 hints, unblur image
-                    or hints_index > len(hint_keys) # All text hints used, unblur image
+                    and hints_index < len(hint_keys) # idk man i forgot
+                    or hints_index > len(hint_keys) # i just hope this works :sob:
                 ):
                     # Unblur image
                     hints_index += 1
