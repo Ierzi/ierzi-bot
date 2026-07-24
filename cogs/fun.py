@@ -8,6 +8,7 @@ from aiogoogletrans import Translator
 from dotenv import load_dotenv
 from groq import AsyncGroq
 import json
+from io import BytesIO
 import os
 from pydantic import BaseModel
 import random
@@ -217,7 +218,14 @@ class Fun(commands.Cog):
         request_url = f"{self.cat_api_url}/carvids"
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
-                video = await r.read()
+                print(r.status)
+
+                if r.status != 200:
+                    print(await r.text())
+                    await ctx.send("error :(")
+                    return
+
+                video = BytesIO(await r.read())
 
         await ctx.send(file=File(video, filename="catvid.mp4"))
 
@@ -229,7 +237,14 @@ class Fun(commands.Cog):
         request_url = f"{self.cat_api_url}/atlas"
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
-                image = await r.read()
+                print(r.status)
+
+                if r.status != 200:
+                    print(await r.text())
+                    await ctx.send("error :(")
+                    return
+
+                image = BytesIO(await r.read())
 
         await ctx.send(file=File(image, filename="atlas.jpg"))
 
