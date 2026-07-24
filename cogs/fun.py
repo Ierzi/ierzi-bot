@@ -28,6 +28,7 @@ class Fun(commands.Cog):
         self.bot = bot
         self.console = console
         self.groq_api_key = os.getenv("GROQ_KEY")
+        self.cat_api_url = os.getenv("CAT_API_URL")
 
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: Optional[discord.Member] = None):
@@ -213,7 +214,7 @@ class Fun(commands.Cog):
     async def catvid(self, ctx: commands.Context):
         """Shows a cute cat video :3"""
 
-        request_url = "http://cat-api.railway.internal/carvids"
+        request_url = f"{self.cat_api_url}/carvids"
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
                 video = await r.read()
@@ -225,7 +226,7 @@ class Fun(commands.Cog):
     async def atlas(self, ctx: commands.Context):
         """Sends a cute pic of my cat :3"""
 
-        request_url = "http://cat-api.railway.internal/atlas"
+        request_url = f"{self.cat_api_url}/atlas"
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
                 image = await r.read()
