@@ -1,4 +1,5 @@
 import discord
+from discord import File
 from discord.ext import commands
 
 import asyncio
@@ -8,7 +9,6 @@ from dotenv import load_dotenv
 from groq import AsyncGroq
 import json
 import os
-from pathlib import Path
 from pydantic import BaseModel
 import random
 from rich.console import Console
@@ -27,13 +27,10 @@ class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
-        self.cat_vid_names: list[Path] = []
-        self.car_vids_folder = Path(__file__).resolve().parent.parent / "car_vids"
         self.groq_api_key = os.getenv("GROQ_KEY")
-        self.fetch_cat_vids()
 
     @commands.command()
-    async def istrans(self, ctx: commands.Context, user: discord.Member = None):
+    async def istrans(self, ctx: commands.Context, user: Optional[discord.Member] = None):
         """https://amitrans.org/"""
         if user is None:
             user = ctx.author
@@ -212,17 +209,28 @@ class Fun(commands.Cog):
         embed.set_image(url=cat_url)
         await ctx.send(embed=embed)
 
-    def fetch_cat_vids(self):
-        for video in self.car_vids_folder.glob("*.mp4"):
-            self.cat_vid_names.append(video)
-
     @commands.command()
     async def catvid(self, ctx: commands.Context):
         """Shows a cute cat video :3"""
-        random_video = random.choice(self.cat_vid_names)
-        await ctx.send(file=discord.File(random_video.resolve()))
-    
+
+        request_url = "https://cat-api.railway.internal/carvids"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                video = await r.read()
+
+        await ctx.send(file=File(video))
+
     # TODO: !atlas
+    @commands.command()
+    async def atlas(self, ctx: commands.Context):
+        """Sends a cute pic of my cat :3"""
+
+        request_url = "https://cat-api.railway.internal/atlas"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(request_url) as r:
+                image = await r.read()
+
+        await ctx.send(file=File(image))
 
     @commands.command()
     @commands.is_owner()

@@ -385,12 +385,10 @@ async def roadmap(ctx: commands.Context):
         "custom pronouns",
         "more reactions",
         "custom ai models",
-        "more songs commands but idk what to add",
         "do thing to request ideas by dming the bot",
         "more reactions (did i already say this?)",
         "other leaderboards idkkkkk",
         "multiple pronouns (for winty)",
-        "make wdt more simple cause yall did NOT understand it",
         "more playlist commands i made a note about this",
     ]
     message = "Features I wanna add: \n"
