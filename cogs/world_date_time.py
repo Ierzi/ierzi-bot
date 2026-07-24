@@ -141,6 +141,11 @@ class WorldDateTime(commands.Cog):
         self, dt: datetime, many: int, random_events: bool = False
     ) -> list:
         """Gets events from Historical Events API."""
+
+        if not self.historical_events_api_key:
+            self.console.print("No historical event key, skip.")
+            return [] # Empty list
+
         timeout = aiohttp.ClientTimeout(total=10)
         url = "https://api.api-ninjas.com/v1/historicalevents"
         async with aiohttp.ClientSession(timeout=timeout) as session:
@@ -233,7 +238,7 @@ class WorldDateTime(commands.Cog):
             return
 
         for event in events:
-            today_embed.description += f"- {event}\n"
+            today_embed.description += f"- {event}\n" # pyright: ignore
 
         await ctx.send(embed=today_embed)
 
