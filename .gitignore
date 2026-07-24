@@ -183,5 +183,6 @@ cython_debug/
 # other
 tests/
 WARP.md
+AGENTS.md
 .vscode/
 pyrightconfig.json

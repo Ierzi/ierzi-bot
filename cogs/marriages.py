@@ -5,7 +5,6 @@ from discord.ui import Button, View
 from .utils import pronouns
 from .utils.database import db
 from .utils.pronouns import PronounEnum
-from .utils.redis import redis_cache
 from .utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 
 from rich.console import Console
@@ -33,7 +32,6 @@ class Marriages(commands.Cog):
             marriage_pair[1],
             marriage_pair[0],
         )
-        await self._fetch_marriages.invalidate(self)
 
     async def remove_marriage_list(self, marriage_pair: tuple[int, int]):
         await db.execute(
@@ -46,9 +44,7 @@ class Marriages(commands.Cog):
             marriage_pair[1],
             marriage_pair[0],
         )
-        await self._fetch_marriages.invalidate(self)
 
-    @redis_cache(expire=60)
     async def _fetch_marriages(self):
         marriages = await db.fetch("SELECT user1_id, user2_id FROM marriages")
         return [[row["user1_id"], row["user2_id"]] for row in marriages]
