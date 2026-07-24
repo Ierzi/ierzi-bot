@@ -213,24 +213,24 @@ class Fun(commands.Cog):
     async def catvid(self, ctx: commands.Context):
         """Shows a cute cat video :3"""
 
-        request_url = "https://cat-api.railway.internal/carvids"
+        request_url = "http://cat-api.railway.internal/carvids"
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
                 video = await r.read()
 
-        await ctx.send(file=File(video))
+        await ctx.send(file=File(video, filename="catvid.mp4"))
 
     # TODO: !atlas
     @commands.command()
     async def atlas(self, ctx: commands.Context):
         """Sends a cute pic of my cat :3"""
 
-        request_url = "https://cat-api.railway.internal/atlas"
+        request_url = "http://cat-api.railway.internal/atlas"
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
                 image = await r.read()
 
-        await ctx.send(file=File(image))
+        await ctx.send(file=File(image, filename="atlas.jpg"))
 
     @commands.command()
     @commands.is_owner()
