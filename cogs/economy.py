@@ -133,7 +133,7 @@ class Economy(commands.Cog):
         float_balance = float(new_balance)
         await db.execute(
             """
-            UPDATE economy 
+            UPDATE economy
             SET balance = $2
             WHERE user_id = $1
         """,
@@ -153,7 +153,7 @@ class Economy(commands.Cog):
         float_balance = float(new_balance)
         await db.execute(
             """
-            UPDATE economy 
+            UPDATE economy
             SET balance = $2,
                 money_lost = money_lost + $3
             WHERE user_id = $1
@@ -172,7 +172,7 @@ class Economy(commands.Cog):
         await self._ensure_user_exists(user_id)
         await db.execute(
             """
-            UPDATE economy 
+            UPDATE economy
             SET rebirths = rebirths + $2
             WHERE user_id = $1
         """,
@@ -181,46 +181,47 @@ class Economy(commands.Cog):
         )
         self.console.print(f"Added {rebirths} rebirths to user {user_id}.")
         async def _set_balance(self, user_id: int, amount: float):
-        """Set the balance of a user."""
-        await self._ensure_user_exists(user_id)
-        float_amount = float(Currency(amount))
-        await db.execute(
-            """
-            UPDATE economy 
-            SET balance = $2
-            WHERE user_id = $1
-        """,
-            user_id,
-            float_amount,
-        )
-        self.console.print(f"Set balance of user {user_id} to {amount}.")
+            """Set the balance of a user."""
+            await self._ensure_user_exists(user_id)
+            float_amount = float(Currency(amount))
+            await db.execute(
+                """
+                UPDATE economy
+                SET balance = $2
+                WHERE user_id = $1
+            """,
+                user_id,
+                float_amount,
+            )
+            self.console.print(f"Set balance of user {user_id} to {amount}.")
+
         async def _set_money_lost(self, user_id: int, amount: float):
-        """Set the money_lost of a user."""
-        await self._ensure_user_exists(user_id)
-        float_amount = float(Currency(amount))
-        await db.execute(
-            """
-            UPDATE economy 
-            SET money_lost = $2
-            WHERE user_id = $1
-        """,
-            user_id,
-            float_amount,
-        )
-        self.console.print(f"Set money_lost of user {user_id} to {amount}.")
+            """Set the money_lost of a user."""
+            await self._ensure_user_exists(user_id)
+            float_amount = float(Currency(amount))
+            await db.execute(
+                """
+                UPDATE economy
+                SET money_lost = $2
+                WHERE user_id = $1
+            """,
+                user_id,
+                float_amount,
+            )
+            self.console.print(f"Set money_lost of user {user_id} to {amount}.")
         async def _set_rebirths(self, user_id: int, rebirths: int):
-        """Set the number of rebirths of a user."""
-        await self._ensure_user_exists(user_id)
-        await db.execute(
-            """
-            UPDATE economy 
-            SET rebirths = $2
-            WHERE user_id = $1
-        """,
-            user_id,
-            rebirths,
-        )
-        self.console.print(f"Set rebirths of user {user_id} to {rebirths}.")
+            """Set the number of rebirths of a user."""
+            await self._ensure_user_exists(user_id)
+            await db.execute(
+                """
+                UPDATE economy
+                SET rebirths = $2
+                WHERE user_id = $1
+            """,
+                user_id,
+                rebirths,
+            )
+            self.console.print(f"Set rebirths of user {user_id} to {rebirths}.")
 
     async def _fetch_cooldown(
         self,
@@ -300,7 +301,7 @@ class Economy(commands.Cog):
         await self._ensure_user_exists(user_id)
         await db.execute(
             f"""
-            INSERT INTO economy (user_id, {cooldown_type}) 
+            INSERT INTO economy (user_id, {cooldown_type})
             VALUES ($1, $2)
             ON CONFLICT (user_id) DO UPDATE SET {cooldown_type} = $2
         """,
@@ -1657,7 +1658,7 @@ class Economy(commands.Cog):
 
         await db.execute(
             """
-            UPDATE economy 
+            UPDATE economy
             SET balance = $2,
                 money_lost = $3,
                 last_daily = $4,
