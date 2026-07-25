@@ -147,21 +147,12 @@ class Reactions(commands.Cog):
         """Kill someone."""
         all_pronouns = await pronouns.get_pronoun(ctx.author.id)
         if user == ctx.author:
-            if user.id == 1153301933231181824:
-                for _ in range(3):
-                    for _ in range(10):
-                        await ctx.send(
-                            f"**{user.mention} KILLS {all_pronouns[4]}!!!!!**"
-                        )
-                        await asyncio.sleep(0.5)
-
-                    await asyncio.sleep(3)
-
             await ctx.send(
                 f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}",
                 allowed_mentions=discord.AllowedMentions.none(),
             )
             return
+
         if user.id == self.bot.user.id:
             await ctx.send("why?? :(")
             return

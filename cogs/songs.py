@@ -8,7 +8,7 @@ from .utils.variables import LONGER_VIEW_TIMEOUT
 import aiohttp
 import asyncio
 from async_lru import alru_cache
-import cv2
+# import cv2
 from difflib import SequenceMatcher
 import hashlib
 import os
@@ -173,7 +173,7 @@ class Songs(commands.Cog):
 
     @commands.command()
     async def recommendation(self, ctx: commands.Context):
-        """Get a random cool song from my playlist"""
+        """Get a random cool song from my playlist."""
         if not self.songs:
             await ctx.send("No songs available (???)")
             return
@@ -225,7 +225,7 @@ class Songs(commands.Cog):
 
     @commands.command()
     async def getsong(self, ctx: commands.Context, index: int):
-        """Gets a song based on an index."""
+        """Gets a song from my playlist based on an index."""
         if index > len(self.songs):
             await ctx.send(
                 f"I don't have that many songs :sob: (only {len(self.songs):,})"
@@ -376,7 +376,7 @@ class Songs(commands.Cog):
 
             await interaction.response.send_message(f"{login_link}", ephemeral=True)
 
-            # Ping the server every 5 seconds to check if the user has authenticated
+            # Ping the server every 10 seconds to check if the user has authenticated
             # 180 seconds / 10 = 18, so 18 attempts
 
             args = {
