@@ -71,7 +71,7 @@ async def on_ready():
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
     await bot.change_presence(
         status=discord.Status.idle,
-        activity=CustomActivity(f"dtupid - {guild_count} servers"),
+        activity=CustomActivity(f"birthday boy - {guild_count} servers"),
     )
     await fill_embeds()
     synced = await bot.tree.sync()
