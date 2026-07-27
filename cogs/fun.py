@@ -28,8 +28,10 @@ class Fun(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
         self.console = console
-        self.groq_api_key = os.getenv("GROQ_KEY")
-        self.cat_api_url = os.getenv("CAT_API_URL")
+        self.groq_api_key = os.getenv("GROQ_KEY", "")
+        self.cat_api_url = os.getenv("CAT_API_URL", "")
+        self.nasa_api_key = os.getenv("NASA_API_KEY", "")
+
 
     @commands.command()
     async def istrans(self, ctx: commands.Context, user: Optional[discord.Member] = None):
@@ -469,3 +471,25 @@ class Fun(commands.Cog):
                     f"❌: {data.reason}\n**Game over!** \n-# Final sequence: {what_beats} ✗ {bottom_line if bottom_line != 'Start' else 'rock'}"
                 )
                 return
+
+    @commands.command()
+    async def apod(self, ctx: commands.Context, date: Optional[str] = None) -> None:
+        """The Astronomy Picture Of the Day. Optional date argument: YYYY-MM-DD"""
+        args: dict[str, str] = {
+            "api_key": self.nasa_api_key
+        }
+        if date:
+            args["date"] = date
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://api.nasa.gov/planetary/apod", params=args) as response:
+                data = await response.json()
+
+            if not data:
+                await ctx.send("No images today")
+                return
+            img = data.get("hdurl") if hasattr(data, "hdurl") else data.get("url")
+
+            embed = discord.Embed(title=data.get("title"))
+            embed.set_image(url=img)
+            await ctx.send(embed=embed)

@@ -325,7 +325,7 @@ async def urban_dictionary(interaction: Interaction, word: str):
 
 # Other commands
 @bot.command(name="id")
-async def id_user(ctx: commands.Context, user: discord.User = None):
+async def id_user(ctx: commands.Context, user: Optional[discord.User] = None):
     """Gets the ID of an user."""
     if not user:
         await ctx.send(ctx.author.id)
@@ -564,6 +564,7 @@ async def help(ctx: commands.Context, category: str = None):
 
     async def help_select_callback(interaction: Interaction):
         selected = help_select.values[0].lower()
+        assert interaction.message is not None
         match selected:
             case "home":
                 await interaction.message.edit(embed=home_embed)
@@ -824,6 +825,7 @@ async def info(ctx: commands.Context):
 
 
 async def start_bot():
+    global token
     await db.init_pool()
     try:
         await load_cogs()
