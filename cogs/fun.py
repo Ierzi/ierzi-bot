@@ -490,6 +490,11 @@ class Fun(commands.Cog):
                 return
             img = data.get("hdurl") if hasattr(data, "hdurl") else data.get("url")
 
-            embed = discord.Embed(title=data.get("title"))
+            embed = discord.Embed(
+                title=data.get("title"),
+                colour=0x0032A0,  # nasa blue
+            )
+            embed.set_footer(text=data.get("copyright"))
+
             embed.set_image(url=img)
             await ctx.send(embed=embed)
