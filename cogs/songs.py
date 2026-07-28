@@ -127,11 +127,11 @@ class Songs(commands.Cog):
                 formatted_hints[key] = f"The artist is from {value}."
             elif key == "popularity":
                 formatted_hints[key] = (
-                    f"It has about {self._format_number(value)} listeners on Last.fm."
+                    f"On Last.fm, about {self._format_number(value)} people have listened to this track."
                 )
             elif key == "playcount":
                 formatted_hints[key] = (
-                    f"It has been played {self._format_number(value)} times on last.fm."  # Applies to both
+                    f"It has been played {self._format_number(value)} times on last.fm."
                 )
             elif key == "release_date":
                 formatted_hints[key] = f"It was released on {value}."
@@ -555,7 +555,6 @@ class Songs(commands.Cog):
                         return
 
                     data = await response.json()
-                    self.console.print(data)
                     track_info = data.get("track", {})
                     # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
                     if not track_info:
