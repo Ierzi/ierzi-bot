@@ -826,7 +826,7 @@ class Songs(commands.Cog):
                     )
 
                     if winstreak and winstreak > 1:
-                        embed_correct.set_footer(text=f"{winstreak} winstreak")
+                        embed_correct.set_footer(text=f"{winstreak} win streak")
 
                     view.clear_items()
                     correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
@@ -877,7 +877,7 @@ async def setup():
 
     # Win streaks
     await db.execute(
-        "ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL, ADD COLUMN IF NOT EXISTS pxu_winstreak INT NULL;"
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS bt_winstreak INT NULL"
     )
 
     # TODO
