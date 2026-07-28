@@ -455,7 +455,6 @@ class Songs(commands.Cog):
         )
         await ctx.send("Logged out.")
 
-    # TODO: Add win streaks
     @commands.command(aliases=("blindtest", "bt", "mj"))
     async def musicjumble(self, ctx: commands.Context):
         """Guess the name of a random song from your listening history."""
@@ -689,6 +688,12 @@ class Songs(commands.Cog):
                 item.disabled = True
 
             self.active_games.remove(channel_id)
+
+            await db.execute(
+                "UPDATE users SET bt_winstreak = 0 WHERE user_id = $1",
+                ctx.author.id,
+            )
+
             view_gaveup = View(timeout=LONGER_VIEW_TIMEOUT)
             view_gaveup.add_item(play_again_button)
 
@@ -766,6 +771,11 @@ class Songs(commands.Cog):
                         colour=0xD51007,
                     )
 
+                    await db.execute(
+                        "UPDATE users SET bt_winstreak = 0 WHERE user_id = $1",
+                        ctx.author.id,
+                    )
+
                     view.clear_items()
                     timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
@@ -792,10 +802,23 @@ class Songs(commands.Cog):
                     await msg.add_reaction("✅")
                     game_state["active"] = False
                     game_state["guessed"] = True
+
+                    await db.execute(
+                        "UPDATE users SET bt_winstreak = COALESCE(bt_winstreak, 0) + 1 WHERE user_id = $1",
+                        msg.author.id,
+                    ) # Add 1 to winstreak
+                    winstreak = await db.fetchval(
+                        "SELECT bt_winstreak FROM users WHERE user_id = $1",
+                        msg.author.id,
+                    ) # Fetch updated winstreak
+
                     embed_correct = Embed(
                         description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
                         colour=0xD51007,
                     )
+
+                    if winstreak and winstreak > 1:
+                        embed_correct.set_footer(text=f"{winstreak} winstreak")
 
                     view.clear_items()
                     correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
@@ -817,6 +840,11 @@ class Songs(commands.Cog):
                         title="Nobody guesssed it...",
                         description=f"The song was **{song_name}** by **{artist_name}**",
                         colour=0xD51007,
+                    )
+
+                    await db.execute(
+                        "UPDATE users SET bt_winstreak = 0 WHERE user_id = $1",
+                        ctx.author.id,
                     )
 
                     view.clear_items()
