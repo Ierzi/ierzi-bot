@@ -555,7 +555,7 @@ class Songs(commands.Cog):
                         return
 
                     data = await response.json()
-                    await ctx.send(data)
+                    self.console.print(data)
                     track_info = data.get("track", {})
                     # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
                     if not track_info:
