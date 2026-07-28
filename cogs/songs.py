@@ -555,7 +555,14 @@ class Songs(commands.Cog):
                         return
 
                     data = await response.json()
-                    self.console.print(data[:1]) # ????
+                    try:
+                        assert data is not None
+                    except AssertionError:
+                        self.console.print("no data")
+                        await ctx.send("error :(")
+                        self.active_games.remove(channel_id)
+                        return
+
                     track_info = data.get("track", {})
                     # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
                     if not track_info:
