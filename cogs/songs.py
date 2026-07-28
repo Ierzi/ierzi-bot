@@ -627,6 +627,18 @@ class Songs(commands.Cog):
 
                     song_data = await response.read()
                     # Make file name original
+                    try:
+                        song_name = song_name.split("(")[0] # Remove parentheses (feats)
+                    except IndexError:
+                        pass
+
+                    try:
+                        song_name = song_name.split("[")[0] # Remove brackets (clean ver or idk)
+                    except IndexError:
+                        pass
+
+                    song_name = song_name.strip()
+
                     filename = f"{song_name}_{artist_name}.mp3"
                     with open(filename, "wb") as f:
                         f.write(song_data)
