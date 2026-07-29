@@ -523,104 +523,102 @@ class Songs(commands.Cog):
                         self.user_listening_pages[ctx.author.id] = total_pages
 
                 tracks = [t for t in tracks if "date" in t]
-                random_track = random.choice(tracks)
 
-                max_mbid_attempts = 20
-                mbid_attempts = 0
-                while True:
+                preview_url = None
+                hints = None
+                for _ in range(20): # deezer attemps
+                    random_track = random.choice(tracks)
+
                     song_name = str(random_track.get("name"))
                     artist_name = str(random_track.get("artist", {}).get("#text", ""))
-                    mbid = random_track.get("mbid")
+
+                    mbid = None
+                    for _ in range(20):
+                        mbid = random_track.get("mbid")
+                        if mbid:
+                            break
+                        self.console.print(f"No mbid for {song_name} by {artist_name}, picking another...")
+                        random_track = random.choice(tracks)
+                        song_name = str(random_track.get("name"))
+                        artist_name = str(random_track.get("artist", {}).get("#text", ""))
+                    else:
+                        self.console.print("Gave up looking for a track with mbid")
+
+                    # * Get some info about the song (for hints)
+                    hints_args = {
+                        "method": "track.getInfo",
+                        "api_key": LASTFM_API_KEY,
+                        "format": "json",
+                    }
                     if mbid:
-                        break
-                    self.console.print(f"No mbid for {song_name} by {artist_name}, picking another...")
-                    random_track = random.choice(tracks)
-                    mbid_attempts += 1
-                    if mbid_attempts >= max_mbid_attempts:
-                        self.console.print("Gave up looking for a track with mbid, using fallback")
-                        break
+                        hints_args["mbid"] = mbid
+                    else:
+                        hints_args["artist"] = artist_name
+                        hints_args["track"] = song_name
+                        hints_args["autocorrect"] = 1
 
-                # * Get some info about the song (for hints)
-                hints_args = {
-                    "method": "track.getInfo",
-                    "api_key": LASTFM_API_KEY,
-                    "format": "json",
-                }
-                if mbid:
-                    hints_args["mbid"] = mbid
-                else:
-                    hints_args["artist"] = artist_name
-                    hints_args["track"] = song_name
-                    hints_args["autocorrect"] = 1
+                    async with session.get(
+                        "http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30
+                    ) as response:
+                        try:
+                            response.raise_for_status()
+                        except Exception as e:
+                            self.console.print(e)
+                            continue
 
-                async with session.get(
-                    "http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30
-                ) as response:
-                    try:
-                        response.raise_for_status()
-                    except Exception as e:
-                        self.console.print(e)
-                        await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
-                        return
+                        data = await response.json()
+                        if data is None:
+                            self.console.print("no data")
+                            continue
 
-                    data = await response.json()
-                    try:
-                        assert data is not None
-                    except AssertionError:
-                        self.console.print("no data")
-                        await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
-                        return
+                        track_info = data.get("track", {})
+                        if not track_info:
+                            self.console.print(
+                                f"No track info for {song_name} by {artist_name}"
+                            )
+                            self.console.print("no hints")
 
-                    track_info = data.get("track", {})
-                    # await ctx.send(track_info if len(track_info) < 2000 else "track info too long")
-                    if not track_info:
-                        self.console.print(
-                            f"No track info for {song_name} by {artist_name}"
-                        )
-                        self.console.print("no hints")
+                        hints = self._make_hints(track_info, artist_name)
+                        hints.pop("album_name", None) # In case it's a single
 
-                    hints = self._make_hints(track_info, artist_name)
-                    hints.pop("album_name") # In case it's a single
+                    # * Ask deezer for a preview
+                    query = f"{song_name} {artist_name}"
+                    self.console.print(query)  # If i dont guess the song for debugging
+                    url = f"https://api.deezer.com/search?q={query}"
 
-                # * Ask deezer for a preview
-                query = f"{song_name} {artist_name}"
-                self.console.print(query)  # If i dont guess the song for debugging
-                url = f"https://api.deezer.com/search?q={query}"
-                # await ctx.send(url)
+                    async with session.get(url, timeout=30) as response:
+                        try:
+                            response.raise_for_status()
+                        except Exception as e:
+                            self.console.print(e)
+                            continue
 
-                async with session.get(url, timeout=30) as response:
-                    try:
-                        response.raise_for_status()
-                    except Exception as e:
-                        self.console.print(e)
-                        await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
-                        return
+                        data = await response.json()
+                        results = data.get("data", [])
+                        if not results:
+                            self.console.print(f"No results from Deezer for query: {query}")
+                            continue
 
-                    data = await response.json()
-                    results = data.get("data", [])
-                    if not results:
-                        await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
-                        self.console.print(f"No results from Deezer for query: {query}")
-                        return
+                        for result in results:
+                            result_artist = result.get("artist", {}).get("name", "").lower()
+                            if result_artist == artist_name.lower():
+                                preview_url = result.get("preview")
+                                if preview_url:
+                                    break
 
-                    for result in results:
-                        result_artist = result.get("artist", {}).get("name", "").lower()
-                        if result_artist == artist_name.lower():
-                            preview_url = result.get("preview")
-                            if preview_url:
-                                break
+                        if not preview_url:
+                            self.console.print(
+                                f"No preview available for song {song_name} by {artist_name}"
+                            )
+                            continue
 
-                    if not preview_url:
-                        await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
-                        self.console.print(
-                            f"No preview available for song {song_name} by {artist_name}"
-                        )
-                        return
+                    break  # Everything succeeded, exit the retry loop
+
+                if not preview_url:
+                    await ctx.send("error :(")
+                    self.active_games.remove(channel_id)
+                    self.console.print("Could not find a suitable track after multiple attempts")
+                    return
 
                 # test send
                 # await ctx.send(f"{preview_url}")
