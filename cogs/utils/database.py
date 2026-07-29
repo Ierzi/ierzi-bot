@@ -3,12 +3,14 @@ from asyncpg import Record, Connection, Pool
 import os
 from typing import Any, AsyncIterator, Iterable, Optional
 
+
 class DatabaseError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
 
     def __str__(self) -> str:
         return self.message
+
 
 class Database:
     def __init__(self) -> None:
@@ -42,7 +44,9 @@ class Database:
 
     def _require_pool(self) -> Pool:
         if self._pool is None:
-            raise DatabaseError("Database pool is not initialized. Call db.init_pool() first.")
+            raise DatabaseError(
+                "Database pool is not initialized. Call db.init_pool() first."
+            )
         return self._pool
 
     async def execute(self, query: str, *args: Any) -> str:

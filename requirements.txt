@@ -1,7 +1,6 @@
 discord.py
 rich
 dotenv
-openai
 asyncpg
 groq
 requests
@@ -10,5 +9,6 @@ aiofiles
 aiogoogletrans #gender
 moviepy
 async-lru
-tzdata # cant believe this is a real thing
-# nltk - not used anymore (why did it ask for sqlite3)
+tzdata
+opencv-python-headless
+currencyconverter

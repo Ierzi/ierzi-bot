@@ -20,6 +20,7 @@ from wikipediaapi import Wikipedia
 # nltk.download("wordnet")
 # nltk.download('averaged_perceptron_tagger_eng')
 
+
 class Search(commands.Cog):
     def __init__(self, bot: commands.Bot, console: Console):
         self.bot = bot
@@ -37,7 +38,7 @@ class Search(commands.Cog):
             async with session.get(request_url) as r:
                 data = await r.json()
                 try:
-                    definition = data['data'][0]['meaning']
+                    definition = data["data"][0]["meaning"]
                 except Exception:
                     await ctx.send("Word not found/Error.")
                     return
@@ -51,12 +52,15 @@ class Search(commands.Cog):
         #     console.print("Invalid status code.")
         #     ctx.send(f"Invalid status code {r.status_code}")
         #     return
-        
+
         # r_json = r.json()
         # definition = r_json["data"][0]["meaning"]
 
-        await ctx.send(f"{ctx.author.mention}: **{word}** \n\n{definition}", allowed_mentions=discord.AllowedMentions.none())
-    
+        await ctx.send(
+            f"{ctx.author.mention}: **{word}** \n\n{definition}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
+
     @commands.command()
     async def define(self, ctx: commands.Context, *, word: str):
         """Look up the meaning of a word."""
@@ -65,25 +69,25 @@ class Search(commands.Cog):
         async with aiohttp.ClientSession() as session:
             async with session.get(request_url) as r:
                 r = await r.json()
-                
+
         # r = requests.get(request_url).json()
 
         try:
-            meanings = r[0]['meanings']
+            meanings = r[0]["meanings"]
         except Exception:
             await ctx.send("Word not found / Error.")
             return
-        
+
         message = f"{ctx.author.mention}: **{word}** \n\n"
         for meaning in meanings:
             message += f"**({meaning['partOfSpeech']})**\n"
-            definitions = meaning['definitions']
+            definitions = meaning["definitions"]
             for i, definition in enumerate(definitions):
-                d = definition['definition']
+                d = definition["definition"]
                 message += f"{i + 1}. {d} \n"
-            
+
             message += "\n"
-        
+
         await ctx.send(message, allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command()
@@ -93,8 +97,11 @@ class Search(commands.Cog):
         if not page.exists():
             await ctx.send("Page doesn't exist.")
             return
-        
-        await ctx.send(f"{ctx.author.mention}: **{article}** \n\n{page.summary}", allowed_mentions=discord.AllowedMentions.none())
+
+        await ctx.send(
+            f"{ctx.author.mention}: **{article}** \n\n{page.summary}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     @commands.command()
     async def google(self, ctx: commands.Context, *, query: str):
@@ -103,41 +110,38 @@ class Search(commands.Cog):
         if not query:
             await ctx.send("Please provide a search query.")
             return
-        
+
         async with ctx.typing():
-            search_embed = Embed(
-                title="Search results",
-                description=""
-            )
+            search_embed = Embed(title="Search results", description="")
 
             # Search using SERPAPI
             params = {
                 "engine": "google",
                 "q": query,
                 "api_key": self.serp_key,
-                "num": 3
+                "num": 3,
             }
             async with aiohttp.ClientSession() as client:
                 async with client.get("https://serpapi.com/search", params=params) as r:
                     response_json: dict = await r.json()
-            
+
             result: dict
-            for result in response_json.get('organic_results', []):
-                title = result.get('title', 'No title')
-                link = result.get('link', 'No link')
-                thumbnail = result.get('thumbnail', None)
+            for result in response_json.get("organic_results", []):
+                title = result.get("title", "No title")
+                link = result.get("link", "No link")
+                thumbnail = result.get("thumbnail", None)
                 search_embed.description += f"**{title}** - {link}\n"
-        
+
                 # Set the thumbnail for the first result that has one
                 if thumbnail and not search_embed.thumbnail:
                     search_embed.set_thumbnail(url=thumbnail)
-        
+
         if not search_embed.description:
             await ctx.send("No results found :(")
             return
-        
+
         await ctx.send(embed=search_embed)
-    
+
     @commands.command()
     async def synonym(self, ctx: commands.Context, *, word: str):
         """Look up the synonyms of a word."""
@@ -152,8 +156,11 @@ class Search(commands.Cog):
                     return
                 r = await r.json()
 
-        synonyms: list[str] = r['synonyms']
-        await ctx.send(f"Synonyms for {word}: {', '.join(synonyms)}", allowed_mentions=discord.AllowedMentions.none())
+        synonyms: list[str] = r["synonyms"]
+        await ctx.send(
+            f"Synonyms for {word}: {', '.join(synonyms)}",
+            allowed_mentions=discord.AllowedMentions.none(),
+        )
 
     async def _define(self, word: str) -> str | None:
         """Define but it doesnt send the messages"""
@@ -163,24 +170,24 @@ class Search(commands.Cog):
             async with session.get(request_url) as r:
                 r.raise_for_status()
                 r = await r.json()
-                
+
         # r = requests.get(request_url).json()
 
         try:
-            meanings = r[0]['meanings']
+            meanings = r[0]["meanings"]
         except Exception:
             return None
-        
+
         message = f"**{word}**: \n\n"
         for meaning in meanings:
             message += f"**({meaning['partOfSpeech']})**\n"
-            definitions = meaning['definitions']
+            definitions = meaning["definitions"]
             for i, definition in enumerate(definitions):
-                d = definition['definition']
+                d = definition["definition"]
                 message += f"{i + 1}. {d} \n"
-            
+
             message += "\n"
-        
+
         return message
 
     async def _urban_dictionary(self, word: str) -> str | None:
@@ -191,14 +198,12 @@ class Search(commands.Cog):
             async with session.get(request_url) as r:
                 data = await r.json()
                 try:
-                    definition = data['data'][0]['meaning']
+                    definition = data["data"][0]["meaning"]
                 except Exception:
                     return None
-        
+
         message = f"**{word}**: \n\n{definition}"
         return message
-
-
 
     # @commands.command()
     # async def links(self, ctx: commands.Context):
@@ -207,19 +212,19 @@ class Search(commands.Cog):
     #     if reply is None:
     #         await ctx.send("You didn't reply to a message.")
     #         return
-        
+
     #     _reply = await ctx.channel.fetch_message(reply.message_id)
     #     message = _reply.content
     #     self.console.print(message)
 
     #     keywords = await self._keywords(message)
     #     self.console.print(keywords)
-        
+
     #     if isinstance(keywords, list):
     #         keywords_str = " ".join(keywords)
     #     else:
     #         keywords_str = str(keywords) if keywords else ""
-            
+
     #     if not keywords_str.strip():
     #         await ctx.send("error :(")
     #         return
@@ -240,17 +245,17 @@ class Search(commands.Cog):
     #         async with aiohttp.ClientSession() as client:
     #             async with client.get("https://serpapi.com/search", params=params) as r:
     #                 response_json: dict = await r.json()
-            
+
     #         result: dict
     #         for result in response_json.get('organic_results', []):
     #             title = result.get('title', 'No title')
     #             link = result.get('link', 'No link')
     #             search_embed.description += f"**{title}** - {link}\n"
-        
+
     #     if not search_embed.description:
     #         await ctx.send("No results found :(")
     #         return
-        
+
     #     await ctx.send(embed=search_embed)
 
     # # Helper commands
@@ -279,7 +284,7 @@ class Search(commands.Cog):
     #     m_filter = [word for word in uniqued if word not in self.MANUAL_FILTER]
 
     #     return m_filter
-    
+
     # def _get_wordnet_pos(self, tag: str):
     #     if tag.startswith('J'):
     #         return wordnet.ADJ
