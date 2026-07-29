@@ -525,11 +525,20 @@ class Songs(commands.Cog):
                 tracks = [t for t in tracks if "date" in t]
                 random_track = random.choice(tracks)
 
-                song_name = str(random_track.get("name"))
-                artist_name = str(random_track.get("artist", {}).get("#text", ""))
-                mbid = random_track.get("mbid")
-                if not mbid:
-                    self.console.print(f"No mbid for {song_name} by {artist_name}")
+                max_mbid_attempts = 20
+                mbid_attempts = 0
+                while True:
+                    song_name = str(random_track.get("name"))
+                    artist_name = str(random_track.get("artist", {}).get("#text", ""))
+                    mbid = random_track.get("mbid")
+                    if mbid:
+                        break
+                    self.console.print(f"No mbid for {song_name} by {artist_name}, picking another...")
+                    random_track = random.choice(tracks)
+                    mbid_attempts += 1
+                    if mbid_attempts >= max_mbid_attempts:
+                        self.console.print("Gave up looking for a track with mbid, using fallback")
+                        break
 
                 # * Get some info about the song (for hints)
                 hints_args = {
@@ -831,11 +840,17 @@ class Songs(commands.Cog):
                     await db.execute(
                         "UPDATE users SET bt_winstreak = COALESCE(bt_winstreak, 0) + 1 WHERE user_id = $1",
                         msg.author.id,
-                    ) # Add 1 to winstreak
+                    )
                     winstreak = await db.fetchval(
                         "SELECT bt_winstreak FROM users WHERE user_id = $1",
                         msg.author.id,
-                    ) # Fetch updated winstreak
+                    )
+
+                    if msg.author.id != ctx.author.id:
+                        await db.execute(
+                            "UPDATE users SET bt_winstreak = 0 WHERE user_id = $1",
+                            ctx.author.id,
+                        )
 
                     embed_correct = Embed(
                         description=f"{msg.author.mention} guessed it! The song was **{song_name}** by **{artist_name}**\n Answered in {elapsed:.1f} seconds.",
@@ -891,6 +906,7 @@ class Songs(commands.Cog):
             await ctx.send("Game removed")
         else:
             await ctx.send("No games found.")
+
 
     # Removed Pixel Jumble Unlimited, see older commits for it
 
