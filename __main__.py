@@ -14,7 +14,7 @@ from cogs.fun import Fun
 from cogs.marriages import Marriages
 from cogs.reactions import Reactions
 from cogs.search import Search
-from cogs.songs import Songs, setup
+from cogs.songs import Songs
 from cogs.world_date_time import WorldDateTime
 
 # Utilities
@@ -829,7 +829,6 @@ async def start_bot():
     await db.init_pool()
     try:
         await load_cogs()
-        await setup()
         console.print("Bot is ready.")
 
         await bot.start(token)
