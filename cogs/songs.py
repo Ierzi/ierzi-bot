@@ -386,7 +386,7 @@ class Songs(commands.Cog):
             }
 
             # Sign call
-            args["api_sig"] = sign(args, os.getenv("LASTFM_API_SECRET"))
+            args["api_sig"] = sign(args, os.getenv("LASTFM_API_SECRET"))  # pyright: ignore
 
             for _ in range(36):
                 await asyncio.sleep(10)
