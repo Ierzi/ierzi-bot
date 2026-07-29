@@ -542,6 +542,7 @@ class Songs(commands.Cog):
                 else:
                     hints_args["artist"] = artist_name
                     hints_args["track"] = song_name
+                    hints_args["autocorrect"] = 1
 
                 async with session.get(
                     "http://ws.audioscrobbler.com/2.0/", params=hints_args, timeout=30
@@ -572,7 +573,7 @@ class Songs(commands.Cog):
                         self.console.print("no hints")
 
                     hints = self._make_hints(track_info, artist_name)
-                    hints.pop("album_name")
+                    hints.pop("album_name") # In case it's a single
 
                 # * Ask deezer for a preview
                 query = f"{song_name} {artist_name}"
@@ -697,6 +698,10 @@ class Songs(commands.Cog):
             await interaction.response.edit_message(embed=embed, view=view)
 
         async def giveup_button_callback(interaction: Interaction):
+            if not interaction.user == ctx.author:
+                await interaction.response.send_message("You cant give up for some1 else br o:broken_heart", ephemeral=True)
+                return
+
             nonlocal game_state
             game_state["active"] = False
             embed_result = Embed(
@@ -875,6 +880,17 @@ class Songs(commands.Cog):
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
                     break
+
+        @commands.command()
+        @commands.is_owner()
+        async def removegame(self, ctx: commands.Context):
+            """Removes the game from the active games list."""
+            channel_id = ctx.channel.id
+            if channel_id in self.active_games:
+                self.active_games.remove(channel_id)
+                await ctx.send("Game removed")
+            else:
+                await ctx.send("No games found.")
 
     # Removed Pixel Jumble Unlimited, see older commits for it
 
