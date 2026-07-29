@@ -881,16 +881,16 @@ class Songs(commands.Cog):
                     await ctx.send(embed=embed_timeout, view=timeout_view)
                     break
 
-        @commands.command()
-        @commands.is_owner()
-        async def removegame(self, ctx: commands.Context):
-            """Removes the game from the active games list."""
-            channel_id = ctx.channel.id
-            if channel_id in self.active_games:
-                self.active_games.remove(channel_id)
-                await ctx.send("Game removed")
-            else:
-                await ctx.send("No games found.")
+    @commands.command()
+    @commands.is_owner()
+    async def removegame(self, ctx: commands.Context):
+        """Removes the game from the active games list."""
+        channel_id = ctx.channel.id
+        if channel_id in self.active_games:
+            self.active_games.remove(channel_id)
+            await ctx.send("Game removed")
+        else:
+            await ctx.send("No games found.")
 
     # Removed Pixel Jumble Unlimited, see older commits for it
 
