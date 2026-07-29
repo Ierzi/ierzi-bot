@@ -572,11 +572,18 @@ class Songs(commands.Cog):
                             continue
 
                         track_info = data.get("track", {})
+
                         if not track_info:
                             self.console.print(
                                 f"No track info for {song_name} by {artist_name}"
                             )
                             self.console.print("no hints")
+
+                        # Check if name corresponds to track name from Deezer (or 90% similarity)
+                        track_name = track_info.get("title")
+                        if track_name and SequenceMatcher(None, song_name.lower(), track_name.lower()).ratio() < 0.9:
+                            self.console.print(f"Incorrect track name: {track_name} |vs| {song_name}")
+                            continue
 
                         hints = self._make_hints(track_info, artist_name)
                         hints.pop("album_name", None) # In case it's a single
@@ -636,7 +643,17 @@ class Songs(commands.Cog):
                     song_data = await response.read()
                     # Make file name original
                     try:
-                        song_name = song_name.split("(")[0] # Remove parentheses (feats)
+                        song_name = song_name.split("(feat")[0] # Remove parentheses (feats)
+                    except IndexError:
+                        pass
+
+                    try:
+                        song_name = song_name.split("(featuring")[0]
+                    except IndexError:
+                        pass
+
+                    try:
+                        song_name = song_name.split("(ft")[0]
                     except IndexError:
                         pass
 
@@ -706,7 +723,7 @@ class Songs(commands.Cog):
 
         async def giveup_button_callback(interaction: Interaction):
             if not interaction.user == ctx.author:
-                await interaction.response.send_message("You cant give up for some1 else br o:broken_heart", ephemeral=True)
+                await interaction.response.send_message("You cant give up for some1 else bro :broken_heart:", ephemeral=True)
                 return
 
             nonlocal game_state
