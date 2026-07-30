@@ -855,7 +855,7 @@ class Songs(commands.Cog):
 
                 # Check if answer is correct
                 similarity = similarity_score(msg.content, song_name)
-                if similarity >= 0.7:  # 70%
+                if similarity >= 0.85:  # 85%
                     await msg.add_reaction("✅")
                     self.game_state["active"] = False
                     self.game_state["guessed"] = True
