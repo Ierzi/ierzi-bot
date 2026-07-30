@@ -37,7 +37,7 @@ class Songs(commands.Cog):
         self.songs: list[SongData] = []
         self.fetch_deezer_playlist()
         self.user_listening_pages: dict[int, int] = {}  # user_id -> page number
-        self.active_games = []
+        self.active_games: dict[int, float] = {}
 
     def get_page(self, index: int):
         url = (
@@ -476,7 +476,16 @@ class Songs(commands.Cog):
             )
             return
 
-        self.active_games.append(channel_id)
+        game_start = asyncio.get_event_loop().time()
+        self.active_games[channel_id] = game_start
+
+        async def softlock_cleanup():
+            await asyncio.sleep(90)
+            if self.active_games.get(channel_id) == game_start:
+                self.active_games.pop(channel_id, None)
+                self.console.print(f"Softlock cleanup: removed game in channel {channel_id}")
+
+        asyncio.create_task(softlock_cleanup())
 
         async with ctx.typing():
             # * Get a random song from their listening history
@@ -507,7 +516,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
+                        self.active_games.pop(channel_id, None)
                         return
 
                     data = await response.json()
@@ -623,7 +632,7 @@ class Songs(commands.Cog):
 
                 if not preview_url:
                     await ctx.send("error :(")
-                    self.active_games.remove(channel_id)
+                    self.active_games.pop(channel_id, None)
                     self.console.print("Could not find a suitable track after multiple attempts")
                     return
 
@@ -637,7 +646,7 @@ class Songs(commands.Cog):
                     except Exception as e:
                         self.console.print(e)
                         await ctx.send("error :(")
-                        self.active_games.remove(channel_id)
+                        self.active_games.pop(channel_id, None)
                         return
 
                     song_data = await response.read()
@@ -735,7 +744,7 @@ class Songs(commands.Cog):
             for item in view.children:
                 item.disabled = True
 
-            self.active_games.remove(channel_id)
+            self.active_games.pop(channel_id, None)
 
             await db.execute(
                 "UPDATE users SET bt_winstreak = 0 WHERE user_id = $1",
@@ -827,7 +836,7 @@ class Songs(commands.Cog):
                     view.clear_items()
                     timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
-                    self.active_games.remove(channel_id)
+                    self.active_games.pop(channel_id, None)
 
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
@@ -877,7 +886,7 @@ class Songs(commands.Cog):
                     view.clear_items()
                     correct_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     correct_view.add_item(play_again_button)
-                    self.active_games.remove(channel_id)
+                    self.active_games.pop(channel_id, None)
 
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_correct, view=correct_view)
@@ -904,7 +913,7 @@ class Songs(commands.Cog):
                     view.clear_items()
                     timeout_view = View(timeout=LONGER_VIEW_TIMEOUT)
                     timeout_view.add_item(play_again_button)
-                    self.active_games.remove(channel_id)
+                    self.active_games.pop(channel_id, None)
 
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_timeout, view=timeout_view)
@@ -916,7 +925,7 @@ class Songs(commands.Cog):
         """Removes the game from the active games list."""
         channel_id = ctx.channel.id
         if channel_id in self.active_games:
-            self.active_games.remove(channel_id)
+            self.active_games.pop(channel_id, None)
             await ctx.send("Game removed")
         else:
             await ctx.send("No games found.")
