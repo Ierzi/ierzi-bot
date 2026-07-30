@@ -455,13 +455,6 @@ class Songs(commands.Cog):
         )
         await ctx.send("Logged out.")
 
-    async def autoremovegame(self, channel_id: int):
-        await asyncio.sleep(90)
-        try:
-            self.active_games.remove(channel_id)
-        except ValueError:
-            pass
-
     @commands.command(aliases=("blindtest", "bt", "mj"))
     async def musicjumble(self, ctx: commands.Context):
         """Guess the name of a random song from your listening history."""
@@ -677,7 +670,7 @@ class Songs(commands.Cog):
 
         # * Make embed
         given_hints = []
-        title = "Blind Test - Guess the song "
+        title = "Music Jumble - Guess the song"
         hints_text = "\n"
         hints_index = 0
         embed = Embed(
@@ -685,7 +678,7 @@ class Songs(commands.Cog):
             description=f"{title}\n{hints_text}",
             colour=0xD51007,  # lastfm red
         )
-        game_state = {"active": True, "guessed": False}
+        self.game_state = {"active": True, "guessed": False}
 
         view = View(timeout=75)
 
@@ -733,8 +726,7 @@ class Songs(commands.Cog):
                 await interaction.response.send_message("You cant give up for some1 else bro :broken_heart:", ephemeral=True)
                 return
 
-            nonlocal game_state
-            game_state["active"] = False
+            self.game_state["active"] = False
             embed_result = Embed(
                 title="Gave up...",
                 description=f"The song was **{song_name}** by **{artist_name}**",
@@ -810,8 +802,7 @@ class Songs(commands.Cog):
             return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
         start_time = asyncio.get_event_loop().time()
-        await self.autoremovegame(ctx.channel.id)
-        while game_state["active"]:
+        while self.game_state["active"]:
             try:
                 # Wait for message with 75 second timeout
                 elapsed = asyncio.get_event_loop().time() - start_time
@@ -821,7 +812,7 @@ class Songs(commands.Cog):
 
                 if remaining <= 0:
                     # Time's up
-                    game_state["active"] = False
+                    self.game_state["active"] = False
                     embed_timeout = Embed(
                         title="Nobody guesssed it...",
                         description=f"The song was **{song_name}** by **{artist_name}**",
@@ -846,7 +837,7 @@ class Songs(commands.Cog):
                     "message", check=check_message, timeout=remaining
                 )
 
-                if not game_state["active"]:
+                if not self.game_state["active"]:
                     break
 
                 elapsed = (
@@ -857,8 +848,8 @@ class Songs(commands.Cog):
                 similarity = similarity_score(msg.content, song_name)
                 if similarity >= 0.7:  # 70%
                     await msg.add_reaction("✅")
-                    game_state["active"] = False
-                    game_state["guessed"] = True
+                    self.game_state["active"] = False
+                    self.game_state["guessed"] = True
 
                     await db.execute(
                         "UPDATE users SET bt_winstreak = COALESCE(bt_winstreak, 0) + 1 WHERE user_id = $1",
@@ -897,8 +888,8 @@ class Songs(commands.Cog):
 
             except asyncio.TimeoutError:
                 # Time's up
-                if game_state["active"]:  # Doesn't trigger if user gave up
-                    game_state["active"] = False
+                if self.game_state["active"]:  # Doesn't trigger if user gave up
+                    self.game_state["active"] = False
                     embed_timeout = Embed(
                         title="Nobody guesssed it...",
                         description=f"The song was **{song_name}** by **{artist_name}**",
