@@ -455,6 +455,13 @@ class Songs(commands.Cog):
         )
         await ctx.send("Logged out.")
 
+    async def autoremovegame(self, channel_id: int):
+        await asyncio.sleep(90)
+        try:
+            self.active_games.remove(channel_id)
+        except ValueError:
+            pass
+
     @commands.command(aliases=("blindtest", "bt", "mj"))
     async def musicjumble(self, ctx: commands.Context):
         """Guess the name of a random song from your listening history."""
@@ -803,6 +810,7 @@ class Songs(commands.Cog):
             return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
         start_time = asyncio.get_event_loop().time()
+        await self.autoremovegame(ctx.channel.id)
         while game_state["active"]:
             try:
                 # Wait for message with 75 second timeout
