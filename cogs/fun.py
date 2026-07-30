@@ -435,7 +435,7 @@ class Fun(commands.Cog):
                     messages=[
                         {
                             "role": "system",
-                            "content": 'You are playing a game where the user suggests items that beat the previous item. You must decide if the user\'s suggestion is valid or not. Respond with JSON in this format: {"decision": true/false, "reason": "explanation"}. Their item might not be part the classic game, but act like it is.',
+                            "content": 'You are playing a game where the user suggests items that beat the previous item, like rock-paper-scissors. You must decide if the user\'s suggestion is valid or not. Respond with JSON in this format: {"decision": true/false, "reason": "explanation"}. Their item might not be part the classic rock-paper-scissors game, but act like it is.',
                         },
                         {
                             "role": "user",
