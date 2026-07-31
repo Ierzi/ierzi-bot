@@ -760,12 +760,16 @@ class Songs(commands.Cog):
 
         async def play_again_callback(interaction: Interaction):
             await interaction.response.defer()
+            play_again_button.disabled = True
+            await interaction.followup.edit_message(
+                interaction.message.id, view=play_again_button.view
+            )  # Disable play again button
 
             if (
                 channel_id in self.active_games
             ):  # There's already a game in this channel
                 await interaction.followup.send(
-                    "There is already a game in this channel, you can't start a new one yett",
+                    "There is already a game in this channel, you can't start a new one yetttttttttttttt",
                     ephemeral=True,
                 )
                 return
@@ -774,14 +778,13 @@ class Songs(commands.Cog):
             play_again_button.label = (
                 f"{interaction.user.display_name} is playing again!"
             )
-            play_again_button.disabled = True
 
             if not interaction.user.id == ctx.author.id:
                 ctx.author = interaction.user
 
             await interaction.followup.edit_message(
                 interaction.message.id, view=play_again_button.view
-            )  # Disable play again button
+            )  # Change play again text
             await self.musicjumble(ctx)
 
         hint_button = Button(label="Add hint")
@@ -855,7 +858,7 @@ class Songs(commands.Cog):
 
                 # Check if answer is correct
                 similarity = similarity_score(msg.content, song_name)
-                if similarity >= 0.85:  # 85%
+                if similarity >= 0.90:  # 90%
                     await msg.add_reaction("✅")
                     self.game_state["active"] = False
                     self.game_state["guessed"] = True
@@ -891,6 +894,8 @@ class Songs(commands.Cog):
                     await bt_message.edit(view=view)  # Disable buttons
                     await ctx.send(embed=embed_correct, view=correct_view)
                     break
+                elif similarity >= 0.8: # Close neough, 80%
+                    await msg.add_reaction("🤏")
                 else:
                     # Wrong answer, continue
                     await msg.add_reaction("❌")

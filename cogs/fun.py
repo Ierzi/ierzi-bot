@@ -231,7 +231,6 @@ class Fun(commands.Cog):
 
         await ctx.send(file=File(video, filename="catvid.mp4"))
 
-    # TODO: !atlas
     @commands.command()
     async def atlas(self, ctx: commands.Context):
         """Sends a cute pic of my cat :3"""
