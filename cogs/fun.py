@@ -497,3 +497,18 @@ class Fun(commands.Cog):
 
             embed.set_image(url=img)
             await ctx.send(embed=embed)
+
+    @commands.command()
+    async def yomama(self, ctx: commands.Context):
+        """Get a random yo mama joke."""
+        async with aiohttp.ClientSession() as session:
+            async with session.get("https://yo-mama.tankobliterator.net/random") as response:
+                try:
+                    response.raise_for_status()
+                except Exception as e:
+                    await ctx.send("error :(")
+                    self.console.print(e)
+                    return
+
+                data = await response.json()
+                await ctx.send(data.get("joke"))
