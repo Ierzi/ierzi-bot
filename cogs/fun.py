@@ -501,6 +501,7 @@ class Fun(commands.Cog):
     @commands.command()
     async def yomama(self, ctx: commands.Context):
         """Get a random yo mama joke."""
+        await ctx.channel.typing()
         async with aiohttp.ClientSession() as session:
             async with session.get("https://yo-mama.tankobliterator.net/random") as response:
                 try:

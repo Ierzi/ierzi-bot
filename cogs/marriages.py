@@ -197,6 +197,72 @@ class Marriages(commands.Cog):
             message, allowed_mentions=discord.AllowedMentions.none(), view=view
         )
 
+    @commands.command(aliases=("divorceall",))
+    async def single(self, ctx: commands.Context):
+        """Divorce all of your spouses."""
+        proposer = ctx.author
+        marriages = await self.get_marriages()
+        user_marriages = [pair for pair in marriages if proposer.id in pair]
+
+        if not user_marriages:
+            await ctx.send(
+                f"{proposer.mention} is not married.",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+            return
+
+        # fa*t STILL cant divorce abby
+        if proposer.id == 1206615811792576614 and 747918143745294356 in [
+            pair[0] if pair[1] == proposer.id else pair[1] for pair in user_marriages
+        ]:
+            await ctx.send("Not now big guy~")
+            return
+
+        number_marriages = len(user_marriages) // 2
+        if number_marriages == 1:
+            message = "Are you sure you want to divorce your only spouse? \nYou have 2 hours to respond."
+        else:
+            message = f"Are you sure you want to divorce all {number_marriages} of your spouses? \nYou have 2 hours to respond."
+
+        view = View(timeout=VIEW_TIMEOUT)
+        yes_button = Button(label="Yes", style=discord.ButtonStyle.green)
+        no_button = Button(label="No", style=discord.ButtonStyle.red)
+
+        async def yes_button_callback(interaction: discord.Interaction):
+            if not interaction.user.id == proposer.id:
+                await interaction.response.send_message(
+                    "b", ephemeral=True
+                )
+                return
+
+            for pair in user_marriages:
+                await self.remove_marriage_list((pair[0], pair[1]))
+
+            await interaction.response.send_message(
+                f"{proposer.mention} is now single and divorced {number_marriages} people."
+            )
+            await interaction.message.edit(view=None)
+            self.console.print(f"{proposer.name} has divorced all their spouses.")
+
+        async def no_button_callback(interaction: discord.Interaction):
+            if not interaction.user.id == proposer.id:
+                await interaction.response.send_message("c", ephemeral=True)
+                return
+
+            await interaction.response.send_message(
+                f"{proposer.mention} changed minds!!!"
+            )
+            await interaction.message.edit(view=None)
+
+        yes_button.callback = yes_button_callback
+        no_button.callback = no_button_callback
+        view.add_item(yes_button)
+        view.add_item(no_button)
+
+        await ctx.send(
+            message, allowed_mentions=discord.AllowedMentions.none(), view=view
+        )
+
     @commands.command()
     async def aremarried(
         self, ctx: commands.Context, user1: discord.Member, user2: discord.Member
@@ -283,9 +349,9 @@ class Marriages(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def forcemarry(
-        self, 
+        self,
         ctx: commands.Context,
-        user1: discord.Member | int, 
+        user1: discord.Member | int,
         user2: discord.Member | int
     ):
         """Can only be used by bot owners. Force marry 2 people."""
@@ -317,9 +383,9 @@ class Marriages(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def forcedivorce(
-        self, 
-        ctx: commands.Context, 
-        user1: discord.Member | int, 
+        self,
+        ctx: commands.Context,
+        user1: discord.Member | int,
         user2: discord.Member | int
     ):
         """Can only be used by bot owners. Force divorce 2 people."""
