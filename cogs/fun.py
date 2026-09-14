@@ -213,41 +213,41 @@ class Fun(commands.Cog):
         embed.set_image(url=cat_url)
         await ctx.send(embed=embed)
 
-    @commands.command()
-    async def catvid(self, ctx: commands.Context):
-        """Shows a cute cat video :3"""
+    # @commands.command()
+    # async def catvid(self, ctx: commands.Context):
+    #     """Shows a cute cat video :3"""
 
-        request_url = f"{self.cat_api_url}/carvids"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
-                print(r.status)
+    #     request_url = f"{self.cat_api_url}/carvids"
+    #     async with aiohttp.ClientSession() as session:
+    #         async with session.get(request_url) as r:
+    #             print(r.status)
 
-                if r.status != 200:
-                    print(await r.text())
-                    await ctx.send("error :(")
-                    return
+    #             if r.status != 200:
+    #                 print(await r.text())
+    #                 await ctx.send("error :(")
+    #                 return
 
-                video = BytesIO(await r.read())
+    #             video = BytesIO(await r.read())
 
-        await ctx.send(file=File(video, filename="catvid.mp4"))
+    #     await ctx.send(file=File(video, filename="catvid.mp4"))
 
-    @commands.command()
-    async def atlas(self, ctx: commands.Context):
-        """Sends a cute pic of my cat :3"""
+    # @commands.command()
+    # async def atlas(self, ctx: commands.Context):
+    #     """Sends a cute pic of my cat :3"""
 
-        request_url = f"{self.cat_api_url}/atlas"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
-                print(r.status)
+    #     request_url = f"{self.cat_api_url}/atlas"
+    #     async with aiohttp.ClientSession() as session:
+    #         async with session.get(request_url) as r:
+    #             print(r.status)
 
-                if r.status != 200:
-                    print(await r.text())
-                    await ctx.send("error :(")
-                    return
+    #             if r.status != 200:
+    #                 print(await r.text())
+    #                 await ctx.send("error :(")
+    #                 return
 
-                image = BytesIO(await r.read())
+    #             image = BytesIO(await r.read())
 
-        await ctx.send(file=File(image, filename="atlas.jpg"))
+    #     await ctx.send(file=File(image, filename="atlas.jpg"))
 
     @commands.command()
     @commands.is_owner()

@@ -1,0 +1,33 @@
+```yaml
+name: Deploy Discord Bot
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy bot
+    runs-on: self-hosted
+
+    steps:
+      - name: Update repository
+        run: |
+          cd /home/ierzi/Documents/coding/ierzi-bot
+          git pull origin main
+
+      - name: Install dependencies
+        run: |
+          cd /home/ierzi/Documents/coding/ierzi-bot
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Restart bot
+        run: |
+          sudo systemctl restart ierzi-bot
+
+      - name: Check bot
+        run: |
+          sudo systemctl is-active --quiet ierzi-bot
+          echo "Bot is running!"
+```

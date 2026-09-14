@@ -2,7 +2,7 @@
 
 -- Users table
 -- now directly contains the birthday table
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     -- important things
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL UNIQUE,
@@ -12,13 +12,13 @@ CREATE TABLE users (
     day SMALLINT NULL,
     month SMALLINT NULL,
     year SMALLINT NULL,
-    timezone VARCHAR(50) NULL
+    timezone VARCHAR(50) NULL,
     -- lastfm
-    lastfm_username VARCHAR(255) NULL
+    lastfm_username VARCHAR(255) NULL,
     session_key VARCHAR(255) NULL
 );
 
-CREATE TABLE economy (
+CREATE TABLE IF NOT EXISTS economy (
     id SERIAL PRIMARY KEY,
     user_id BIGINT REFERENCES users(user_id) ON DELETE CASCADE,
     balance NUMERIC(15, 12) DEFAULT 0.00,
@@ -31,7 +31,7 @@ CREATE TABLE economy (
 );
 
 -- Marriages Table
-CREATE TABLE marriages (
+CREATE TABLE IF NOT EXISTS marriages (
     id SERIAL PRIMARY KEY,
     user1_id BIGINT REFERENCES users(user_id),
     user2_id BIGINT REFERENCES users(user_id)

@@ -26,15 +26,28 @@ class Database:
         if self._pool is not None:
             return
 
+        common = dict(min_size=min_size, max_size=max_size, timeout=timeout)
+
+        # Preferred for self-hosting / most PaaS: single connection string.
+        dsn = os.getenv("DATABASE_URL")
+        if dsn:
+            self._pool = await asyncpg.create_pool(dsn, **common)
+            return
+
+        # Fallback: split Railway-style vars.
+        if not (os.getenv("PGHOST") and os.getenv("PGDATABASE") and os.getenv("PGUSER")):
+            raise DatabaseError(
+                "No database configured. Set DATABASE_URL "
+                "or PGHOST/PGDATABASE/PGUSER (+PGPASSWORD/PGPORT)."
+            )
+
         self._pool = await asyncpg.create_pool(
             host=os.getenv("PGHOST"),
             database=os.getenv("PGDATABASE"),
             user=os.getenv("PGUSER"),
             password=os.getenv("PGPASSWORD"),
             port=int(os.getenv("PGPORT") or 5432),
-            min_size=min_size,
-            max_size=max_size,
-            timeout=timeout,
+            **common,
         )
 
     async def close_pool(self) -> None:

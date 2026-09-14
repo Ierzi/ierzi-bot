@@ -1,7 +1,7 @@
 # Ierzi Bot
 
 # Discord.py Improrts
-import discord
+import discord  # noqa: I001
 from discord import Interaction, Embed, Message, SelectOption, User, app_commands
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
@@ -19,14 +19,14 @@ from cogs.world_date_time import WorldDateTime
 
 # Utilities
 from cogs.utils import pronouns
-from cogs.utils.database import db
+from cogs.utils.database import db, DatabaseError
 from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 
 # Other
 import aiohttp
 import asyncio
 from datetime import datetime, timezone
-from dotenv import load_dotenv  # Dotenv is useless cause im hosting on railway
+from dotenv import load_dotenv
 import os
 import random
 from rich.console import Console
@@ -173,7 +173,7 @@ async def on_message(message: Message):
                     name=f"{question}" if len(question) < 97 else f"{question[:97]}..."
                 )
 
-    if not message.author.id == bot.user.id:
+    if message.author.id != bot.user.id:
         # @Ierzi Bot is this true
         if (
             f"{bot.user.mention} is this true" in message.content.lower()
@@ -795,22 +795,21 @@ async def info(ctx: commands.Context):
     message = ""
 
     # Get commit name and hash (first 6 characters) with a request
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-            "https://api.github.com/repos/ierzi/ierzi-bot/commits/main"
-            if not experimental_branch
-            else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental"
-        ) as response:
-            try:
-                response.raise_for_status()
-            except Exception as e:
-                await ctx.send("error :(")
-                console.print(e)
-                return
-            data = await response.json()
-            commit_hash = data["sha"][:6]
-            commit_name = data["commit"]["message"]
-            commit_author = data["commit"]["author"]["name"]
+    async with aiohttp.ClientSession() as session, session.get(
+        "https://api.github.com/repos/ierzi/ierzi-bot/commits/main"
+        if not experimental_branch
+        else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental"
+    ) as response:
+        try:
+            response.raise_for_status()
+        except Exception as e:
+            await ctx.send("error :(")
+            console.print(e)
+            return
+        data = await response.json()
+        commit_hash = data["sha"][:6]
+        commit_name = data["commit"]["message"]
+        commit_author = data["commit"]["author"]["name"]
 
     message += f"**Commit {commit_hash}** by **{commit_author}**: {commit_name}\n"
 
@@ -826,7 +825,19 @@ async def info(ctx: commands.Context):
 
 async def start_bot():
     global token
-    await db.init_pool()
+    if not token:
+        console.print("[red]Missing TOKEN.[/red] Copy .env.example to .env and set it.")
+        raise SystemExit(1)
+    try:
+        await db.init_pool()
+    except DatabaseError as e:
+        console.print(f"[red]{e}[/red]")
+        console.print("Create the database if needed, and apply schema.sql (see README).")
+        raise SystemExit(1)
+    except Exception as e:
+        console.print(f"[red]Could not connect to Postgres: {e}[/red]")
+        console.print("Check that Postgres is running and reachable.")
+        raise SystemExit(1)
     try:
         await load_cogs()
         console.print("Bot is ready.")

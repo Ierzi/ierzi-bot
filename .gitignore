@@ -129,6 +129,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env*
 .venv
 env/
 venv/
@@ -186,3 +187,5 @@ WARP.md
 AGENTS.md
 .vscode/
 pyrightconfig.json
+scripts/
+actions-runner/
