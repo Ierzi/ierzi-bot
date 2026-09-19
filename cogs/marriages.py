@@ -101,7 +101,7 @@ class Marriages(commands.Cog):
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
         async def yes_button_callback(interaction: discord.Interaction):
-            if not interaction.user.id == partner.id:
+            if interaction.user.id != partner.id:
                 await interaction.response.send_message("no.", ephemeral=True)
                 return
 
@@ -116,7 +116,7 @@ class Marriages(commands.Cog):
             )
 
         async def no_button_callback(interaction: discord.Interaction):
-            if not interaction.user.id == partner.id:
+            if interaction.user.id != partner.id:
                 await interaction.response.send_message(
                     "why do you wanna ruin someone's marriage? :sob:", ephemeral=True
                 )
@@ -166,7 +166,7 @@ class Marriages(commands.Cog):
         )
 
         async def yes_button_callback(interaction: discord.Interaction):
-            if not interaction.user.id == proposer.id:
+            if interaction.user.id != proposer.id:
                 await interaction.response.send_message(
                     "wow you found the very secret message", ephemeral=True
                 )
@@ -179,7 +179,7 @@ class Marriages(commands.Cog):
             await interaction.message.edit(view=None)
 
         async def no_button_callback(interaction: discord.Interaction):
-            if not interaction.user.id == proposer.id:
+            if interaction.user.id != proposer.id:
                 await interaction.response.send_message("a", ephemeral=True)
                 return
 
@@ -229,7 +229,7 @@ class Marriages(commands.Cog):
         no_button = Button(label="No", style=discord.ButtonStyle.red)
 
         async def yes_button_callback(interaction: discord.Interaction):
-            if not interaction.user.id == proposer.id:
+            if interaction.user.id != proposer.id:
                 await interaction.response.send_message(
                     "b", ephemeral=True
                 )
@@ -245,7 +245,7 @@ class Marriages(commands.Cog):
             self.console.print(f"{proposer.name} has divorced all their spouses.")
 
         async def no_button_callback(interaction: discord.Interaction):
-            if not interaction.user.id == proposer.id:
+            if interaction.user.id != proposer.id:
                 await interaction.response.send_message("c", ephemeral=True)
                 return
 
@@ -340,8 +340,7 @@ class Marriages(commands.Cog):
                 marriage_status += message if message not in marriage_status else ""
                 count += 1
 
-        if marriage_status.endswith(", "):
-            marriage_status = marriage_status[:-2]
+        marriage_status = marriage_status.removesuffix(", ")
 
         marriage_status += f"\n\nTotal marriages: {count // 2}"
         await ctx.send(marriage_status, allowed_mentions=discord.AllowedMentions.none())

@@ -822,19 +822,22 @@ async def info(ctx: commands.Context):
 
     await ctx.send(message)
 
+@bot.command()
+async def ping(ctx: commands.Context):
+    await ctx.send(f"Pong! Latency: {round(bot.latency * 1000, 2)}ms")
 
 async def start_bot():
     global token
     if not token:
-        console.print("[red]Missing TOKEN.[/red] Copy .env.example to .env and set it.")
+        console.print("[red]Missing TOKEN.[/red]")
         raise SystemExit(1)
     try:
         await db.init_pool()
     except DatabaseError as e:
         console.print(f"[red]{e}[/red]")
-        console.print("Create the database if needed, and apply schema.sql (see README).")
+        console.print("Create the database if needed, and apply schema.sql.")
         raise SystemExit(1)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         console.print(f"[red]Could not connect to Postgres: {e}[/red]")
         console.print("Check that Postgres is running and reachable.")
         raise SystemExit(1)
