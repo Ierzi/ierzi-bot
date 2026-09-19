@@ -8,7 +8,9 @@ on:
 jobs:
   deploy:
     name: Deploy bot
-    runs-on: self-hosted
+    runs-on: self-
+    permissions:
+      contents: read
 
     steps:
       - name: Update repository
