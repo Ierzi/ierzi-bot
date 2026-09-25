@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     name: Deploy bot
-    runs-on: self-
+    runs-on: self-hosted
     permissions:
       contents: read
 
