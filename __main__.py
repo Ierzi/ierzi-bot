@@ -824,7 +824,11 @@ async def info(ctx: commands.Context):
 
 @bot.command()
 async def ping(ctx: commands.Context):
-    await ctx.send(f"Pong! Latency: {round(bot.latency * 1000, 2)}ms")
+    start = ctx.message.created_at
+    end = datetime.now(timezone.utc)
+
+    latency = (end - start).total_seconds() * 1000  # Convert to milliseconds
+    await ctx.send(f"Pong! Latency: {latency:.2f} ms")
 
 async def start_bot():
     global token
