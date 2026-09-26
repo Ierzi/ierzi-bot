@@ -30,7 +30,6 @@ from dotenv import load_dotenv
 import os
 import random
 from rich.console import Console
-from typing import Optional
 import time
 
 console = Console()
@@ -71,7 +70,7 @@ async def on_ready():
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
     await bot.change_presence(
         status=discord.Status.idle,
-        activity=CustomActivity(f"birthday boy - {guild_count} servers"),
+        activity=CustomActivity(f"why am i in {guild_count} servers"),
     )
     await fill_embeds()
     synced = await bot.tree.sync()
@@ -103,7 +102,7 @@ async def bot_loop():
     guild_count = len(bot.guilds) if len(bot.guilds) != 21 else "9+10"
     await bot.change_presence(
         status=discord.Status.idle,
-        activity=CustomActivity(f"birthday boy - {guild_count} servers"),
+        activity=CustomActivity(f"why am i in {guild_count} servers"),
     )
 
 
@@ -325,7 +324,7 @@ async def urban_dictionary(interaction: Interaction, word: str):
 
 # Other commands
 @bot.command(name="id")
-async def id_user(ctx: commands.Context, user: Optional[discord.User] = None):
+async def id_user(ctx: commands.Context, user: discord.User | None = None):
     """Gets the ID of an user."""
     if not user:
         await ctx.send(ctx.author.id)
@@ -538,7 +537,7 @@ async def fill_embeds():
 
 
 @bot.command(aliases=("cmds", "commands"))
-async def help(ctx: commands.Context, category: str = None):
+async def help(ctx: commands.Context, category: str | None = None):
     """Shows this message."""
     view = View(timeout=VIEW_TIMEOUT)
 
@@ -736,7 +735,7 @@ async def try_pronouns(user_id: int):
 
 
 @bot.command(name="getpronouns")
-async def get_pronouns(ctx: commands.Context, user: Optional[discord.User] = None):
+async def get_pronouns(ctx: commands.Context, user: discord.User | None = None):
     """Get someone's pronouns."""
     # Get user_id
     if user:
