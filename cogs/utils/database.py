@@ -1,7 +1,9 @@
-import asyncpg
-from asyncpg import Record, Connection, Pool
 import os
-from typing import Any, AsyncIterator, Iterable, Optional
+from collections.abc import AsyncIterator, Iterable
+from typing import Any
+
+import asyncpg
+from asyncpg import Connection, Pool, Record
 
 
 class DatabaseError(Exception):
@@ -14,7 +16,7 @@ class DatabaseError(Exception):
 
 class Database:
     def __init__(self) -> None:
-        self._pool: Optional[Pool] = None
+        self._pool: Pool | None = None
 
     async def init_pool(
         self,
@@ -26,7 +28,7 @@ class Database:
         if self._pool is not None:
             return
 
-        common = dict(min_size=min_size, max_size=max_size, timeout=timeout)
+        common = {"min_size": min_size, "max_size": max_size, "timeout": timeout}
 
         # Preferred for self-hosting / most PaaS: single connection string.
         dsn = os.getenv("DATABASE_URL")
@@ -78,7 +80,7 @@ class Database:
             rows = await conn.fetch(query, *args)
             return list(rows)
 
-    async def fetchrow(self, query: str, *args: Any) -> Optional[Record]:
+    async def fetchrow(self, query: str, *args: Any) -> Record | None:
         pool = self._require_pool()
         async with pool.acquire() as conn:
             return await conn.fetchrow(query, *args)

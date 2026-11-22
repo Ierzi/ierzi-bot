@@ -1,4 +1,4 @@
-import discord
+import discord # noqa: I001
 from discord.ext import commands
 from discord.ui import Button, View
 

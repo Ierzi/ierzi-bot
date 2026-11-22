@@ -1,5 +1,6 @@
-import discord
+import discord  # noqa: I001
 from discord.ext import commands
+
 import asyncio
 import os
 from groq import AsyncGroq

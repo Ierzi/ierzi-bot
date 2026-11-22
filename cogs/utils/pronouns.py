@@ -1,10 +1,10 @@
-from .database import db
-
-from dotenv import load_dotenv
 from enum import Enum
 from typing import Literal
+
+from dotenv import load_dotenv
 from rich.console import Console
 
+from .database import db
 
 # IF YOU WANNA UPDATE PRONOUNS
 # UPDATE ALL OF THIS

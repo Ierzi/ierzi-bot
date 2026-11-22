@@ -1,5 +1,5 @@
-import discord
-from discord import File
+import discord # noqa: I001
+from discord import File # noqa: F401
 from discord.ext import commands
 
 import asyncio
@@ -8,12 +8,11 @@ from aiogoogletrans import Translator
 from dotenv import load_dotenv
 from groq import AsyncGroq
 import json
-from io import BytesIO
+from io import BytesIO # noqa: F401
 import os
 from pydantic import BaseModel
 import random
 from rich.console import Console
-from typing import Optional
 
 console = Console()
 load_dotenv()
@@ -34,7 +33,7 @@ class Fun(commands.Cog):
 
 
     @commands.command()
-    async def istrans(self, ctx: commands.Context, user: Optional[discord.Member] = None):
+    async def istrans(self, ctx: commands.Context, user: discord.Member | None = None):
         """https://amitrans.org/"""
         if user is None:
             user = ctx.author
@@ -83,7 +82,7 @@ class Fun(commands.Cog):
 
     @commands.command(aliases=("gaytector",))
     async def gaydar(
-        self, ctx: commands.Context, user: Optional[discord.Member] = None
+        self, ctx: commands.Context, user: discord.Member | None = None
     ):
         """Sends a percentage based on how gay someone is."""
         if user is None:
@@ -203,9 +202,8 @@ class Fun(commands.Cog):
         """Shows a cute cat picture :3"""
         request_url = "https://api.thecatapi.com/v1/images/search"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
-                r = await r.json()
+        async with aiohttp.ClientSession() as session, session.get(request_url) as r:
+            r = await r.json()
 
         cat_url = r[0]["url"]
 
@@ -255,8 +253,7 @@ class Fun(commands.Cog):
         """Pi digits. Currently owner only due to a certain happening."""
         headers = {"accept": "application/json"}
         url = f"https://api.math.tools/numbers/pi?to={digits}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as response:
+        async with aiohttp.ClientSession() as session, session.get(url, headers=headers) as response:
                 json_data = await response.json()
 
         console.print(json_data)
@@ -407,7 +404,7 @@ class Fun(commands.Cog):
 
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=90)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await ctx.send("Game timed out.")
                 return
 
@@ -452,7 +449,7 @@ class Fun(commands.Cog):
                     data = WhatBeatsRockResponse(
                         decision=result["decision"], reason=result["reason"]
                     )
-                except Exception as e:
+                except (json.JSONDecodeError, KeyError) as e:
                     # Fallback if JSON parsing fails
                     self.console.print(e)
                     content = response.choices[0].message.content.lower()
@@ -472,7 +469,7 @@ class Fun(commands.Cog):
                 return
 
     @commands.command()
-    async def apod(self, ctx: commands.Context, date: Optional[str] = None) -> None:
+    async def apod(self, ctx: commands.Context, date: str | None = None) -> None:
         """The Astronomy Picture Of the Day. Optional date argument: YYYY-MM-DD"""
         args: dict[str, str] = {
             "api_key": self.nasa_api_key
@@ -502,11 +499,10 @@ class Fun(commands.Cog):
     async def yomama(self, ctx: commands.Context):
         """Get a random yo mama joke."""
         await ctx.channel.typing()
-        async with aiohttp.ClientSession() as session:
-            async with session.get("https://yo-mama.tankobliterator.net/random") as response:
+        async with aiohttp.ClientSession() as session, session.get("https://yo-mama.tankobliterator.net/random") as response:
                 try:
                     response.raise_for_status()
-                except Exception as e:
+                except aiohttp.ClientResponseError as e:
                     await ctx.send("error :(")
                     self.console.print(e)
                     return

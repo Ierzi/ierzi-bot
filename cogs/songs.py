@@ -1,10 +1,11 @@
-from discord import Embed, File, Interaction, Message
+from discord import Embed, File, Interaction, Message # noqa: I001
 from discord.ext import commands
 from discord.ui import Button, View
 
 from .utils.database import db
 from .utils.variables import LONGER_VIEW_TIMEOUT
 
+import aiofiles
 import aiohttp
 import asyncio
 from async_lru import alru_cache
@@ -24,7 +25,7 @@ LASTFM_API_KEY = os.getenv("LASTFM_API_KEY")
 def sign(params: dict, api_secret: str) -> str:
     params_for_sig = {k: v for k, v in params.items() if k != "format"}
     signature_string = (
-        "".join(f"{k}{str(v)}" for k, v in sorted(params_for_sig.items())) + api_secret
+        "".join(f"{k}{v!s}" for k, v in sorted(params_for_sig.items())) + api_secret
     )
     return hashlib.md5(signature_string.encode("utf-8")).hexdigest()
 
@@ -185,8 +186,7 @@ class Songs(commands.Cog):
         # Fetch a preview from Deezer
         query = f"{title} {artist}"
         url = f"https://api.deezer.com/search?q={query}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=10) as response:
+        async with aiohttp.ClientSession() as session, session.get(url, timeout=10) as response:
                 if response.status != 200:
                     await ctx.send(f"Error fetching preview: {response.status}")
                 else:
@@ -198,7 +198,7 @@ class Songs(commands.Cog):
                             async with session.get(preview_url) as response:
                                 try:
                                     response.raise_for_status()
-                                except Exception as e:
+                                except aiohttp.ClientResponseError as e:
                                     self.console.print(e)
                                     await ctx.send("error :(")
                                     return
@@ -206,7 +206,7 @@ class Songs(commands.Cog):
                                 song_data = await response.read()
                                 # Make file name original
                                 preview = f"{title}_{artist}.mp3"
-                                with open(preview, "wb") as f:
+                                with aiofiles.open(preview, "wb") as f:
                                     f.write(song_data)
                         else:
                             self.console.print(
@@ -238,8 +238,7 @@ class Songs(commands.Cog):
         # Fetch a preview from Deezer
         query = f"{title} {artist}"
         url = f"https://api.deezer.com/search?q={query}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=10) as response:
+        async with aiohttp.ClientSession() as session, session.get(url, timeout=10) as response:
                 if response.status != 200:
                     await ctx.send(f"Error fetching preview: {response.status}")
                 else:
@@ -251,7 +250,7 @@ class Songs(commands.Cog):
                             async with session.get(preview_url) as response:
                                 try:
                                     response.raise_for_status()
-                                except Exception as e:
+                                except aiohttp.ClientResponseError as e:
                                     self.console.print(e)
                                     await ctx.send("error :(")
                                     return
@@ -259,7 +258,7 @@ class Songs(commands.Cog):
                                 song_data = await response.read()
                                 # Make file name original
                                 preview = f"{title}_{artist}.mp3"
-                                with open(preview, "wb") as f:
+                                with aiofiles.open(preview, "wb") as f:
                                     f.write(song_data)
                         else:
                             self.console.print(
@@ -283,8 +282,7 @@ class Songs(commands.Cog):
             if index == 0
             else f"{self.deezer_playlist_url}?index={index * 25}"
         )
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as resp:
+        async with aiohttp.ClientSession() as session, session.get(url) as resp:
                 if resp.status != 200:
                     self.console.print(f"Error while fetching playlist: {resp.status}")
                     return []
@@ -305,8 +303,7 @@ class Songs(commands.Cog):
         if user_id != 966351518020300841:
             await ctx.send("no.")
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(self.deezer_playlist_url) as resp:
+        async with aiohttp.ClientSession() as session, session.get(self.deezer_playlist_url) as resp:
                 if resp.status != 200:
                     await ctx.send(f"Error {resp.status} :(")
                     return
@@ -338,11 +335,10 @@ class Songs(commands.Cog):
 
         base_url = "http://ws.audioscrobbler.com/2.0/"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(base_url, params=args) as response:
+        async with aiohttp.ClientSession() as session, session.get(base_url, params=args) as response:
                 try:
                     response.raise_for_status()
-                except Exception as e:
+                except aiohttp.ClientResponseError as e:
                     self.console.print(e)
                     await ctx.send("error :(")
 
@@ -365,7 +361,7 @@ class Songs(commands.Cog):
         view = View(timeout=300)
 
         async def login_button_callback(interaction: Interaction):
-            if not interaction.user.id == ctx.author.id:
+            if interaction.user.id != ctx.author.id:
                 await interaction.response.send_message(
                     "this is not your button vro :broken_heart:", ephemeral=True
                 )
@@ -390,11 +386,10 @@ class Songs(commands.Cog):
 
             for _ in range(36):
                 await asyncio.sleep(10)
-                async with aiohttp.ClientSession() as session:
-                    async with session.get(f"{base_url}", params=args) as response:
+                async with aiohttp.ClientSession() as session, session.get(f"{base_url}", params=args) as response:
                         try:
                             response.raise_for_status()
-                        except Exception as e:
+                        except aiohttp.ClientResponseError as e:
                             self.console.print(e)
                             continue
 
@@ -513,7 +508,7 @@ class Songs(commands.Cog):
                 ) as response:
                     try:
                         response.raise_for_status()
-                    except Exception as e:
+                    except aiohttp.ClientResponseError as e:
                         self.console.print(e)
                         await ctx.send("error :(")
                         self.active_games.pop(channel_id, None)
@@ -571,7 +566,7 @@ class Songs(commands.Cog):
                     ) as response:
                         try:
                             response.raise_for_status()
-                        except Exception as e:
+                        except aiohttp.ClientResponseError as e:
                             self.console.print(e)
                             continue
 
@@ -605,7 +600,7 @@ class Songs(commands.Cog):
                     async with session.get(url, timeout=30) as response:
                         try:
                             response.raise_for_status()
-                        except Exception as e:
+                        except aiohttp.ClientResponseError as e:
                             self.console.print(e)
                             continue
 
@@ -643,7 +638,7 @@ class Songs(commands.Cog):
                 async with session.get(preview_url) as response:
                     try:
                         response.raise_for_status()
-                    except Exception as e:
+                    except aiohttp.ClientResponseError as e:
                         self.console.print(e)
                         await ctx.send("error :(")
                         self.active_games.pop(channel_id, None)
@@ -674,7 +669,7 @@ class Songs(commands.Cog):
                     song_name = song_name.strip()
 
                     filename = f"{song_name}_{artist_name}.mp3"
-                    with open(filename, "wb") as f:
+                    with aiofiles.open(filename, "wb") as f:
                         f.write(song_data)
 
         # * Make embed
@@ -731,7 +726,7 @@ class Songs(commands.Cog):
             await interaction.response.edit_message(embed=embed, view=view)
 
         async def giveup_button_callback(interaction: Interaction):
-            if not interaction.user == ctx.author:
+            if interaction.user != ctx.author:
                 await interaction.response.send_message("You cant give up for some1 else bro :broken_heart:", ephemeral=True)
                 return
 
@@ -779,7 +774,7 @@ class Songs(commands.Cog):
                 f"{interaction.user.display_name} is playing again!"
             )
 
-            if not interaction.user.id == ctx.author.id:
+            if interaction.user.id != ctx.author.id:
                 ctx.author = interaction.user
 
             await interaction.followup.edit_message(
@@ -900,7 +895,7 @@ class Songs(commands.Cog):
                     # Wrong answer, continue
                     await msg.add_reaction("❌")
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 # Time's up
                 if self.game_state["active"]:  # Doesn't trigger if user gave up
                     self.game_state["active"] = False

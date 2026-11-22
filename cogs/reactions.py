@@ -1,4 +1,4 @@
-import discord
+import discord # noqa: I001
 from discord import File
 from discord.ext import commands
 
@@ -145,7 +145,6 @@ class Reactions(commands.Cog):
     @commands.command()
     async def kill(self, ctx: commands.Context, user: discord.Member):
         """Kill someone."""
-        all_pronouns = await pronouns.get_pronoun(ctx.author.id)
         if user == ctx.author:
             await ctx.send(
                 f"NOOOOOOOO DONT KILL YOURSELF {ctx.author.mention}",

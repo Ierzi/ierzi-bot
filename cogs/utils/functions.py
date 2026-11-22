@@ -1,10 +1,10 @@
-from datetime import datetime, timezone, timedelta
-from typing import Literal, Union, Optional
+from datetime import UTC, datetime, timedelta, timezone
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 
 def to_timestamp(
-    time_value: Union[int, datetime],
+    time_value: int | datetime,
     format: Literal["t", "T", "d", "D", "f", "F", "R"],
     *,
     next_year: bool = False,
@@ -40,9 +40,9 @@ def to_ordinal(number: int) -> str:
         return number_str + "th"
 
 
-def parse_offset(offset: Optional[str | int]) -> Union[timezone, ZoneInfo]:
+def parse_offset(offset: str | int | None) -> timezone | ZoneInfo:
     if offset is None:
-        return timezone.utc
+        return UTC
 
     if isinstance(offset, int):
         if not -24 <= offset <= 24:
@@ -56,12 +56,12 @@ def parse_offset(offset: Optional[str | int]) -> Union[timezone, ZoneInfo]:
             raise ValueError("Empty timezone string")
 
         if s.upper() == "UTC":
-            return timezone.utc
+            return UTC
 
         if s.upper().startswith("UTC"):
             utc_offset = s[3:].strip()
             if not utc_offset:
-                return timezone.utc
+                return UTC
 
             try:
                 if utc_offset.startswith(("+", "-")):

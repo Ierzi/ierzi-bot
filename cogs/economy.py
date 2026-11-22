@@ -1,4 +1,4 @@
-import discord
+import discord  # noqa: I001
 from discord import Message, SelectOption, Embed
 from discord.ext import commands
 from discord.ui import View, Select
@@ -10,17 +10,17 @@ from .utils.types import Currency
 from .utils.variables import VIEW_TIMEOUT
 
 import asyncio
-from datetime import timedelta, datetime, timezone
-from typing import Literal, Optional
+from datetime import timedelta, datetime, UTC
+from typing import Literal
 import random
 from rich.console import Console
 
 from cogs.utils import pronouns
 
 
-_hours = Optional[int]
-_minutes = Optional[int]
-_seconds = Optional[int]
+_hours = int | None
+_minutes = int | None
+_seconds = int | None
 _output_data = tuple[bool, _hours, _minutes, _seconds]
 
 
@@ -53,7 +53,7 @@ class Economy(commands.Cog):
         self.latest_transactions = []  # (user_id, amount, timestamp)
 
     # Helper functions
-    async def _fetch_balance(self, user_id: int) -> Optional[float]:
+    async def _fetch_balance(self, user_id: int) -> float | None:
         row = await db.fetchrow(
             "SELECT balance FROM economy WHERE user_id = $1", user_id
         )
@@ -66,7 +66,7 @@ class Economy(commands.Cog):
         raw_balance = await self._fetch_balance(user_id)
         return Currency(raw_balance) if raw_balance is not None else Currency.none()
 
-    async def _fetch_money_lost(self, user_id: int) -> Optional[float]:
+    async def _fetch_money_lost(self, user_id: int) -> float | None:
         row = await db.fetchrow(
             "SELECT money_lost FROM economy WHERE user_id = $1", user_id
         )
@@ -80,7 +80,7 @@ class Economy(commands.Cog):
         return Currency(raw_money_lost) if raw_money_lost is not None else Currency.none()
 
 
-    async def _fetch_rebirths(self, user_id: int) -> Optional[int]:
+    async def _fetch_rebirths(self, user_id: int) -> int | None:
         row = await db.fetchrow(
             "SELECT rebirths FROM economy WHERE user_id = $1", user_id
         )
@@ -117,7 +117,7 @@ class Economy(commands.Cog):
 
     async def _add_new_transaction(self, user_id: int, amount: float) -> None:
         """Add a new transaction to the latest transactions list."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         timestamp = to_timestamp(now, "R")
         self.latest_transactions.append((user_id, amount, timestamp))
 
@@ -229,7 +229,7 @@ class Economy(commands.Cog):
         cooldown_type: Literal[
             "last_worked", "last_daily", "last_robbed_bank", "last_robbed_user"
         ],
-    ) -> Optional[str]:
+    ) -> str | None:
         row = await db.fetchrow(
             f"SELECT {cooldown_type} FROM economy WHERE user_id = $1", user_id
         )
@@ -279,7 +279,7 @@ class Economy(commands.Cog):
             return (True, None, None, None)
 
         last_used: datetime = datetime.fromisoformat(last_used_iso)
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
 
         if now - last_used >= cooldown:
             return (True, None, None, None)
@@ -297,7 +297,7 @@ class Economy(commands.Cog):
         ],
     ) -> None:
         """Update the cooldown for a specific action."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         await self._ensure_user_exists(user_id)
         await db.execute(
             f"""
@@ -330,7 +330,7 @@ class Economy(commands.Cog):
     # Commands
     @commands.command(name="ecoprofile", aliases=("balance", "bal"))
     async def eco_profile(
-        self, ctx: commands.Context, member: Optional[discord.Member] = None
+        self, ctx: commands.Context, member: discord.Member | None = None
     ):
         """See your or someone else's economy profile."""
         if member is None:
@@ -548,8 +548,8 @@ class Economy(commands.Cog):
     async def eco_leaderboard(
         self,
         ctx: commands.Context,
-        arg_a: Optional[str] = None,
-        arg_b: Optional[str] = None,
+        arg_a: str | None = None,
+        arg_b: str | None = None,
     ):
         """See the economy leaderboard."""
         await ctx.typing()
@@ -577,7 +577,7 @@ class Economy(commands.Cog):
                 offset = (page - 1) * 10  # Recalculate offset
                 # Unkwown category, balance by default
                 _case = 1
-            except Exception:
+            except ValueError:
                 # Maybe argument 2? --> case 3
                 try:
                     page = int(arg_b)
@@ -585,7 +585,7 @@ class Economy(commands.Cog):
                     # Since its argument 2, set category to arg_a
                     category = arg_a
                     _case = 3
-                except Exception:
+                except ValueError:
                     # Forcefully case 2
                     category = arg_a
                     _case = 2
@@ -595,7 +595,7 @@ class Economy(commands.Cog):
         self.console.print(f"Case {_case}")
         self.console.print(f"Page {page}, offset {offset}, category {category}.")
 
-        async def get_balance_leaderboard() -> Optional[Embed]:
+        async def get_balance_leaderboard() -> Embed | None:
             nonlocal offset
             rows = await self._fetch_leaderboard("balance", per_page, offset)
 
@@ -623,7 +623,7 @@ class Economy(commands.Cog):
 
             return embed
 
-        async def get_money_lost_leaderboard() -> Optional[Embed]:
+        async def get_money_lost_leaderboard() -> Embed | None:
             nonlocal offset
             rows = await self._fetch_leaderboard("money_lost", per_page, offset)
 
@@ -651,7 +651,7 @@ class Economy(commands.Cog):
 
             return embed
 
-        async def get_rebirths_leaderboard() -> Optional[Embed]:
+        async def get_rebirths_leaderboard() -> Embed | None:
             nonlocal offset
             rows = await self._fetch_leaderboard("rebirths", per_page, offset)
 
@@ -871,7 +871,7 @@ class Economy(commands.Cog):
 
             try:
                 msg = await self.bot.wait_for("message", check=check, timeout=15.0)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 return
 
             if msg.content.strip().lower() != "no":
@@ -922,7 +922,7 @@ class Economy(commands.Cog):
             )
 
     @commands.command()
-    async def transactions(self, ctx: commands.Context, page: Optional[int] = 1):
+    async def transactions(self, ctx: commands.Context, page: int | None = 1):
         """See the latest economy transactions."""
 
         def get_transactions(page: int):
@@ -1120,7 +1120,7 @@ class Economy(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 1, commands.BucketType.user)
-    async def dicebet(self, ctx: commands.Context, amount: Optional[float] = None):
+    async def dicebet(self, ctx: commands.Context, amount: float | None = None):
         """Roll a 6 sided dice, guess the correct side to win 6x your bet."""
         if not amount:
             await ctx.send("If you just wanna roll a dice, use !roll :broken_heart:")
@@ -1369,10 +1369,9 @@ class Economy(commands.Cog):
             await ctx.send("invalid type")
             return
 
-        if _type == "color":
-            if choice not in ["red", "black", "green"]:
-                await ctx.send("invalid color")
-                return
+        if _type == "color" and choice not in ["red", "black", "green"]:
+            await ctx.send("invalid color")
+            return
 
         # Not including ranges nor odds/evens for now
 
@@ -1428,15 +1427,7 @@ class Economy(commands.Cog):
         await message.edit(content=winning_message)
 
         if _type == "color":
-            if choice == "red" and winning_number in red_numbers:
-                winnings = float(bet * 2)
-                await self._add_money(user_id, winnings)
-                await ctx.send(
-                    f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}",
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
-                return
-            elif choice == "black" and winning_number not in red_numbers:
+            if (choice == "red" and winning_number in red_numbers) or (choice == "black" and winning_number not in red_numbers):
                 winnings = float(bet * 2)
                 await self._add_money(user_id, winnings)
                 await ctx.send(
@@ -1453,15 +1444,14 @@ class Economy(commands.Cog):
                 )
                 return
 
-        elif _type == "number":
-            if choice == str(winning_number):
-                winnings = float(bet * 36)
-                await self._add_money(user_id, winnings - bet.to_float())
-                await ctx.send(
-                    f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}",
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
-                return
+        elif _type == "number" and choice == str(winning_number):
+            winnings = float(bet * 36)
+            await self._add_money(user_id, winnings - bet.to_float())
+            await ctx.send(
+                f"{ctx.author.mention} won {winnings} coins! {self.coin_emoji}",
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
+            return
 
         await self._remove_money(user_id, bet.to_float())
         await ctx.send(
@@ -1477,7 +1467,7 @@ class Economy(commands.Cog):
             return
 
     @rebirth.command()
-    async def see(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+    async def see(self, ctx: commands.Context, member: discord.Member | None = None):
         """See your or someone else's rebirths."""
         if member is None:
             member = ctx.author
@@ -1527,7 +1517,7 @@ class Economy(commands.Cog):
 
     @rebirth.command(aliases=("next",))
     async def price(
-        self, ctx: commands.Context, member: Optional[discord.Member] = None
+        self, ctx: commands.Context, member: discord.Member | None = None
     ):
         """See how much your next or someone else's rebirth will cost."""
 
@@ -1562,7 +1552,7 @@ class Economy(commands.Cog):
     @commands.command(aliases=("gr",))
     @commands.is_owner()
     async def give_rebirth(
-        self, ctx: commands.Context, user: discord.User, amount: Optional[int] = 1
+        self, ctx: commands.Context, user: discord.User, amount: int | None = 1
     ):
         """Give someone rebirths. Can only be used by bot owners."""
 

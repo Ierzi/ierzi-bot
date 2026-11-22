@@ -1,4 +1,4 @@
-import discord
+import discord # noqa: I001
 from discord import Embed, Message
 from discord.ext import commands
 from discord.ui import View, Button
@@ -10,14 +10,12 @@ from .utils.functions import to_ordinal, to_timestamp, parse_offset, tz_to_str
 from .utils.types import Birthday
 
 import aiohttp
-import asyncio
 import certifi
 from currency_converter import CurrencyConverter, SINGLE_DAY_ECB_URL
 from datetime import datetime, timedelta
 import os
 import random
 from rich.console import Console
-from typing import Optional, Union
 import ssl
 from zoneinfo import ZoneInfo
 
@@ -71,7 +69,7 @@ class WorldDateTime(commands.Cog):
             birthday.year,
         )
 
-    async def _get_birthday(self, user_id: int) -> Optional[Birthday]:
+    async def _get_birthday(self, user_id: int) -> Birthday | None:
         """Get the birthday of a user."""
         row = await db.fetchrow(
             "SELECT day, month, year FROM users WHERE user_id = $1", user_id
@@ -97,12 +95,11 @@ class WorldDateTime(commands.Cog):
         ssl_context = ssl.create_default_context(cafile=certifi.where())
         async with aiohttp.ClientSession(
             timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)
-        ) as client:
-            async with client.get(
-                url, headers={"User-Agent": "ierzi-bot/1.0"}
-            ) as request:
-                request.raise_for_status()
-                response: dict = await request.json()
+        ) as client, client.get(
+            url, headers={"User-Agent": "ierzi-bot/1.0"}
+        ) as request:
+            request.raise_for_status()
+            response: dict = await request.json()
 
         return response.get("events", [])
 
@@ -117,15 +114,14 @@ class WorldDateTime(commands.Cog):
             try:
                 async with aiohttp.ClientSession(
                     timeout=timeout, connector=aiohttp.TCPConnector(ssl=ssl_context)
-                ) as session:
-                    async with session.get(
-                        url, headers={"User-Agent": "ierzi-bot/1.0"}
-                    ) as request:
-                        request.raise_for_status()
-                        response: dict = await request.json()
-                        self.console.print(response)
-                        break
-            except Exception as e:
+                ) as session, session.get(
+                    url, headers={"User-Agent": "ierzi-bot/1.0"}
+                ) as request:
+                    request.raise_for_status()
+                    response: dict = await request.json()
+                    self.console.print(response)
+                    break
+            except aiohttp.ClientResponseError as e:
                 self.console.print(f"OTD fetch attempt {attempt + 1} failed: {e}")
                 if attempt == 2:
                     self.console.print("OTD fetch failed after retries.")
@@ -148,8 +144,7 @@ class WorldDateTime(commands.Cog):
 
         timeout = aiohttp.ClientTimeout(total=10)
         url = "https://api.api-ninjas.com/v1/historicalevents"
-        async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(
+        async with aiohttp.ClientSession(timeout=timeout) as session, session.get(
                 url,
                 headers={
                     "User-Agent": "ierzi-bot/1.0",
@@ -199,7 +194,7 @@ class WorldDateTime(commands.Cog):
             timezone,
         )
 
-    async def _get_timezone(self, user_id: int) -> Optional[str]:
+    async def _get_timezone(self, user_id: int) -> str | None:
         """Get the timezone of a user."""
         row = await db.fetchrow(
             "SELECT timezone FROM users WHERE user_id = $1", user_id
@@ -221,7 +216,7 @@ class WorldDateTime(commands.Cog):
         now = datetime.now(parse_offset(tz))
         try:
             events = await self._get_events(now)
-        except Exception as e:
+        except (TimeoutError, aiohttp.ClientError) as e:
             await ctx.send("error :(")
             self.console.print(f"Error fetching events: {e}")
             return
@@ -248,8 +243,8 @@ class WorldDateTime(commands.Cog):
         self,
         ctx: commands.Context,
         day: int,
-        month: Union[int, str],
-        year: Optional[int] = None,
+        month: int | str,
+        year: int | None = None,
     ):
         """Set your birthday. (Day Month and optionally Year)"""
         if year is not None and year < 0:
@@ -277,7 +272,7 @@ class WorldDateTime(commands.Cog):
         )
 
     @birthday.command()
-    async def get(self, ctx: commands.Context, user: Optional[discord.User] = None):
+    async def get(self, ctx: commands.Context, user: discord.User | None = None):
         """Get someone's birthday."""
         user_id = user.id if user else ctx.author.id
 
@@ -300,8 +295,8 @@ class WorldDateTime(commands.Cog):
     async def until(
         self,
         ctx: commands.Context,
-        user: Optional[discord.User] = None,
-        month: Optional[Union[int, str]] = None,
+        user: discord.User | None = None,
+        month: int | str | None = None,
     ):
         """Get the time until someone's birthday."""
         user_id = user.id if user else ctx.author.id
@@ -339,7 +334,7 @@ class WorldDateTime(commands.Cog):
         )
 
     @birthday.command()
-    async def since(self, ctx: commands.Context, user: Optional[discord.User] = None):
+    async def since(self, ctx: commands.Context, user: discord.User | None = None):
         """Get the time since someone's birthday."""
         user_id = user.id if user else ctx.author.id
 
@@ -449,7 +444,7 @@ class WorldDateTime(commands.Cog):
         )
 
     @birthday.command()
-    async def month(self, ctx: commands.Context, month: Union[int, str]):
+    async def month(self, ctx: commands.Context, month: int | str):
         """Lists all birthdays in a given month."""
         if isinstance(month, int) and (month < 1 or month > 12):
             await ctx.send("Month must be between 1 and 12")
@@ -458,8 +453,9 @@ class WorldDateTime(commands.Cog):
         if isinstance(month, str):
             try:
                 month = MONTHS.index(month.capitalize()) + 1
-            except Exception:
+            except ValueError:
                 await ctx.send("invalid month")
+                return
 
         birthdays = await db.fetch(
             "SELECT user_id, day, month FROM users WHERE month = $1 AND day IS NOT NULL",
@@ -543,8 +539,8 @@ class WorldDateTime(commands.Cog):
         ctx: commands.Context,
         user: discord.User,
         day: int,
-        month: Union[int, str],
-        year: Optional[int] = None,
+        month: int | str,
+        year: int | None = None,
     ):
         """Force set a user's birthday. Can only be used by bot owners."""
         if isinstance(month, str):
@@ -559,7 +555,7 @@ class WorldDateTime(commands.Cog):
 
     # Timezone commands
     @timezone.command(name="set")
-    async def set_timezone(self, ctx: commands.Context, timezone: Optional[str] = None):
+    async def set_timezone(self, ctx: commands.Context, timezone: str | None = None):
         """Set your timezone."""
         # Pre-load buttons
         buttons_view = View(timeout=VIEW_TIMEOUT)
@@ -593,13 +589,13 @@ class WorldDateTime(commands.Cog):
                     offset = parse_offset(offset.content)
                 else:
                     offset = ZoneInfo(offset.content)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 await ctx.send("You took too long to respond.")
                 return
         else:
             try:
                 offset = parse_offset(timezone)
-            except Exception as e:
+            except ValueError as e:
                 await ctx.send("error :(")
                 self.console.print(f"Error parsing timezone {timezone}: {e}")
                 return
@@ -622,7 +618,7 @@ class WorldDateTime(commands.Cog):
 
     @timezone.command(name="get")
     async def get_timezone(
-        self, ctx: commands.Context, user: Optional[discord.User] = None
+        self, ctx: commands.Context, user: discord.User | None = None
     ):
         """Get a user's timezone."""
         if not user:
@@ -640,7 +636,7 @@ class WorldDateTime(commands.Cog):
 
         try:
             tzinfo = parse_offset(tz)
-        except Exception as e:
+        except ValueError as e:
             await ctx.send("error :(")
             self.console.print(f"Error parsing timezone {tz}: {e}")
             return
@@ -653,7 +649,7 @@ class WorldDateTime(commands.Cog):
 
     @timezone.command()
     async def difference(
-        self, ctx: commands.Context, tz1: str, tz2: Optional[str] = None
+        self, ctx: commands.Context, tz1: str, tz2: str | None = None
     ):
         """Get the difference between two timezones with its name or an user."""
         if not tz2:
@@ -668,7 +664,7 @@ class WorldDateTime(commands.Cog):
         try:
             tzinfo1 = parse_offset(tz1)
             tzinfo2 = parse_offset(tz2)
-        except Exception as e:
+        except ValueError as e:
             await ctx.send("error :(")
             self.console.print(f"Error parsing timezone {tz1 if not tz2 else tz2}: {e}")
             return
@@ -690,7 +686,7 @@ class WorldDateTime(commands.Cog):
 
     @timezone.command(name="now")
     async def tz_now(
-        self, ctx: commands.Context, tz: Optional[discord.Member | str] = None
+        self, ctx: commands.Context, tz: discord.Member | str | None = None
     ):
         """Get the current time in a timezone with its name or an user."""
         if not tz:
@@ -711,7 +707,7 @@ class WorldDateTime(commands.Cog):
 
         try:
             tzinfo = parse_offset(timezone)
-        except Exception as e:
+        except ValueError as e:
             await ctx.send("error :(")
             self.console.print(f"Error parsing timezone {timezone}: {e}")
             return
@@ -729,7 +725,7 @@ class WorldDateTime(commands.Cog):
         await ctx.send(f"{', '.join(currencies)}" if currencies else "No currencies :( ???")
 
     @commands.command(aliases=("ce",))
-    async def currencyexchange(self, ctx: commands.Context, from_currency: Optional[str], to_currency: Optional[str], amount: Optional[float]):
+    async def currencyexchange(self, ctx: commands.Context, from_currency: str | None, to_currency: str | None, amount: float | None):
         """Converts an amount from one currency to another."""
         if from_currency is None or to_currency is None:
             await ctx.send("!currencyexchange [from_currency] [to_currency] [amount]")

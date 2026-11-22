@@ -1,5 +1,5 @@
 from datetime import datetime
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Optional
 
 
@@ -70,7 +70,7 @@ class Currency:
 
         return Currency(self.value / Decimal(other))
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Currency):
             return self.value == other.value
 
@@ -123,7 +123,7 @@ class BirthdayError(Exception):
 
 class Birthday:
     # I think its easier to just use a class for this
-    def __init__(self, day: int, month: int, year: Optional[int] = None):
+    def __init__(self, day: int, month: int, year: int | None = None):
         if year is not None and year < 0:
             raise BirthdayError("Year cannot be negative.")
         if day < 1 or day > 31:
@@ -139,7 +139,7 @@ class Birthday:
     def from_datetime(cls, datetime: datetime) -> "Birthday":
         return cls(datetime.day, datetime.month, datetime.year)
 
-    def to_datetime(self, year: Optional[int] = None) -> datetime:
+    def to_datetime(self, year: int | None = None) -> datetime:
         if year is None:
             year = self.year if self.year is not None else datetime.now().year
         return datetime(year, self.month, self.day)
@@ -167,7 +167,7 @@ class Birthday:
             else f"Birthday({self.day:02d}/{self.month:02d}/{self.year:04d})"
         )
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, Birthday):
             if self.year is None or other.year is None:
                 return self.day == other.day and self.month == other.month
@@ -183,5 +183,5 @@ class Birthday:
 
         return NotImplemented
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)

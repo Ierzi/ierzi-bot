@@ -1,4 +1,4 @@
-import discord
+import discord # noqa: I001
 from discord import Embed
 from discord.ext import commands
 
@@ -34,12 +34,11 @@ class Search(commands.Cog):
         """Look up the meaning of a word on the Urban Dictionary."""
         request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
+        async with aiohttp.ClientSession() as session, session.get(request_url) as r:
                 data = await r.json()
                 try:
                     definition = data["data"][0]["meaning"]
-                except Exception:
+                except IndexError:
                     await ctx.send("Word not found/Error.")
                     return
 
@@ -66,15 +65,14 @@ class Search(commands.Cog):
         """Look up the meaning of a word."""
         request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
+        async with aiohttp.ClientSession() as session, session.get(request_url) as r:
                 r = await r.json()
 
         # r = requests.get(request_url).json()
 
         try:
             meanings = r[0]["meanings"]
-        except Exception:
+        except IndexError:
             await ctx.send("Word not found / Error.")
             return
 
@@ -121,8 +119,7 @@ class Search(commands.Cog):
                 "api_key": self.serp_key,
                 "num": 3,
             }
-            async with aiohttp.ClientSession() as client:
-                async with client.get("https://serpapi.com/search", params=params) as r:
+            async with aiohttp.ClientSession() as client, client.get("https://serpapi.com/search", params=params) as r:
                     response_json: dict = await r.json()
 
             result: dict
@@ -147,11 +144,10 @@ class Search(commands.Cog):
         """Look up the synonyms of a word."""
         request_url = f"https://www.synonyms.com/synonyms_api.php/synonyms/{word}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
+        async with aiohttp.ClientSession() as session, session.get(request_url) as r:
                 try:
                     r.raise_for_status()
-                except Exception:
+                except IndexError:
                     await ctx.send("error :(")
                     return
                 r = await r.json()
@@ -166,8 +162,7 @@ class Search(commands.Cog):
         """Define but it doesnt send the messages"""
         request_url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
+        async with aiohttp.ClientSession() as session, session.get(request_url) as r:
                 r.raise_for_status()
                 r = await r.json()
 
@@ -175,7 +170,7 @@ class Search(commands.Cog):
 
         try:
             meanings = r[0]["meanings"]
-        except Exception:
+        except IndexError:
             return None
 
         message = f"**{word}**: \n\n"
@@ -194,12 +189,11 @@ class Search(commands.Cog):
         """Urban Dictionary but doesnt send the messages."""
         request_url = f"https://unofficialurbandictionaryapi.com/api/search?term={word}&strict=true"
 
-        async with aiohttp.ClientSession() as session:
-            async with session.get(request_url) as r:
+        async with aiohttp.ClientSession() as session, session.get(request_url) as r:
                 data = await r.json()
                 try:
                     definition = data["data"][0]["meaning"]
-                except Exception:
+                except IndexError:
                     return None
 
         message = f"**{word}**: \n\n{definition}"

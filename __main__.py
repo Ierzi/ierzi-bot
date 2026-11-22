@@ -1,7 +1,7 @@
 # Ierzi Bot
 
 # Discord.py Improrts
-import discord  # noqa: I001
+import discord  # noqa: I001 ty but i like my imports like that
 from discord import Interaction, Embed, Message, SelectOption, User, app_commands
 from discord.activity import CustomActivity
 from discord.ext import commands, tasks
@@ -25,7 +25,7 @@ from cogs.utils.variables import VIEW_TIMEOUT, SLURS_SERVERS
 # Other
 import aiohttp
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, UTC
 from dotenv import load_dotenv
 import os
 import random
@@ -37,7 +37,7 @@ console = Console()
 load_dotenv()
 
 token = os.getenv("TOKEN")
-start_uptime = datetime.now(timezone.utc)
+start_uptime = datetime.now(UTC)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -360,7 +360,6 @@ async def profile(ctx: commands.Context, *user_ids: int):
 @bot.command()
 async def github(ctx: commands.Context):
     """if you wanna contribute idk"""
-    global experimental_branch
     if experimental_branch:
         await ctx.send(
             "https://git.gay/Ierzi/ierzi-bot/src/branch/experimental \nhttps://github.com/Ierzi/ierzi-bot/tree/experimental"
@@ -789,19 +788,16 @@ async def force_set_pronouns(ctx: commands.Context, user: discord.User, _pronoun
 @bot.command(aliases=("uptime",))
 async def info(ctx: commands.Context):
     """info about the bot including uptime (new command!!)"""
-    global start_uptime, experimental_branch, console
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     message = ""
 
     # Get commit name and hash (first 6 characters) with a request
     async with aiohttp.ClientSession() as session, session.get(
-        "https://api.github.com/repos/ierzi/ierzi-bot/commits/main"
-        if not experimental_branch
-        else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental"
+        "https://api.github.com/repos/ierzi/ierzi-bot/commits/main" if not experimental_branch else "https://api.github.com/repos/ierzi/ierzi-bot/commits/experimental"
     ) as response:
         try:
             response.raise_for_status()
-        except Exception as e:
+        except aiohttp.ClientResponseError as e:
             await ctx.send("error :(")
             console.print(e)
             return
@@ -824,13 +820,12 @@ async def info(ctx: commands.Context):
 @bot.command()
 async def ping(ctx: commands.Context):
     start = ctx.message.created_at
-    end = datetime.now(timezone.utc)
+    end = datetime.now(UTC)
 
     latency = (end - start).total_seconds() * 1000  # Convert to milliseconds
     await ctx.send(f"Pong! Latency: {latency:.2f} ms")
 
 async def start_bot():
-    global token
     if not token:
         console.print("[red]Missing TOKEN.[/red]")
         raise SystemExit(1)
